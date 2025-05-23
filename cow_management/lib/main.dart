@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cow_management/cow_list/cow_list_page.dart';
+import 'package:cow_management/test_server/cows_list._screen.dart';
 
 
 void main() => runApp(const SoDamApp());
@@ -10,7 +12,61 @@ class SoDamApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: HomeScreen(),
+      home: MainScaffold(),
+    );
+  }
+}
+
+class MainScaffold extends StatefulWidget {
+  const MainScaffold({super.key});
+
+  @override
+  State<MainScaffold> createState() => _MainScaffoldState();
+}
+
+class _MainScaffoldState extends State<MainScaffold> {
+  int _selectedIndex = 0;
+
+  final List<Widget> _pages = [
+    const HomeScreen(),
+    const CowListPage(cows: [
+      {
+        'name': '꽃분이 젖소',
+        'id': '12345',
+        'sensor': '센서번호 - 221105',
+        'date': '등록일자 - 24.1.25',
+        'status': '건강양호 - 양호',
+        'milk': '최근 착유량 - 34L',
+      },
+    ]),
+
+    const Center(child: Text('분석 페이지')), // 분석 탭
+    const Center(child: Text('내 정보 페이지')), // 내 정보 탭
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: _pages[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        selectedItemColor: Colors.pink,
+        unselectedItemColor: Colors.grey,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: '홈'),
+          BottomNavigationBarItem(icon: Icon(Icons.list), label: '할 일'),
+          BottomNavigationBarItem(icon: Icon(Icons.pie_chart), label: '분석'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: '내 정보'),
+        ],
+      ),
     );
   }
 }
@@ -24,7 +80,6 @@ class HomeScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
-          // 전체 화면 스크롤
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -37,10 +92,11 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: _buildBottomNav(),
     );
   }
 }
+
+// 나머지 _buildHeader(), _buildCowStatusChartCard(), _buildAIPredictionSummary(), _buildReminderList(), _buildTaskList() 함수는 동일하게 유지해도 됩니다.
 
 Widget _buildHeader() {
   return Padding(
