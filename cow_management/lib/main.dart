@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cow_management/cow_list/cow_list_page.dart';
+import 'package:cow_management/test_server/cows_list._screen.dart';
+
 
 void main() => runApp(const SoDamApp());
 
@@ -82,10 +84,10 @@ class HomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildHeader(),
-              _buildCowStatusChartCard(),
-              _buildAIPredictionSummary(),
-              _buildReminderList(),
-              _buildTaskList(),
+              _buildCowStatusChartCard(), // 소 상태 요약
+              _buildAIPredictionSummary(), // AI 예측
+              _buildReminderList(), // 태그 버튼
+              _buildTaskList(context), // context 전달
             ],
           ),
         ),
@@ -366,7 +368,7 @@ Widget _buildReminderList() {
   );
 }
 
-Widget _buildTaskList() {
+Widget _buildTaskList(BuildContext context) {
   final List<Map<String, dynamic>> tasks = [
     {
       'title': '우유 착유 일정 확인',
@@ -388,49 +390,78 @@ Widget _buildTaskList() {
   return Padding(
     padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
     child: Column(
-      children: tasks.map((task) {
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                task['done']
-                    ? Icons.check_circle
-                    : Icons.radio_button_unchecked,
-                color: task['done'] ? Colors.green : Colors.grey,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      task['title'],
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      task['subtitle'],
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Colors.black54,
-                      ),
-                    ),
-                  ],
+      children: [
+        ...tasks.map((task) {
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  task['done']
+                      ? Icons.check_circle
+                      : Icons.radio_button_unchecked,
+                  color: task['done'] ? Colors.green : Colors.grey,
                 ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        task['title'],
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        task['subtitle'],
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Colors.black54,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+        // "나의 소 목록 불러오기" 버튼 추가
+        const SizedBox(height: 8),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.purple,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
-            ],
+              padding: const EdgeInsets.symmetric(vertical: 16),
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const CowListScreen(),
+                ),
+              );
+            },
+            child: const Text(
+              '나의 소 목록 불러오기',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
           ),
-        );
-      }).toList(),
+        ),
+      ],
     ),
   );
 }
