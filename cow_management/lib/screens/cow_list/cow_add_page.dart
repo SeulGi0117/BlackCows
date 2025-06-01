@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:cow_management/cow_list/cow_add_done_page.dart';
+import 'package:cow_management/screens/cow_list/cow_add_done_page.dart';
 
 class CowAddPage extends StatefulWidget {
   const CowAddPage({super.key});

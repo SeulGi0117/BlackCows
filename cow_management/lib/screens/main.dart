@@ -1,18 +1,39 @@
 import 'package:flutter/material.dart';
-import 'package:cow_management/cow_list/cow_list_page.dart';
-import 'package:cow_management/test_server/cows_list._screen.dart';
+import 'package:provider/provider.dart';
+import 'package:cow_management/providers/user_provider.dart';
+import 'package:cow_management/providers/cow_provider.dart';
+import 'package:cow_management/screens/accounts/login.dart';
+import 'package:cow_management/screens/cow_list/cow_list_page.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:cow_management/screens/accounts/signup.dart';
 
-
-void main() => runApp(const SoDamApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load();
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => CowProvider()),
+      ],
+      child: const SoDamApp(),
+    ),
+  );
+}
 
 class SoDamApp extends StatelessWidget {
   const SoDamApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: MainScaffold(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const LoginPage(),
+        '/signup': (context) => const SignupPage(), // ✅ 여기!
+        '/main': (context) => const MainScaffold(), // 있으면 추가해도 좋아
+      },
     );
   }
 }
@@ -29,17 +50,7 @@ class _MainScaffoldState extends State<MainScaffold> {
 
   final List<Widget> _pages = [
     const HomeScreen(),
-    const CowListPage(cows: [
-      {
-        'name': '꽃분이 젖소',
-        'id': '12345',
-        'sensor': '센서번호 - 221105',
-        'date': '등록일자 - 24.1.25',
-        'status': '건강양호 - 양호',
-        'milk': '최근 착유량 - 34L',
-      },
-    ]),
-
+    const CowListPage(),
     const Center(child: Text('분석 페이지')), // 분석 탭
     const Center(child: Text('내 정보 페이지')), // 내 정보 탭
   ];
@@ -433,7 +444,7 @@ Widget _buildTaskList(BuildContext context) {
               ],
             ),
           );
-        }).toList(),
+        }),
         // "나의 소 목록 불러오기" 버튼 추가
         const SizedBox(height: 8),
         SizedBox(
@@ -451,7 +462,7 @@ Widget _buildTaskList(BuildContext context) {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const CowListScreen(),
+                  builder: (context) => const CowListPage(),
                 ),
               );
             },
