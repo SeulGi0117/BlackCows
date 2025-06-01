@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:cow_management/cow_list/cow_add_page.dart';
+import 'package:cow_management/screens/cow_list/cow_add_page.dart';
+import 'package:cow_management/providers/cow_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter/foundation.dart';
 
 class CowListPage extends StatefulWidget {
-  final List<Map<String, String>> cows;
-
-  const CowListPage({super.key, required this.cows});
+  const CowListPage({super.key});
 
   @override
   State<CowListPage> createState() => _CowListPageState();
@@ -15,21 +16,18 @@ class _CowListPageState extends State<CowListPage> {
   final TextEditingController _searchController = TextEditingController();
 
   @override
-  void initState() {
-    super.initState();
-    filteredCows = widget.cows;
-    _searchController.addListener(_onSearchChanged);
-  }
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final cows = Provider.of<CowProvider>(context).cows;
 
-  void _onSearchChanged() {
-    final keyword = _searchController.text.toLowerCase();
-    setState(() {
-      filteredCows = widget.cows.where((cow) {
-        final name = cow['name']?.toLowerCase() ?? '';
-        final id = cow['id']?.toLowerCase() ?? '';
-        return name.contains(keyword) || id.contains(keyword);
-      }).toList();
-    });
+    filteredCows = cows
+        .map((cow) => {
+              'name': cow.cow_name,
+              'date': cow.birthdate.toIso8601String(), // DateTime → 문자열
+              'status': describeEnum(cow.status), // enum → 문자열
+              'breed': cow.breed,
+            })
+        .toList();
   }
 
   @override
