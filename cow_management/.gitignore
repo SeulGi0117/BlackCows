@@ -65,3 +65,4 @@ cow_management/macos/Flutter/ephemeral/Flutter-Generated.xcconfig
 
 cow_management/.gitignore
 .dart_tool/
+android/local.properties
