@@ -20,6 +20,7 @@ test/**.dart
 test/**.g.dart
 test/**.gr.dart
 test/**.gr.dart
+.lock
 
 # =========================================
 # IntelliJ / Android Studio 관련
