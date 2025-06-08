@@ -1,35 +1,43 @@
 class User {
+  final String? id;
   final String username;
-  final String email; // useremail → email
-  final String password;
-  final String? farmName; // 선택적 필드로 설정 가능
-  final String? passwordConfirm; // 선택적 필드
+  final String email;
+  final String? farmName;
+  final String? farmId;
+  final String? createdAt;
+  final bool isActive;
 
   User({
+    this.id,
     required this.username,
     required this.email,
-    required this.password,
     this.farmName,
-    this.passwordConfirm,
+    this.farmId,
+    this.createdAt,
+    this.isActive = true,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
+      id: json['id']?.toString(),
       username: json['username'] ?? '',
       email: json['email'] ?? '',
-      password: json['password'] ?? '',
       farmName: json['farm_name'],
-      passwordConfirm: json['password_confirm'],
+      farmId: json['farm_id']?.toString(),
+      createdAt: json['created_at'],
+      isActive: json['is_active'] ?? true,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'username': username,
       'email': email,
-      'password': password,
-      if (farmName != null) 'farm_name': farmName,
-      if (passwordConfirm != null) 'password_confirm': passwordConfirm,
+      'farm_name': farmName,
+      'farm_id': farmId,
+      'created_at': createdAt,
+      'is_active': isActive,
     };
   }
 }

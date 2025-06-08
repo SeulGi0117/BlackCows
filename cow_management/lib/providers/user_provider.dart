@@ -5,10 +5,10 @@ import 'package:cow_management/models/User.dart';
 
 class UserProvider with ChangeNotifier {
   User? _currentUser;
-
+  bool _shouldShowWelcome = false;
   User? get currentUser => _currentUser;
-
   bool get isLoggedIn => _currentUser != null;
+  bool get shouldShowWelcome => _shouldShowWelcome;
 
   void setUser(User user) {
     _currentUser = user;
@@ -17,6 +17,12 @@ class UserProvider with ChangeNotifier {
 
   void clearUser() {
     _currentUser = null;
+    _shouldShowWelcome = false;
+    notifyListeners();
+  }
+
+  void markWelcomeShown() {
+    _shouldShowWelcome = false;
     notifyListeners();
   }
 
@@ -25,7 +31,11 @@ class UserProvider with ChangeNotifier {
     try {
       final response = await http.post(
         Uri.parse(loginUrl),
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Accept': 'application/json',
+          'Accept-Charset': 'utf-8',
+        },
         body: jsonEncode({
           'username': username,
           'password': password,
@@ -33,15 +43,19 @@ class UserProvider with ChangeNotifier {
       );
       print('요청 데이터: username=$username, password=$password');
       print('응답 상태코드: ${response.statusCode}');
-      print('응답 본문: ${response.body}');
+      
+      // UTF-8로 디코딩하여 응답 본문 출력
+      final responseBody = utf8.decode(response.bodyBytes);
+      print('응답 본문: $responseBody');
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        _currentUser = User.fromJson(data);
+        final data = jsonDecode(responseBody);
+        _currentUser = User.fromJson(data['user']);
+        _shouldShowWelcome = true; // 로그인 성공 시 환영 메시지 표시 플래그 설정
         notifyListeners();
         return true;
       } else {
-        print('로그인 실패: ${response.statusCode} - ${response.body}');
+        print('로그인 실패: ${response.statusCode} - $responseBody');
         return false;
       }
     } catch (e) {
@@ -88,6 +102,7 @@ class UserProvider with ChangeNotifier {
   // 로그아웃 처리
   void logout() {
     _currentUser = null;
+    _shouldShowWelcome = false;
     notifyListeners();
     print('로그아웃');
   }
