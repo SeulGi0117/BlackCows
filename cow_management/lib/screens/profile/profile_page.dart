@@ -47,7 +47,7 @@ class ProfilePage extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        user?.useremail ?? '이메일 없음',
+                        user?.email ?? '이메일 없음',
                         style: const TextStyle(
                           color: Colors.black54,
                         ),

@@ -25,7 +25,7 @@ class UserProvider with ChangeNotifier {
     try {
       final response = await http.post(
         Uri.parse(loginUrl),
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: jsonEncode({
           'username': username,
           'password': password,
@@ -46,6 +46,41 @@ class UserProvider with ChangeNotifier {
       }
     } catch (e) {
       print('로그인 중 오류 발생: $e');
+      return false;
+    }
+  }
+
+  Future<bool> signup({
+    required String username,
+    required String email,
+    required String password,
+    required String passwordConfirm,
+    required String farmName,
+    required String signupUrl,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse(signupUrl),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: jsonEncode({
+          'username': username,
+          'email': email,
+          'password': password,
+          'password_confirm': passwordConfirm,
+          'farm_name': farmName,
+        }),
+      );
+
+      print('회원가입 요청 응답 코드: ${response.statusCode}');
+      print('회원가입 응답 본문: ${response.body}');
+
+      if (response.statusCode == 201) {
+        return true; // 회원가입 성공
+      } else {
+        return false; // 회원가입 실패
+      }
+    } catch (e) {
+      print('회원가입 중 오류 발생: $e');
       return false;
     }
   }

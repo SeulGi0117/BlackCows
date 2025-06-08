@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cow_management/providers/user_provider.dart';
 import 'package:cow_management/main.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -19,15 +20,10 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    // final baseUrl = dotenv.env['BASE_URL']!;
-    // print('✅ BASE_URL: $baseUrl');
-
-    // .env는 웹에서 안되는지 오류가 자꾸 뜸 불러오질 못하는듯
-    loginUrl =
-        'http://52.78.212.96:8000/http://ec2-52-78-212-96.ap-northeast-2.compute.amazonaws.com:8000/';
+    loginUrl = '${dotenv.env['API_BASE_URL']!}/auth/login';
   }
 
-  void _login() async {
+  Future<void> _login() async {
     final username = _usernameController.text.trim();
     final password = _passwordController.text.trim();
 
@@ -41,7 +37,7 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _isLoading = true);
 
     final success = await Provider.of<UserProvider>(context, listen: false)
-        .login(username, password, loginUrl); // 👈 loginUrl 전달
+        .login(username, password, loginUrl);
 
     setState(() => _isLoading = false);
 
@@ -99,10 +95,7 @@ class _LoginPageState extends State<LoginPage> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/'); // 로그인 누르면 메인 홈으로 이동
-                  },
-                  // onPressed: _isLoading ? null : _login,
+                  onPressed: _isLoading ? null : _login,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.pink,
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -122,12 +115,9 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 16),
-
-              // 회원가입 버튼
               TextButton(
                 onPressed: () {
-                  Navigator.pushNamed(context,
-                      '/signup'); // 또는 Navigator.push(context, MaterialPageRoute(...))
+                  Navigator.pushNamed(context, '/signup');
                 },
                 child: const Text("아직 회원이 아니신가요? 회원가입"),
               ),

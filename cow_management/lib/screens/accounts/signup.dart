@@ -1,12 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:cow_management/providers/user_provider.dart';
-import 'package:cow_management/models/user.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
-final String baseUrl = dotenv.env['BASE_URL']!;
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -19,31 +14,49 @@ class _SignupPageState extends State<SignupPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _passwordConfirmController =
+      TextEditingController();
+  final TextEditingController _farmNameController = TextEditingController();
   bool _isLoading = false;
 
   Future<void> _signup() async {
     final username = _usernameController.text.trim();
-    final userEmail = _emailController.text.trim();
+    final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
+    final passwordConfirm = _passwordConfirmController.text.trim();
+    final farmName = _farmNameController.text.trim();
 
-    if (username.isEmpty || userEmail.isEmpty || password.isEmpty) {
+    if ([username, email, password, passwordConfirm, farmName]
+        .any((e) => e.isEmpty)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('모든 필드를 입력해주세요.')),
       );
       return;
     }
 
+    if (password != passwordConfirm) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('비밀번호가 일치하지 않습니다.')),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
+    final apiUrl = dotenv.env['API_BASE_URL'];
+    assert(apiUrl != null, 'API_BASE_URL이 .env에 없습니다');
+
     try {
-      final url = Uri.parse('$baseUrl/api/signup/');
+      final url = Uri.parse('$apiUrl/auth/register');
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'username': username,
-          'user_email': userEmail,
+          'email': email,
           'password': password,
+          'password_confirm': passwordConfirm,
+          'farm_name': farmName,
         }),
       );
 
@@ -71,6 +84,8 @@ class _SignupPageState extends State<SignupPage> {
     _usernameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _passwordConfirmController.dispose();
+    _farmNameController.dispose();
     super.dispose();
   }
 
@@ -97,6 +112,17 @@ class _SignupPageState extends State<SignupPage> {
               controller: _passwordController,
               obscureText: true,
               decoration: const InputDecoration(labelText: '비밀번호'),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _passwordConfirmController,
+              obscureText: true,
+              decoration: const InputDecoration(labelText: '비밀번호 확인'),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _farmNameController,
+              decoration: const InputDecoration(labelText: '농장이름'),
             ),
             const SizedBox(height: 24),
             SizedBox(
