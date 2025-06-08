@@ -2,11 +2,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:cow_management/screens/cow_list/cow_add_page.dart';
 import 'package:cow_management/providers/cow_provider.dart';
+import 'package:cow_management/providers/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:cow_management/models/cow.dart';
-import 'package:cow_management/screens/cow_list/cow_detail_page.dart';
 
 class CowListPage extends StatefulWidget {
   const CowListPage({super.key});
@@ -26,6 +26,7 @@ class _CowListPageState extends State<CowListPage> {
   }
 
   Future<void> _fetchCowsFromBackend() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
     final apiUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
 
     if (apiUrl.isEmpty) {
@@ -33,19 +34,34 @@ class _CowListPageState extends State<CowListPage> {
       return;
     }
 
+    if (!userProvider.isLoggedIn || userProvider.accessToken == null) {
+      print('로그인이 필요합니다');
+      return;
+    }
+
     try {
-      final response = await http.get(Uri.parse('$apiUrl/cows/'));
+      final response = await http.get(
+        Uri.parse('$apiUrl/cows/'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${userProvider.accessToken}',
+        },
+      );
+      
       if (response.statusCode == 200) {
         final decoded = utf8.decode(response.bodyBytes);
         final List<dynamic> jsonList = jsonDecode(decoded);
         final List<Cow> cows =
             jsonList.map((json) => Cow.fromJson(json)).toList();
 
-        final cowProvider = Provider.of<CowProvider>(context, listen: false);
-        cowProvider.setCows(cows);
+        if (mounted) {
+          final cowProvider = Provider.of<CowProvider>(context, listen: false);
+          cowProvider.setCows(cows);
+        }
       } else {
-        print(apiUrl);
+        print('API URL: $apiUrl');
         print('❌ 요청 실패: ${response.statusCode}');
+        print('응답 내용: ${utf8.decode(response.bodyBytes)}');
       }
     } catch (e) {
       print('🐞 요청 중 오류 발생: $e');
@@ -228,7 +244,7 @@ class _CowListPageState extends State<CowListPage> {
                         fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   Text(
-                      '출생일 - ${cow.birthdate.toIso8601String().split('T')[0]}'),
+                      '출생일 - ${cow.birthdate?.toIso8601String().split('T')[0] ?? '미등록'}'),
                   Text('품종 - ${cow.breed}'),
                   Text('센서 - ${cow.sensor}'),
                 ],

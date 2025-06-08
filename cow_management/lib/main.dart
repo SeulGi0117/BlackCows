@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cow_management/providers/user_provider.dart';
@@ -32,6 +33,7 @@ class SoDamApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      locale: const Locale('ko', 'KR'),
       initialRoute: '/login', // 시작 루트
       routes: {
         '/': (context) => const MainScaffold(), // 메인 홈

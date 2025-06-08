@@ -5,9 +5,14 @@ import 'package:cow_management/models/User.dart';
 
 class UserProvider with ChangeNotifier {
   User? _currentUser;
+  String? _accessToken;
+  String? _refreshToken;
   bool _shouldShowWelcome = false;
+  
   User? get currentUser => _currentUser;
-  bool get isLoggedIn => _currentUser != null;
+  String? get accessToken => _accessToken;
+  String? get refreshToken => _refreshToken;
+  bool get isLoggedIn => _currentUser != null && _accessToken != null;
   bool get shouldShowWelcome => _shouldShowWelcome;
 
   void setUser(User user) {
@@ -15,8 +20,16 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void setTokens(String accessToken, String refreshToken) {
+    _accessToken = accessToken;
+    _refreshToken = refreshToken;
+    notifyListeners();
+  }
+
   void clearUser() {
     _currentUser = null;
+    _accessToken = null;
+    _refreshToken = null;
     _shouldShowWelcome = false;
     notifyListeners();
   }
@@ -50,9 +63,20 @@ class UserProvider with ChangeNotifier {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(responseBody);
+        
+        // 사용자 정보 저장
         _currentUser = User.fromJson(data['user']);
+        
+        // 토큰 저장
+        _accessToken = data['access_token'];
+        _refreshToken = data['refresh_token'];
+        
         _shouldShowWelcome = true; // 로그인 성공 시 환영 메시지 표시 플래그 설정
         notifyListeners();
+        
+        print('로그인 성공: 토큰 저장됨');
+        print('Access Token: ${_accessToken?.substring(0, 20)}...');
+        
         return true;
       } else {
         print('로그인 실패: ${response.statusCode} - $responseBody');
@@ -73,9 +97,15 @@ class UserProvider with ChangeNotifier {
     required String signupUrl,
   }) async {
     try {
+      print('회원가입 요청 데이터: username=$username, email=$email, farm_name=$farmName');
+      
       final response = await http.post(
         Uri.parse(signupUrl),
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Accept': 'application/json',
+          'Accept-Charset': 'utf-8',
+        },
         body: jsonEncode({
           'username': username,
           'email': email,
@@ -86,9 +116,12 @@ class UserProvider with ChangeNotifier {
       );
 
       print('회원가입 요청 응답 코드: ${response.statusCode}');
-      print('회원가입 응답 본문: ${response.body}');
+      
+      // UTF-8로 디코딩하여 응답 본문 출력
+      final responseBody = utf8.decode(response.bodyBytes);
+      print('회원가입 응답 본문: $responseBody');
 
-      if (response.statusCode == 201) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         return true; // 회원가입 성공
       } else {
         return false; // 회원가입 실패
@@ -102,8 +135,10 @@ class UserProvider with ChangeNotifier {
   // 로그아웃 처리
   void logout() {
     _currentUser = null;
+    _accessToken = null;
+    _refreshToken = null;
     _shouldShowWelcome = false;
     notifyListeners();
-    print('로그아웃');
+    print('로그아웃: 모든 데이터 삭제됨');
   }
 }

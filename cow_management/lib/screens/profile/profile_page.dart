@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cow_management/providers/user_provider.dart';
 import 'package:cow_management/screens/accounts/login.dart';
-import 'package:cow_management/models/User.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});

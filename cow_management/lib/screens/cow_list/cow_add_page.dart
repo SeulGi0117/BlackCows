@@ -3,6 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:cow_management/screens/cow_list/cow_add_done_page.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:cow_management/models/cow.dart';
+import 'package:provider/provider.dart';
+import 'package:cow_management/providers/user_provider.dart';
+import 'package:cow_management/providers/cow_provider.dart';
 
 class CowAddPage extends StatefulWidget {
   const CowAddPage({super.key});
@@ -12,18 +17,152 @@ class CowAddPage extends StatefulWidget {
 }
 
 class _CowAddPageState extends State<CowAddPage> {
-  final TextEditingController idController = TextEditingController();
+  final TextEditingController earTagController = TextEditingController();
   final TextEditingController nameController = TextEditingController();
   final TextEditingController sensorController = TextEditingController();
-  final TextEditingController healthController = TextEditingController();
-  String? _selectedReproStatus;
+  final TextEditingController breedController = TextEditingController();
+  final TextEditingController notesController = TextEditingController();
+  
+  DateTime? _selectedBirthdate;
+  HealthStatus? _selectedHealthStatus;
+  BreedingStatus? _selectedBreedingStatus;
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    earTagController.dispose();
+    nameController.dispose();
+    sensorController.dispose();
+    breedController.dispose();
+    notesController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _selectBirthdate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now().subtract(const Duration(days: 365)),
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        _selectedBirthdate = picked;
+      });
+    }
+  }
+
+  Future<void> _addCow() async {
+    if (_isLoading) return;
+
+    // 유효성 검사
+    if (earTagController.text.trim().isEmpty || 
+        nameController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('이표번호와 이름은 필수 입력 항목입니다!'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      
+      if (!userProvider.isLoggedIn || userProvider.accessToken == null) {
+        throw Exception('로그인이 필요합니다');
+      }
+
+      final apiUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
+      
+      final cowData = {
+        'ear_tag_number': earTagController.text.trim(),
+        'name': nameController.text.trim(),
+        if (_selectedBirthdate != null) 
+          'birthdate': _selectedBirthdate!.toIso8601String().split('T')[0],
+        if (sensorController.text.trim().isNotEmpty) 
+          'sensor_number': sensorController.text.trim(),
+        if (_selectedHealthStatus != null) 
+          'health_status': _selectedHealthStatus!.name,
+        if (_selectedBreedingStatus != null) 
+          'breeding_status': _selectedBreedingStatus!.name,
+        if (breedController.text.trim().isNotEmpty) 
+          'breed': breedController.text.trim(),
+        if (notesController.text.trim().isNotEmpty) 
+          'notes': notesController.text.trim(),
+      };
+
+      final response = await http.post(
+        Uri.parse('$apiUrl/cows/'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${userProvider.accessToken}',
+        },
+        body: jsonEncode(cowData),
+      );
+
+      if (!mounted) return;
+
+      if (response.statusCode == 201) {
+        final responseData = jsonDecode(utf8.decode(response.bodyBytes));
+        final newCow = Cow.fromJson(responseData);
+        
+        // CowProvider에 새로운 소 추가
+        final cowProvider = Provider.of<CowProvider>(context, listen: false);
+        cowProvider.addCow(newCow);
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CowAddDonePage(cowName: nameController.text.trim()),
+          ),
+        );
+      } else {
+        String errorMessage = '소 추가에 실패했습니다';
+        try {
+          final errorData = jsonDecode(utf8.decode(response.bodyBytes));
+          if (errorData['detail'] != null) {
+            errorMessage = errorData['detail'];
+          }
+        } catch (e) {
+          errorMessage = '오류: ${response.statusCode}';
+        }
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('에러 발생: $e'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        title: const Text('젖소 기록 추가'),
+        title: const Text('젖소 등록'),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
@@ -32,147 +171,246 @@ class _CowAddPageState extends State<CowAddPage> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              '새로운 젖소의 정보 추가',
+              '새로운 젖소 정보 등록',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 24),
-            const Text('개체 번호'),
+            
+            // 이표번호 (필수)
+            const Text('이표번호 *', style: TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
             TextField(
-              controller: idController,
+              controller: earTagController,
               decoration: const InputDecoration(
                 hintText: 'ABC12345',
                 border: OutlineInputBorder(),
+                filled: true,
+                fillColor: Colors.white,
               ),
             ),
             const SizedBox(height: 16),
-            const Text('이름 (별명)'),
+            
+            // 이름 (필수)
+            const Text('이름 *', style: TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
             TextField(
               controller: nameController,
               decoration: const InputDecoration(
-                hintText: '김젖례',
+                hintText: '젖소 이름을 입력하세요',
                 border: OutlineInputBorder(),
+                filled: true,
+                fillColor: Colors.white,
               ),
             ),
             const SizedBox(height: 16),
-            const Text('센서 번호'),
+            
+            // 출생일
+            const Text('출생일', style: TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
+            InkWell(
+              onTap: _selectBirthdate,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      _selectedBirthdate != null
+                          ? '${_selectedBirthdate!.year}-${_selectedBirthdate!.month.toString().padLeft(2, '0')}-${_selectedBirthdate!.day.toString().padLeft(2, '0')}'
+                          : '출생일을 선택하세요',
+                      style: TextStyle(
+                        color: _selectedBirthdate != null ? Colors.black : Colors.grey,
+                      ),
+                    ),
+                    const Icon(Icons.calendar_today, color: Colors.grey),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            // 센서 번호
+            const Text('센서 번호', style: TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
             TextField(
               controller: sensorController,
               decoration: const InputDecoration(
-                hintText: '13-Digit Sensor Number',
+                hintText: '센서 번호를 입력하세요',
                 border: OutlineInputBorder(),
+                filled: true,
+                fillColor: Colors.white,
               ),
             ),
             const SizedBox(height: 16),
-            const Text('건강상태'),
-            TextField(
-              controller: healthController,
-              decoration: const InputDecoration(
-                hintText: '건강 양호 / 이상',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text('번식 상태'),
-            DropdownButtonFormField<String>(
+            
+            // 건강 상태
+            const Text('건강 상태', style: TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<HealthStatus>(
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
+                filled: true,
+                fillColor: Colors.white,
               ),
-              value: _selectedReproStatus,
-              hint: const Text('번식 상태를 선택하세요'),
-              items: const [
-                DropdownMenuItem(value: '발정 전', child: Text('발정 전')),
-                DropdownMenuItem(value: '배란 임박', child: Text('배란 임박')),
-                DropdownMenuItem(value: '임신 확인', child: Text('임신 확인')),
-                DropdownMenuItem(value: '번식 완료', child: Text('번식 완료')),
-              ],
+              value: _selectedHealthStatus,
+              hint: const Text('건강 상태를 선택하세요'),
+              items: HealthStatus.values.map((status) {
+                String displayName;
+                switch (status) {
+                  case HealthStatus.excellent:
+                    displayName = '최상';
+                    break;
+                  case HealthStatus.good:
+                    displayName = '양호';
+                    break;
+                  case HealthStatus.average:
+                    displayName = '보통';
+                    break;
+                  case HealthStatus.poor:
+                    displayName = '나쁨';
+                    break;
+                  case HealthStatus.sick:
+                    displayName = '병환';
+                    break;
+                }
+                return DropdownMenuItem(
+                  value: status,
+                  child: Text(displayName),
+                );
+              }).toList(),
               onChanged: (value) {
                 setState(() {
-                  _selectedReproStatus = value;
+                  _selectedHealthStatus = value;
                 });
               },
             ),
+            const SizedBox(height: 16),
+            
+            // 번식 상태
+            const Text('번식 상태', style: TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<BreedingStatus>(
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                filled: true,
+                fillColor: Colors.white,
+              ),
+              value: _selectedBreedingStatus,
+              hint: const Text('번식 상태를 선택하세요'),
+              items: BreedingStatus.values.map((status) {
+                String displayName;
+                switch (status) {
+                  case BreedingStatus.calf:
+                    displayName = '송아지';
+                    break;
+                  case BreedingStatus.heifer:
+                    displayName = '미경산';
+                    break;
+                  case BreedingStatus.pregnant:
+                    displayName = '임신';
+                    break;
+                  case BreedingStatus.lactating:
+                    displayName = '비유';
+                    break;
+                  case BreedingStatus.dry:
+                    displayName = '건유';
+                    break;
+                  case BreedingStatus.breeding:
+                    displayName = '교배';
+                    break;
+                }
+                return DropdownMenuItem(
+                  value: status,
+                  child: Text(displayName),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedBreedingStatus = value;
+                });
+              },
+            ),
+            const SizedBox(height: 16),
+            
+            // 품종
+            const Text('품종', style: TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
+            TextField(
+              controller: breedController,
+              decoration: const InputDecoration(
+                hintText: '홀스타인, 저지 등',
+                border: OutlineInputBorder(),
+                filled: true,
+                fillColor: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            // 메모
+            const Text('메모', style: TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
+            TextField(
+              controller: notesController,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                hintText: '추가 정보나 특이사항을 입력하세요',
+                border: OutlineInputBorder(),
+                filled: true,
+                fillColor: Colors.white,
+              ),
+            ),
             const SizedBox(height: 32),
+            
+            // 저장 버튼
             SizedBox(
               width: double.infinity,
-              child: TextButton(
-                onPressed: () async {
-                  // 유효성 검사
-                  if (idController.text.isEmpty ||
-                      nameController.text.isEmpty ||
-                      sensorController.text.isEmpty ||
-                      healthController.text.isEmpty ||
-                      _selectedReproStatus == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('모든 정보를 입력해주세요!'),
-                        backgroundColor: Colors.redAccent,
-                      ),
-                    );
-                    return;
-                  }
-                  final cowName = nameController.text;
-                  final cowData = {
-                    'id': idController.text,
-                    'name': cowName,
-                    'sensor': sensorController.text,
-                    'health': healthController.text,
-                    'reproductive': _selectedReproStatus ?? '',
-                  };
-
-                  final url = Uri.parse('http://your-server.com/api/cows/');
-
-                  try {
-                    final response = await http.post(
-                      url,
-                      headers: {'Content-Type': 'application/json'},
-                      body: jsonEncode(cowData),
-                    );
-
-                    if (!mounted) return;
-
-                    if (response.statusCode == 201) {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              CowAddDonePage(cowName: cowName),
-                        ),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('오류: ${response.statusCode}')),
-                      );
-                    }
-                  } catch (e) {
-                    if (!mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('에러 발생: $e')),
-                    );
-                  }
-                },
-                style: TextButton.styleFrom(
-                  backgroundColor: Colors.grey.shade400,
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _addCow,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.pink,
+                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                child: const Text(
-                  '저장',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : const Text(
+                        '등록하기',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
               ),
-            )
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              '* 표시된 항목은 필수 입력 항목입니다.',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
+              ),
+            ),
           ],
         ),
       ),

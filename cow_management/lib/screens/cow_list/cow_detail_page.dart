@@ -24,7 +24,7 @@ class CowDetailPage extends StatelessWidget {
             const SizedBox(height: 16),
             Text('이름: ${cow.name}'),
             Text('개체번호: ${cow.number}'),
-            Text('출생일: ${cow.birthdate.toIso8601String().split('T')[0]}'),
+            // Text('출생일: ${cow.birthdate.toIso8601String().split('T')[0]}'),
             Text('품종: ${cow.breed}'),
             Text('센서 번호: ${cow.sensor}'),
             Text('상태: ${cow.status}'),
