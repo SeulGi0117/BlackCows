@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/cow.dart';
+import 'package:cow_management/models/cow.dart';
 
 class CowProvider with ChangeNotifier {
   final List<Cow> _cows = [];
@@ -12,7 +12,7 @@ class CowProvider with ChangeNotifier {
   }
 
   void removeCow(String id) {
-    _cows.removeWhere((cow) => cow.cow_name == id); // cow ID로 비교해도 OK
+    _cows.removeWhere((cow) => cow.name == id); // cow ID로 비교해도 OK
     notifyListeners();
   }
 
@@ -27,7 +27,24 @@ class CowProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  List<Cow> filterByStatus(CowStatus status) {
+  List<Cow> filterByStatus(String status) {
     return _cows.where((cow) => cow.status == status).toList();
+  }
+
+  List<Cow> get favorites => _cows.where((cow) => cow.isFavorite).toList();
+
+  // 즐겨찾기 기능
+  void toggleFavorite(Cow cow) {
+    cow.isFavorite = !cow.isFavorite;
+    notifyListeners();
+  }
+
+  bool isFavoriteByName(String cowname) {
+    return favorites.any((cow) => cow.name == cowname);
+  }
+
+  void toggleFavoriteByName(String cowname) {
+    final cow = cows.firstWhere((c) => c.name == cowname);
+    toggleFavorite(cow); // 기존에 정의된 toggleFavorite 사용
   }
 }

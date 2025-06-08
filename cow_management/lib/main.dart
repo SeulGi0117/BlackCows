@@ -1,3 +1,4 @@
+import 'package:cow_management/screens/profile/profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cow_management/providers/user_provider.dart';
@@ -6,10 +7,12 @@ import 'package:cow_management/screens/accounts/login.dart';
 import 'package:cow_management/screens/cow_list/cow_list_page.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cow_management/screens/accounts/signup.dart';
+import 'package:cow_management/screens/cow_list/cow_detail_page.dart';
+import 'package:cow_management/models/cow.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load();
+  await dotenv.load(fileName: ".env");
   runApp(
     MultiProvider(
       providers: [
@@ -28,11 +31,19 @@ class SoDamApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute: '/',
+      initialRoute: '/login', // 시작 루트
       routes: {
-        '/': (context) => const LoginPage(),
-        '/signup': (context) => const SignupPage(), // ✅ 여기!
-        '/main': (context) => const MainScaffold(), // 있으면 추가해도 좋아
+        '/': (context) => const MainScaffold(), // 메인 홈
+        '/login': (context) => const LoginPage(), // 로그인
+        '/signup': (context) => const SignupPage(), // 회원가입
+        '/cows': (context) => const CowListPage(), // 소 목록
+        '/analysis': (context) =>
+            const Center(child: Text('분석 페이지')), // 분석 페이지 미구현
+        '/profile': (context) => const ProfilePage(), // 프로필필
+        '/cows/detail': (context) {
+          final cow = ModalRoute.of(context)!.settings.arguments as Cow;
+          return CowDetailPage(cow: cow);
+        },
       },
     );
   }
@@ -51,8 +62,8 @@ class _MainScaffoldState extends State<MainScaffold> {
   final List<Widget> _pages = [
     const HomeScreen(),
     const CowListPage(),
-    const Center(child: Text('분석 페이지')), // 분석 탭
-    const Center(child: Text('내 정보 페이지')), // 내 정보 탭
+    const Center(child: Text('분석 페이지')), // 아직 미구현
+    const ProfilePage(),
   ];
 
   void _onItemTapped(int index) {
@@ -73,7 +84,7 @@ class _MainScaffoldState extends State<MainScaffold> {
         unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: '홈'),
-          BottomNavigationBarItem(icon: Icon(Icons.list), label: '할 일'),
+          BottomNavigationBarItem(icon: Icon(Icons.list), label: '소 관리'),
           BottomNavigationBarItem(icon: Icon(Icons.pie_chart), label: '분석'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: '내 정보'),
         ],
@@ -97,8 +108,7 @@ class HomeScreen extends StatelessWidget {
               _buildHeader(),
               _buildCowStatusChartCard(), // 소 상태 요약
               _buildAIPredictionSummary(), // AI 예측
-              _buildReminderList(), // 태그 버튼
-              _buildTaskList(context), // context 전달
+              _buildFavoriteCows(context), // context 전달
             ],
           ),
         ),
@@ -350,102 +360,74 @@ Widget _buildAIPredictionSummary() {
   );
 }
 
-Widget _buildReminderList() {
-  final List<String> tags = ['To do', 'Doing', 'Done', 'Emergency', 'Checkup'];
-
-  return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
-    child: SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: tags.map((tag) {
-          return Padding(
-            padding: const EdgeInsets.only(right: 10),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                tag,
-                style: const TextStyle(fontWeight: FontWeight.w500),
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    ),
-  );
-}
-
-Widget _buildTaskList(BuildContext context) {
-  final List<Map<String, dynamic>> tasks = [
-    {
-      'title': '우유 착유 일정 확인',
-      'subtitle': '오전 10:00까지',
-      'done': false,
-    },
-    {
-      'title': '질병 진단 제출',
-      'subtitle': 'D+1까지 보고',
-      'done': true,
-    },
-    {
-      'title': '환경 센서 확인',
-      'subtitle': '오늘 온도: 28°C',
-      'done': false,
-    },
-  ];
+Widget _buildFavoriteCows(BuildContext context) {
+  final cowProvider = Provider.of<CowProvider>(context);
+  final favorites = cowProvider.favorites;
 
   return Padding(
     padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
     child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ...tasks.map((task) {
-          return Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  task['done']
-                      ? Icons.check_circle
-                      : Icons.radio_button_unchecked,
-                  color: task['done'] ? Colors.green : Colors.grey,
+        const Text(
+          '즐겨찾는 소',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 10),
+        if (favorites.isEmpty)
+          const Text('즐겨찾기한 소가 없어요!')
+        else
+          ...favorites.map((cow) {
+            return GestureDetector(
+              onTap: () {
+                Navigator.pushNamed(context, '/cows/detail', arguments: cow);
+              },
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        task['title'],
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(
+                        cow.isFavorite ? Icons.star : Icons.star_border,
+                        color: Colors.amber,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        task['subtitle'],
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: Colors.black54,
-                        ),
+                      onPressed: () {
+                        cowProvider.toggleFavorite(cow);
+                      },
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            cow.name,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '품종: ${cow.breed}, 상태: ${cow.status}',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Colors.black54,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          );
-        }),
-        // "나의 소 목록 불러오기" 버튼 추가
+              ),
+            );
+          }),
         const SizedBox(height: 8),
         SizedBox(
           width: double.infinity,
@@ -459,12 +441,7 @@ Widget _buildTaskList(BuildContext context) {
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const CowListPage(),
-                ),
-              );
+              Navigator.pushNamed(context, '/cows');
             },
             child: const Text(
               '나의 소 목록 불러오기',
@@ -481,9 +458,7 @@ Widget _buildBottomNav() {
   return BottomNavigationBar(
     type: BottomNavigationBarType.fixed, // 아이콘 4개 이상일 때 고정
     currentIndex: 0, // 선택된 인덱스 (현재는 고정값)
-    onTap: (index) {
-      // TODO: 상태로 이동 로직 구현 가능
-    },
+    onTap: (index) {},
     selectedItemColor: Colors.pink,
     unselectedItemColor: Colors.grey,
     items: const [
@@ -493,7 +468,7 @@ Widget _buildBottomNav() {
       ),
       BottomNavigationBarItem(
         icon: Icon(Icons.list),
-        label: '할 일',
+        label: '소 관리',
       ),
       BottomNavigationBarItem(
         icon: Icon(Icons.pie_chart),

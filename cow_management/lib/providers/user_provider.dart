@@ -20,7 +20,7 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // ✅ 실제 서버와 연동하는 로그인 함수
+  // 실제 서버와 연동하는 로그인 함수
   Future<bool> login(String username, String password, String loginUrl) async {
     try {
       final response = await http.post(
@@ -31,6 +31,9 @@ class UserProvider with ChangeNotifier {
           'password': password,
         }),
       );
+      print('요청 데이터: username=$username, password=$password');
+      print('응답 상태코드: ${response.statusCode}');
+      print('응답 본문: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -47,18 +50,10 @@ class UserProvider with ChangeNotifier {
     }
   }
 
-  // ✅ 테스트용 가짜 로그인 함수
-  Future<bool> loginTest(String username, String password) async {
-    if (username == 'minji' && password == '1234') {
-      _currentUser = User(
-        username: username,
-        password: password,
-        user_email: '$username@example.com',
-      );
-      notifyListeners();
-      return true;
-    } else {
-      return false;
-    }
+  // 로그아웃 처리
+  void logout() {
+    _currentUser = null;
+    notifyListeners();
+    print('로그아웃');
   }
 }

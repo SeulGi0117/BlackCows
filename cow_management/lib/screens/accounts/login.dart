@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cow_management/providers/user_provider.dart';
-import 'package:cow_management/screens/main.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:cow_management/screens/accounts/signup.dart';
+import 'package:cow_management/main.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -25,7 +23,8 @@ class _LoginPageState extends State<LoginPage> {
     // print('✅ BASE_URL: $baseUrl');
 
     // .env는 웹에서 안되는지 오류가 자꾸 뜸 불러오질 못하는듯
-    loginUrl = 'https://5724-182-222-162-35.ngrok-free.app/';
+    loginUrl =
+        'http://52.78.212.96:8000/http://ec2-52-78-212-96.ap-northeast-2.compute.amazonaws.com:8000/';
   }
 
   void _login() async {
@@ -100,7 +99,10 @@ class _LoginPageState extends State<LoginPage> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _isLoading ? null : _login,
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/'); // 로그인 누르면 메인 홈으로 이동
+                  },
+                  // onPressed: _isLoading ? null : _login,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.pink,
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -121,7 +123,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 16),
 
-              // 👉 회원가입 버튼
+              // 회원가입 버튼
               TextButton(
                 onPressed: () {
                   Navigator.pushNamed(context,
