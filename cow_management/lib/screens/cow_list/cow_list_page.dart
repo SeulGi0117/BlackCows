@@ -1,8 +1,12 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:cow_management/screens/cow_list/cow_add_page.dart';
 import 'package:cow_management/providers/cow_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart' as http;
+import 'package:cow_management/models/cow.dart';
+import 'package:cow_management/screens/cow_list/cow_detail_page.dart';
 
 class CowListPage extends StatefulWidget {
   const CowListPage({super.key});
@@ -12,22 +16,40 @@ class CowListPage extends StatefulWidget {
 }
 
 class _CowListPageState extends State<CowListPage> {
-  late List<Map<String, String>> filteredCows;
   final TextEditingController _searchController = TextEditingController();
+  String? _selectedStatus; // 문자열 상태 필터
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final cows = Provider.of<CowProvider>(context).cows;
+  void initState() {
+    super.initState();
+    _fetchCowsFromBackend();
+  }
 
-    filteredCows = cows
-        .map((cow) => {
-              'name': cow.cow_name,
-              'date': cow.birthdate.toIso8601String(), // DateTime → 문자열
-              'status': describeEnum(cow.status), // enum → 문자열
-              'breed': cow.breed,
-            })
-        .toList();
+  Future<void> _fetchCowsFromBackend() async {
+    final apiUrl = dotenv.env['API_BASE_URL'];
+
+    if (apiUrl == null) {
+      print('API 주소가 없습니다');
+      return;
+    }
+
+    try {
+      final response = await http.get(Uri.parse('$apiUrl/cows/'));
+      if (response.statusCode == 200) {
+        final decoded = utf8.decode(response.bodyBytes);
+        final List<dynamic> jsonList = jsonDecode(decoded);
+        final List<Cow> cows =
+            jsonList.map((json) => Cow.fromJson(json)).toList();
+
+        final cowProvider = Provider.of<CowProvider>(context, listen: false);
+        cowProvider.setCows(cows);
+      } else {
+        print(apiUrl);
+        print('❌ 요청 실패: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('🐞 요청 중 오류 발생: $e');
+    }
   }
 
   @override
@@ -38,14 +60,15 @@ class _CowListPageState extends State<CowListPage> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Map<String, String>> dangerCows = [
-      {'name': '꽃분이 젖소', 'reason': '심박수 비정상'},
-      {'name': '정숙 젖소', 'reason': '체온 급상승'},
-    ];
-    final List<Map<String, String>> fertileCows = [
-      {'name': '점박이 젖소', 'reason': '배란 예측 D-1'},
-      {'name': '육즙 젖소', 'reason': '배란 예측 D-2'},
-    ];
+    final cowProvider = Provider.of<CowProvider>(context);
+    final searchText = _searchController.text.toLowerCase();
+
+    final cows = cowProvider.cows.where((cow) {
+      final matchStatus =
+          _selectedStatus == null || cow.status == _selectedStatus;
+      final matchSearch = cow.name.toLowerCase().contains(searchText);
+      return matchStatus && matchSearch;
+    }).toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -58,36 +81,21 @@ class _CowListPageState extends State<CowListPage> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            _buildSearchBar(context),
+            _buildSearchBar(),
             const SizedBox(height: 12),
             _buildFilterChips(),
             const SizedBox(height: 12),
             Expanded(
-              child: filteredCows.isEmpty
+              child: cows.isEmpty
                   ? const Center(
                       child: Text(
-                        '검색 결과가 없습니다.\n다시 시도해주세요!',
+                        '소가 없습니다.\n소를 추가해주세요!',
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 16),
                       ),
                     )
                   : ListView(
-                      children: [
-                        ...filteredCows.map(_buildCowCard),
-                        const SizedBox(height: 20),
-                        _buildSummarySection(
-                          title: '건강상태 위험한 젖소',
-                          icon: Icons.warning_amber,
-                          color: Colors.red,
-                          data: dangerCows,
-                        ),
-                        _buildSummarySection(
-                          title: '번식 적기인 젖소',
-                          icon: Icons.favorite,
-                          color: Colors.orange,
-                          data: fertileCows,
-                        ),
-                      ],
+                      children: cows.map(_buildCowCard).toList(),
                     ),
             ),
           ],
@@ -96,14 +104,15 @@ class _CowListPageState extends State<CowListPage> {
     );
   }
 
-  Widget _buildSearchBar(BuildContext context) {
+  Widget _buildSearchBar() {
     return Row(
       children: [
         Expanded(
           child: TextField(
             controller: _searchController,
+            onChanged: (_) => setState(() {}),
             decoration: InputDecoration(
-              hintText: '개체번호, 이름 검색',
+              hintText: '이름 검색',
               prefixIcon: const Icon(Icons.search),
               contentPadding:
                   const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
@@ -140,15 +149,27 @@ class _CowListPageState extends State<CowListPage> {
   }
 
   Widget _buildFilterChips() {
-    final List<String> filters = ['양호', '위험'];
+    final filters = {
+      '전체': null,
+      '양호': '양호',
+      '위험': '위험',
+    };
 
     return Wrap(
       spacing: 10,
-      children: filters.map((label) {
+      children: filters.entries.map((entry) {
+        final label = entry.key;
+        final status = entry.value;
+        final selected = _selectedStatus == status;
+
         return FilterChip(
           label: Text(label),
-          selected: false,
-          onSelected: (bool selected) {},
+          selected: selected,
+          onSelected: (bool value) {
+            setState(() {
+              _selectedStatus = value ? status : null;
+            });
+          },
           selectedColor: Colors.pink.shade100,
           checkmarkColor: Colors.pink,
           backgroundColor: Colors.grey.shade200,
@@ -161,99 +182,82 @@ class _CowListPageState extends State<CowListPage> {
     );
   }
 
-  Widget _buildCowCard(Map<String, String> cow) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Row(
-        children: [
-          const Text('\uD83D\uDC04', style: TextStyle(fontSize: 40)),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildCowCard(Cow cow) {
+    final cowProvider = Provider.of<CowProvider>(context, listen: false);
+    final isFavorite = cowProvider.isFavoriteByName(cow.name);
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushNamed(
+          context,
+          '/cows/detail',
+          arguments: cow,
+        );
+        // 추후 상세 페이지 연결
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: Row(
+          children: [
+            IconButton(
+              icon: Icon(
+                isFavorite ? Icons.star : Icons.star_border,
+                color: Colors.amber,
+              ),
+              onPressed: () {
+                cowProvider.toggleFavoriteByName(cow.name);
+                setState(() {});
+              },
+            ),
+            const SizedBox(width: 12),
+            const Text('🐄', style: TextStyle(fontSize: 36)),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    cow.name,
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                      '출생일 - ${cow.birthdate.toIso8601String().split('T')[0]}'),
+                  Text('품종 - ${cow.breed}'),
+                  Text('센서 - ${cow.sensor}'),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(
-                  cow['name'] ?? '이름 없음',
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.green),
+                  ),
+                  child: Text(
+                    cow.status,
+                    style: const TextStyle(color: Colors.green, fontSize: 12),
+                  ),
                 ),
-                Text('개체번호 - ${cow['id'] ?? '미지정'}'),
-                Text(cow['sensor'] ?? ''),
-                Text(cow['date'] ?? ''),
+                const SizedBox(height: 6),
+                Text(
+                  cow.milk,
+                  style: const TextStyle(fontSize: 12, color: Colors.black54),
+                ),
               ],
             ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.green),
-                ),
-                child: Text(
-                  cow['status'] ?? '',
-                  style: const TextStyle(color: Colors.green, fontSize: 12),
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                cow['milk'] ?? '',
-                style: const TextStyle(fontSize: 12, color: Colors.black54),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSummarySection({
-    required String title,
-    required IconData icon,
-    required Color color,
-    required List<Map<String, String>> data,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(top: 10),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.2)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: color, size: 20),
-              const SizedBox(width: 6),
-              Text(
-                title,
-                style: TextStyle(
-                  color: color,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          ...data.map((cow) => Padding(
-                padding: const EdgeInsets.only(left: 4, top: 4),
-                child: Text('• ${cow['name']} - ${cow['reason']}',
-                    style: const TextStyle(fontSize: 14)),
-              )),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -1,53 +1,56 @@
-import 'package:flutter/foundation.dart'; // Enum에 필요하면
-import 'User.dart';
-
-enum CowStatus { healthy, sick, danger }
+enum CowStatus { healthy, danger, unknown }
 
 class Cow {
-  final String cow_name;
+  final String id;
+  final String name;
+  final String number;
+  final String sensor;
+  final String date;
+  final String status;
+  final String milk;
   final DateTime birthdate;
   final String breed;
-  final CowStatus status;
-  final User user;
+  bool isFavorite;
 
   Cow({
-    required this.cow_name,
+    required this.id,
+    required this.name,
+    required this.number,
+    required this.sensor,
+    required this.date,
+    required this.status,
+    required this.milk,
     required this.birthdate,
     required this.breed,
-    required this.status,
-    required this.user,
+    this.isFavorite = false,
   });
 
   factory Cow.fromJson(Map<String, dynamic> json) {
     return Cow(
-      cow_name: json['cow_name'] ?? '',
-      birthdate: DateTime.parse(json['birthdate']),
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
+      number: json['number'] ?? '',
+      sensor: json['sensor'] ?? '',
+      date: json['date'] ?? '',
+      status: json['status'] ?? 'unknown',
+      milk: json['milk'] ?? '',
+      birthdate: DateTime.tryParse(json['birthdate'] ?? '') ?? DateTime(2000),
       breed: json['breed'] ?? '',
-      status: _statusFromString(json['status']),
-      user: User.fromJson(json['user']),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'cow_name': cow_name,
+      'id': id,
+      'name': name,
+      'number': number,
+      'sensor': sensor,
+      'date': date,
+      'status': status,
+      'milk': milk,
       'birthdate': birthdate.toIso8601String(),
       'breed': breed,
-      'status': describeEnum(status), // enum → 문자열로 변환
-      'user': user.toJson(),
+      'isFavorite': isFavorite,
     };
-  }
-
-  static CowStatus _statusFromString(String statusStr) {
-    switch (statusStr) {
-      case 'healthy':
-        return CowStatus.healthy;
-      case 'sick':
-        return CowStatus.sick;
-      case 'danger':
-        return CowStatus.danger;
-      default:
-        throw ArgumentError('Unknown status: $statusStr');
-    }
   }
 }
