@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:cow_management/providers/user_provider.dart';
 import 'package:cow_management/main.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -14,20 +18,20 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
-  late String loginUrl;
+  bool _isPasswordVisible = false;
+  late String baseUrl;
 
   @override
   void initState() {
     super.initState();
-    // final baseUrl = dotenv.env['BASE_URL']!;
-    // print('✅ BASE_URL: $baseUrl');
-
-    // .env는 웹에서 안되는지 오류가 자꾸 뜸 불러오질 못하는듯
-    loginUrl =
-        'http://52.78.212.96:8000/http://ec2-52-78-212-96.ap-northeast-2.compute.amazonaws.com:8000/';
+    baseUrl = dotenv.env['API_BASE_URL'] ?? '';
+    if (baseUrl.isEmpty) {
+      print('경고: API_BASE_URL이 설정되지 않았습니다. .env 파일을 확인해주세요.');
+    }
   }
 
-  void _login() async {
+
+  Future<void> _login() async {
     final username = _usernameController.text.trim();
     final password = _passwordController.text.trim();
 
@@ -38,10 +42,17 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
+    if (username.length < 3) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('아이디는 최소 3글자 이상이어야 합니다!')),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     final success = await Provider.of<UserProvider>(context, listen: false)
-        .login(username, password, loginUrl); // 👈 loginUrl 전달
+        .login(username, password, '$baseUrl/auth/login');
 
     setState(() => _isLoading = false);
 
@@ -50,9 +61,11 @@ class _LoginPageState extends State<LoginPage> {
         context,
         MaterialPageRoute(builder: (_) => const MainScaffold()),
       );
-    } else {
+    } else if (mounted) {
+      // 로그인 실패 시 비밀번호 필드 초기화
+      _passwordController.clear();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('로그인 실패! 아이디와 비밀번호를 확인해주세요.')),
+        const SnackBar(content: Text('아이디 또는 비밀번호가 올바르지 않습니다.')),
       );
     }
   }
@@ -81,28 +94,51 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 40),
               TextField(
                 controller: _usernameController,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(
+                    RegExp(r'[a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣]'),
+                  ),
+                  LengthLimitingTextInputFormatter(20),
+                ],
                 decoration: const InputDecoration(
                   labelText: '아이디',
                   border: OutlineInputBorder(),
+                  helperText: '영어, 한글, 숫자만 입력 가능 (3-20자)',
                 ),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: _passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(
+                obscureText: !_isPasswordVisible,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(
+                    RegExp(r'[a-zA-Z0-9!"#$%&()*+,./:;<=>?@^_`{|}~\-\[\]\\]'),
+                  ),
+                ],
+                decoration: InputDecoration(
                   labelText: '비밀번호',
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
+                  helperText: '영어, 숫자, 허용된 특수문자만 사용 가능',
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _isPasswordVisible
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                      color: Colors.grey,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isPasswordVisible = !_isPasswordVisible;
+                      });
+                    },
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/'); // 로그인 누르면 메인 홈으로 이동
-                  },
-                  // onPressed: _isLoading ? null : _login,
+                                onPressed: _isLoading ? null : _login,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.pink,
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -125,9 +161,13 @@ class _LoginPageState extends State<LoginPage> {
 
               // 회원가입 버튼
               TextButton(
-                onPressed: () {
-                  Navigator.pushNamed(context,
-                      '/signup'); // 또는 Navigator.push(context, MaterialPageRoute(...))
+                onPressed: () async {
+                  final result = await Navigator.pushNamed(context, '/signup');
+                  if (result == true) {
+                    // 회원가입 성공 시 텍스트 필드 초기화
+                    _usernameController.clear();
+                    _passwordController.clear();
+                  }
                 },
                 child: const Text("아직 회원이 아니신가요? 회원가입"),
               ),

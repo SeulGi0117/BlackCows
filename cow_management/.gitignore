@@ -18,6 +18,8 @@ migrate_working_dir/
 
 # 환경변수 파일
 .env
+*.env
+assets/config/.env
 
 # The .vscode folder contains launch configuration and tasks you configure in
 # VS Code which you may wish to be included in version control, so this line
@@ -34,6 +36,8 @@ migrate_working_dir/
 .pub/
 /build/
 **/build/
+.packages
+
 
 
 # Symbolication related
@@ -59,3 +63,42 @@ cow_management/ios/Flutter/flutter_export_environment.sh
 cow_management/ios/Flutter/Generated.xcconfig
 cow_management/macos/Flutter/ephemeral/flutter_export_environment.sh
 cow_management/macos/Flutter/ephemeral/Flutter-Generated.xcconfig
+
+# Android
+/android/.gradle/
+/android/app/build/
+
+# iOS
+/ios/Pods/
+/ios/.symlinks/
+/ios/Flutter/Flutter.framework
+/ios/Flutter/Flutter.podspec
+/ios/Flutter/Generated.xcconfig
+
+# macOS
+/macos/Flutter/ephemeral/
+/macos/Flutter/Flutter.framework
+
+# Windows
+/windows/flutter/ephemeral/
+/windows/Flutter/Flutter.framework
+
+# Web
+/web/generated_plugin_registrant.dart
+
+# Build outputs
+android/app/build/
+ios/Pods/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+macos/Flutter/ephemeral/
+windows/flutter/ephemeral/
+.dart_tool/
+android/.gradle/
+android/local.properties
+ios/Runner/GeneratedPluginRegistrant.*
+linux/flutter/
+macos/Flutter/
+windows/flutter/
+*.lock

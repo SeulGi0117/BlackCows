@@ -26,9 +26,9 @@ class _CowListPageState extends State<CowListPage> {
   }
 
   Future<void> _fetchCowsFromBackend() async {
-    final apiUrl = dotenv.env['API_BASE_URL'];
+    final apiUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
 
-    if (apiUrl == null) {
+    if (apiUrl.isEmpty) {
       print('API 주소가 없습니다');
       return;
     }
