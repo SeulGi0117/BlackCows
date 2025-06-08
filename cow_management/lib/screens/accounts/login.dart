@@ -31,6 +31,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
 
+
   Future<void> _login() async {
     final username = _usernameController.text.trim();
     final password = _passwordController.text.trim();
@@ -158,8 +159,6 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 16),
-
-              // 회원가입 버튼
               TextButton(
                 onPressed: () async {
                   final result = await Navigator.pushNamed(context, '/signup');

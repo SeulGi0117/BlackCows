@@ -64,6 +64,41 @@ class UserProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> signup({
+    required String username,
+    required String email,
+    required String password,
+    required String passwordConfirm,
+    required String farmName,
+    required String signupUrl,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse(signupUrl),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: jsonEncode({
+          'username': username,
+          'email': email,
+          'password': password,
+          'password_confirm': passwordConfirm,
+          'farm_name': farmName,
+        }),
+      );
+
+      print('회원가입 요청 응답 코드: ${response.statusCode}');
+      print('회원가입 응답 본문: ${response.body}');
+
+      if (response.statusCode == 201) {
+        return true; // 회원가입 성공
+      } else {
+        return false; // 회원가입 실패
+      }
+    } catch (e) {
+      print('회원가입 중 오류 발생: $e');
+      return false;
+    }
+  }
+
   // 로그아웃 처리
   void logout() {
     _currentUser = null;
