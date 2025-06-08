@@ -1,4 +1,6 @@
+# =========================================
 # Miscellaneous
+# =========================================
 *.class
 *.log
 *.pyc
@@ -9,24 +11,39 @@
 .history
 .svn/
 migrate_working_dir/
+Thumbs.db
+.devtools/
+.devlog/
+coverage/
+test/**.mocks.dart
+test/**.dart
+test/**.g.dart
+test/**.gr.dart
+test/**.gr.dart
 
-# IntelliJ related
+# =========================================
+# IntelliJ / Android Studio 관련
+# =========================================
 *.iml
 *.ipr
 *.iws
 .idea/
 
+# =========================================
+# VS Code 설정
+# =========================================
+.vscode/
+
+# =========================================
 # 환경변수 파일
+# =========================================
 .env
 *.env
 assets/config/.env
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
-
-# Flutter/Dart/Pub related
+# =========================================
+# Flutter / Dart / Pub 관련
+# =========================================
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
@@ -34,78 +51,68 @@ assets/config/.env
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
-/build/
-**/build/
 .packages
+.melos_tool/
+.dart_server/
+build/
+**/build/
 
-
-
-# Symbolication related
+# =========================================
+# Obfuscation & Symbolication
+# =========================================
 app.*.symbols
-
-# Obfuscation related
 app.*.map.json
 
-# Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
-
-
-# minji
-pubspec.lock
-pubspec.yaml
-package_config_subset
-package_config_subset.json
-version
-cow_management/android/local.properties
-cow_management/ios/Flutter/flutter_export_environment.sh
-cow_management/ios/Flutter/Generated.xcconfig
-cow_management/macos/Flutter/ephemeral/flutter_export_environment.sh
-cow_management/macos/Flutter/ephemeral/Flutter-Generated.xcconfig
-
-# Android
-/android/.gradle/
-/android/app/build/
-
-# iOS
-/ios/Pods/
-/ios/.symlinks/
-/ios/Flutter/Flutter.framework
-/ios/Flutter/Flutter.podspec
-/ios/Flutter/Generated.xcconfig
-
-# macOS
-/macos/Flutter/ephemeral/
-/macos/Flutter/Flutter.framework
-
-# Windows
-/windows/flutter/ephemeral/
-/windows/Flutter/Flutter.framework
-
-# Web
-/web/generated_plugin_registrant.dart
-
-# Build outputs
+# =========================================
+# Android 관련
+# =========================================
+android/.gradle/
 android/app/build/
-ios/Pods/
+android/app/debug
+android/app/profile
+android/app/release
+android/local.properties
+*.so
+ios/Runner/GeneratedPluginRegistrant.*
+
+# =========================================
+# iOS / macOS 관련
+# =========================================
 ios/Flutter/Flutter.framework
 ios/Flutter/Flutter.podspec
 ios/Flutter/Generated.xcconfig
+ios/Pods/
+ios/Runner.xcworkspace/
+ios/build/
 macos/Flutter/ephemeral/
-windows/flutter/ephemeral/
-.dart_tool/
-android/.gradle/
-android/local.properties
-ios/Runner/GeneratedPluginRegistrant.*
-linux/flutter/
+macos/Pods/
+macos/build/
 macos/Flutter/
-windows/flutter/
-*.lock
 
-# minjiAdd commentMore actions
+# =========================================
+# Windows / Linux 관련
+# =========================================
+windows/flutter/ephemeral/
+windows/build/
+windows/flutter/
+linux/flutter/ephemeral/
+linux/build/
+linux/flutter/
+
+# =========================================
+# Web 관련 (generated)
+# =========================================
+web/generated_plugin_registrant.dart
+
+# =========================================
+# Firebase 관련
+# =========================================
+firebase_options.dart
+
+# =========================================
+# 프로젝트 특이 설정 (minji)
+# =========================================
 pubspec.lock
-pubspec.yaml
 package_config_subset
 package_config_subset.json
 version
