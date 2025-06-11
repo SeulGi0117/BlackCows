@@ -41,13 +41,13 @@ class _CowListPageState extends State<CowListPage> {
 
     try {
       final response = await http.get(
-        Uri.parse('$apiUrl/cows/'),
+        Uri.parse('$apiUrl/cows/?sortDirection=DESCENDING'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ${userProvider.accessToken}',
         },
       );
-      
+
       if (response.statusCode == 200) {
         final decoded = utf8.decode(response.bodyBytes);
         final List<dynamic> jsonList = jsonDecode(decoded);
