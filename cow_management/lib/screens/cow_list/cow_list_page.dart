@@ -203,13 +203,16 @@ class _CowListPageState extends State<CowListPage> {
     final isFavorite = cowProvider.isFavoriteByName(cow.name);
 
     return GestureDetector(
-      onTap: () {
-        Navigator.pushNamed(
+      onTap: () async {
+        final result = await Navigator.pushNamed(
           context,
           '/cows/detail',
           arguments: cow,
         );
-        // 추후 상세 페이지 연결
+        if (result == true) {
+          // 삭제되었을 경우 목록 다시 불러오기!
+          _fetchCowsFromBackend();
+        }
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),

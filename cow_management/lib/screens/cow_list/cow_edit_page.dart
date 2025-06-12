@@ -61,6 +61,7 @@ class _CowEditPageState extends State<CowEditPage> {
 
   Future<void> _updateCow() async {
     if (_isLoading) return;
+
     if (nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('이름은 필수 입력 항목입니다!')),
@@ -94,20 +95,18 @@ class _CowEditPageState extends State<CowEditPage> {
 
       final updatedCow = Cow.fromJson(response.data);
       final cowProvider = Provider.of<CowProvider>(context, listen: false);
-      cowProvider.updateCow(updatedCow);
+      cowProvider.updateCow(updatedCow); // 리스트에도 반영
 
       if (!mounted) return;
-      Navigator.pop(context); // 또는 수정 완료 페이지로 이동 가능
+      Navigator.pop(context, updatedCow); // 이전 화면으로
     } on DioException catch (e) {
       final data = e.response?.data;
-
       String message;
 
       if (data is Map<String, dynamic> && data['detail'] != null) {
         if (data['detail'] is String) {
           message = data['detail'];
         } else if (data['detail'] is List) {
-          // 리스트면 첫 번째 메시지를 꺼냄
           message = data['detail'].first.toString();
         } else {
           message = '알 수 없는 오류가 발생했어요.';
@@ -140,9 +139,19 @@ class _CowEditPageState extends State<CowEditPage> {
             const Text('출생일'),
             InkWell(
               onTap: _selectBirthdate,
-              child: Text(
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
                   _selectedBirthdate?.toLocal().toString().split(' ')[0] ??
-                      '날짜 선택'),
+                      '날짜 선택',
+                  style: const TextStyle(color: Colors.black87),
+                ),
+              ),
             ),
             const SizedBox(height: 16),
             const Text('센서 번호'),
@@ -154,7 +163,9 @@ class _CowEditPageState extends State<CowEditPage> {
               hint: const Text('선택'),
               items: HealthStatus.values.map((status) {
                 return DropdownMenuItem(
-                    value: status, child: Text(status.name));
+                  value: status,
+                  child: Text(status.name),
+                );
               }).toList(),
               onChanged: (val) => setState(() => _selectedHealthStatus = val),
             ),
@@ -165,7 +176,9 @@ class _CowEditPageState extends State<CowEditPage> {
               hint: const Text('선택'),
               items: BreedingStatus.values.map((status) {
                 return DropdownMenuItem(
-                    value: status, child: Text(status.name));
+                  value: status,
+                  child: Text(status.name),
+                );
               }).toList(),
               onChanged: (val) => setState(() => _selectedBreedingStatus = val),
             ),
