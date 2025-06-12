@@ -11,6 +11,7 @@ import 'package:cow_management/screens/profile/profile_page.dart';
 import 'package:cow_management/screens/cow_list/cow_list_page.dart';
 import 'package:cow_management/screens/cow_list/cow_detail_page.dart';
 import 'package:cow_management/models/cow.dart';
+import 'package:cow_management/screens/cow_list/cow_edit_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -46,6 +47,10 @@ class SoDamApp extends StatelessWidget {
         '/cows/detail': (context) {
           final cow = ModalRoute.of(context)!.settings.arguments as Cow;
           return CowDetailPage(cow: cow);
+        },
+        '/cows/edit': (context) {
+          final cow = ModalRoute.of(context)!.settings.arguments as Cow;
+          return CowEditPage(cow: cow);
         },
       },
     );
@@ -95,5 +100,3 @@ class _MainScaffoldState extends State<MainScaffold> {
     );
   }
 }
-
-
