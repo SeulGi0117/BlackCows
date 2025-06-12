@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cow_management/models/cow.dart';
+import 'package:cow_management/screens/cow_list/cow_edit_page.dart';
 
 class CowDetailPage extends StatelessWidget {
   final Cow cow;
@@ -33,6 +34,18 @@ class CowDetailPage extends StatelessWidget {
             ElevatedButton(
               onPressed: () => Navigator.pop(context),
               child: const Text('뒤로가기'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        CowEditPage(cow: cow), // cow 객체 넘겨줘야 해
+                  ),
+                );
+              },
+              child: const Text('수정하기'),
             ),
           ],
         ),
