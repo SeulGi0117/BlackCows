@@ -25,6 +25,24 @@ class _CowEditPageState extends State<CowEditPage> {
   BreedingStatus? _selectedBreedingStatus;
   bool _isLoading = false;
 
+  // 한국어 매칭
+  final healthStatusLabels = {
+    HealthStatus.excellent: '최상',
+    HealthStatus.good: '양호',
+    HealthStatus.average: '보통',
+    HealthStatus.poor: '나쁨',
+    HealthStatus.sick: '병환',
+  };
+
+  final breedingStatusLabels = {
+    BreedingStatus.calf: '송아지',
+    BreedingStatus.heifer: '미경산',
+    BreedingStatus.pregnant: '임신',
+    BreedingStatus.lactating: '비유',
+    BreedingStatus.dry: '건유',
+    BreedingStatus.breeding: '교배',
+  };
+
   @override
   void initState() {
     super.initState();
@@ -95,10 +113,10 @@ class _CowEditPageState extends State<CowEditPage> {
 
       final updatedCow = Cow.fromJson(response.data);
       final cowProvider = Provider.of<CowProvider>(context, listen: false);
-      cowProvider.updateCow(updatedCow); // 리스트에도 반영
+      cowProvider.updateCow(updatedCow);
 
       if (!mounted) return;
-      Navigator.pop(context, updatedCow); // 이전 화면으로
+      Navigator.pop(context, updatedCow);
     } on DioException catch (e) {
       final data = e.response?.data;
       String message;
@@ -164,7 +182,7 @@ class _CowEditPageState extends State<CowEditPage> {
               items: HealthStatus.values.map((status) {
                 return DropdownMenuItem(
                   value: status,
-                  child: Text(status.name),
+                  child: Text(healthStatusLabels[status]!),
                 );
               }).toList(),
               onChanged: (val) => setState(() => _selectedHealthStatus = val),
@@ -177,7 +195,7 @@ class _CowEditPageState extends State<CowEditPage> {
               items: BreedingStatus.values.map((status) {
                 return DropdownMenuItem(
                   value: status,
-                  child: Text(status.name),
+                  child: Text(breedingStatusLabels[status]!),
                 );
               }).toList(),
               onChanged: (val) => setState(() => _selectedBreedingStatus = val),
