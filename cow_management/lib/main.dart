@@ -11,6 +11,8 @@ import 'package:cow_management/screens/profile/profile_page.dart';
 import 'package:cow_management/screens/cow_list/cow_list_page.dart';
 import 'package:cow_management/screens/cow_list/cow_detail_page.dart';
 import 'package:cow_management/models/cow.dart';
+import 'package:cow_management/widgets/app_wrapper.dart';
+import 'package:cow_management/widgets/floating_chatbot_button.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -77,20 +79,22 @@ class _MainScaffoldState extends State<MainScaffold> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _pages[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        selectedItemColor: Colors.pink,
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: '홈'),
-          BottomNavigationBarItem(icon: Icon(Icons.list), label: '소 관리'),
-          BottomNavigationBarItem(icon: Icon(Icons.pie_chart), label: '분석'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: '내 정보'),
-        ],
+    return AppWrapper(
+      child: Scaffold(
+        body: _pages[_selectedIndex],
+        bottomNavigationBar: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          currentIndex: _selectedIndex,
+          onTap: _onItemTapped,
+          selectedItemColor: Colors.pink,
+          unselectedItemColor: Colors.grey,
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: '홈'),
+            BottomNavigationBarItem(icon: Icon(Icons.list), label: '소 관리'),
+            BottomNavigationBarItem(icon: Icon(Icons.pie_chart), label: '분석'),
+            BottomNavigationBarItem(icon: Icon(Icons.person), label: '내 정보'),
+          ],
+        ),
       ),
     );
   }
