@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 
 class ChatbotScreen extends StatefulWidget {
   const ChatbotScreen({super.key});
@@ -67,9 +68,8 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
               itemBuilder: (context, index) {
                 final msg = _messages[index];
                 return Align(
-                  alignment: msg.isUser
-                      ? Alignment.centerRight
-                      : Alignment.centerLeft,
+                  alignment:
+                      msg.isUser ? Alignment.centerRight : Alignment.centerLeft,
                   child: Row(
                     mainAxisAlignment: msg.isUser
                         ? MainAxisAlignment.end
@@ -77,10 +77,11 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (!msg.isUser) ...[
-                        CircleAvatar(           // 챗봇일 경우, 소 캐릭터
+                        const CircleAvatar(
+                          // 챗봇일 경우, 소 캐릭터
                           radius: 18,
-                          backgroundImage: AssetImage(
-                              'assets/images/chatbot_icon.png'), 
+                          backgroundImage:
+                              AssetImage('assets/images/chatbot_icon.png'),
                         ),
                         const SizedBox(width: 8),
                       ],
@@ -90,7 +91,8 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                             : CrossAxisAlignment.start,
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 15, vertical: 12),
                             margin: const EdgeInsets.symmetric(vertical: 4),
                             constraints: const BoxConstraints(maxWidth: 500),
                             decoration: BoxDecoration(
@@ -100,8 +102,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                               borderRadius: BorderRadius.only(
                                 bottomLeft: const Radius.circular(12),
                                 topRight: const Radius.circular(12),
-                                topLeft:
-                                    Radius.circular(msg.isUser ? 12 : 0),
+                                topLeft: Radius.circular(msg.isUser ? 12 : 0),
                                 bottomRight:
                                     Radius.circular(msg.isUser ? 0 : 12),
                               ),
@@ -133,19 +134,19 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                   child: TextField(
                     controller: _controller,
                     decoration: InputDecoration(
-                      hintText: "메시지를 입력하세요",
-                      hintStyle: const TextStyle( 
-                        fontSize: 13,
-                        color: Colors.grey,
-                      ),
-                      filled: true, // 배경색 적용하려면 꼭 필요
-                      fillColor: Colors.white, // 입력창 배경색
-                      isDense: true,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24), 
-                        borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.3)), 
-                      )
-                    ),
+                        hintText: "메시지를 입력하세요",
+                        hintStyle: const TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey,
+                        ),
+                        filled: true, // 배경색 적용하려면 꼭 필요
+                        fillColor: Colors.white, // 입력창 배경색
+                        isDense: true,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                          borderSide:
+                              BorderSide(color: Colors.grey.withOpacity(0.3)),
+                        )),
                   ),
                 ),
                 const SizedBox(width: 8),
