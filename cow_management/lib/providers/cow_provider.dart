@@ -12,8 +12,16 @@ class CowProvider with ChangeNotifier {
   }
 
   void removeCow(String id) {
-    _cows.removeWhere((cow) => cow.name == id); // cow ID로 비교해도 OK
+    _cows.removeWhere((cow) => cow.name == id);
     notifyListeners();
+  }
+
+  void updateCow(Cow updatedCow) {
+    final index = _cows.indexWhere((c) => c.id == updatedCow.id);
+    if (index != -1) {
+      _cows[index] = updatedCow;
+      notifyListeners();
+    }
   }
 
   void setCows(List<Cow> newList) {

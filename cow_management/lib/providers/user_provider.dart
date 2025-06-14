@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:cow_management/models/User.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dio/dio.dart';
+import 'package:cow_management/services/dio_client.dart';
 
 class UserProvider with ChangeNotifier {
   User? _currentUser;
@@ -41,51 +43,37 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // 실제 서버와 연동하는 로그인 함수
   Future<bool> login(String username, String password, String loginUrl) async {
     try {
-      final response = await http.post(
-        Uri.parse(loginUrl),
-        headers: {
-          'Content-Type': 'application/json; charset=utf-8',
-          'Accept': 'application/json',
-          'Accept-Charset': 'utf-8',
-        },
-        body: jsonEncode({
+      final dio = DioClient().dio;
+
+      final response = await dio.post(
+        loginUrl,
+        data: {
           'username': username,
           'password': password,
-        }),
+        },
       );
-      print('요청 데이터: username=$username, password=$password');
-      print('응답 상태코드: ${response.statusCode}');
-
-      // UTF-8로 디코딩하여 응답 본문 출력
-      final responseBody = utf8.decode(response.bodyBytes);
-      print('응답 본문: $responseBody');
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(responseBody);
+        final data = response.data;
 
-        // 사용자 정보 저장
         _currentUser = User.fromJson(data['user']);
-
-        // 토큰 저장
         _accessToken = data['access_token'];
         _refreshToken = data['refresh_token'];
+        await saveTokenToStorage(_accessToken!);
 
-        _shouldShowWelcome = true; // 로그인 성공 시 환영 메시지 표시 플래그 설정
+        _shouldShowWelcome = true;
         notifyListeners();
 
-        print('로그인 성공: 토큰 저장됨');
-        print('Access Token: ${_accessToken?.substring(0, 20)}...');
-
+        print('✅ 로그인 성공: ${_accessToken?.substring(0, 20)}...');
         return true;
       } else {
-        print('로그인 실패: ${response.statusCode} - $responseBody');
+        print('❌ 로그인 실패: ${response.statusCode} - ${response.data}');
         return false;
       }
-    } catch (e) {
-      print('로그인 중 오류 발생: $e');
+    } on DioException catch (e) {
+      print('❌ 로그인 에러: ${e.response?.data ?? e.message}');
       return false;
     }
   }
@@ -99,38 +87,28 @@ class UserProvider with ChangeNotifier {
     required String signupUrl,
   }) async {
     try {
-      print(
-          '회원가입 요청 데이터: username=$username, email=$email, farm_name=$farmName');
+      final dio = DioClient().dio;
 
-      final response = await http.post(
-        Uri.parse(signupUrl),
-        headers: {
-          'Content-Type': 'application/json; charset=utf-8',
-          'Accept': 'application/json',
-          'Accept-Charset': 'utf-8',
-        },
-        body: jsonEncode({
+      final response = await dio.post(
+        signupUrl,
+        data: {
           'username': username,
           'email': email,
           'password': password,
           'password_confirm': passwordConfirm,
           'farm_name': farmName,
-        }),
+        },
       );
 
-      print('회원가입 요청 응답 코드: ${response.statusCode}');
-
-      // UTF-8로 디코딩하여 응답 본문 출력
-      final responseBody = utf8.decode(response.bodyBytes);
-      print('회원가입 응답 본문: $responseBody');
-
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return true; // 회원가입 성공
+        print('✅ 회원가입 성공');
+        return true;
       } else {
-        return false; // 회원가입 실패
+        print('❌ 회원가입 실패: ${response.statusCode} - ${response.data}');
+        return false;
       }
-    } catch (e) {
-      print('회원가입 중 오류 발생: $e');
+    } on DioException catch (e) {
+      print('❌ 회원가입 에러: ${e.response?.data ?? e.message}');
       return false;
     }
   }

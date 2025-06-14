@@ -11,12 +11,16 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  int countByStatus(List cows, String status) {
+    return cows.where((cow) => cow.status == status).length;
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    
+
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    
+
     if (userProvider.shouldShowWelcome && userProvider.currentUser != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -105,10 +109,17 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildCowStatusChartCard() {
+    final cowProvider = Provider.of<CowProvider>(context);
+    final cows = cowProvider.cows;
+
+    final int normal = countByStatus(cows, '양호');
+    final int warning = countByStatus(cows, '위험');
+    final int danger = countByStatus(cows, '이상');
+
     final statusSummary = [
-      {'label': '정상', 'count': 10, 'color': Colors.green},
-      {'label': '주의', 'count': 3, 'color': Colors.orange},
-      {'label': '이상', 'count': 1, 'color': Colors.red},
+      {'label': '양호', 'count': normal, 'color': Colors.green},
+      {'label': '위험', 'count': warning, 'color': Colors.orange},
+      {'label': '이상', 'count': danger, 'color': Colors.red},
     ];
 
     return Padding(
@@ -348,4 +359,4 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-} 
+}

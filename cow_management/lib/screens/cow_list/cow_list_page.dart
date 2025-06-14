@@ -167,8 +167,11 @@ class _CowListPageState extends State<CowListPage> {
   Widget _buildFilterChips() {
     final filters = {
       '전체': null,
+      '최상': '최상',
       '양호': '양호',
-      '위험': '위험',
+      '보통': '보통',
+      '나쁨': '나쁨',
+      '병환': '병환',
     };
 
     return Wrap(
@@ -203,13 +206,16 @@ class _CowListPageState extends State<CowListPage> {
     final isFavorite = cowProvider.isFavoriteByName(cow.name);
 
     return GestureDetector(
-      onTap: () {
-        Navigator.pushNamed(
+      onTap: () async {
+        final result = await Navigator.pushNamed(
           context,
           '/cows/detail',
           arguments: cow,
         );
-        // 추후 상세 페이지 연결
+        if (result == true) {
+          // 삭제되었을 경우 목록 다시 불러오기!
+          _fetchCowsFromBackend();
+        }
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),

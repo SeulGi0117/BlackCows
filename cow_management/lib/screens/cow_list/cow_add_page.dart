@@ -8,6 +8,8 @@ import 'package:cow_management/models/cow.dart';
 import 'package:provider/provider.dart';
 import 'package:cow_management/providers/user_provider.dart';
 import 'package:cow_management/providers/cow_provider.dart';
+import 'package:dio/dio.dart';
+import 'package:cow_management/services/dio_client.dart';
 
 class CowAddPage extends StatefulWidget {
   const CowAddPage({super.key});
@@ -22,7 +24,7 @@ class _CowAddPageState extends State<CowAddPage> {
   final TextEditingController sensorController = TextEditingController();
   final TextEditingController breedController = TextEditingController();
   final TextEditingController notesController = TextEditingController();
-  
+
   DateTime? _selectedBirthdate;
   HealthStatus? _selectedHealthStatus;
   BreedingStatus? _selectedBreedingStatus;
@@ -55,105 +57,66 @@ class _CowAddPageState extends State<CowAddPage> {
   Future<void> _addCow() async {
     if (_isLoading) return;
 
-    // 유효성 검사
-    if (earTagController.text.trim().isEmpty || 
+    if (earTagController.text.trim().isEmpty ||
         nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('이표번호와 이름은 필수 입력 항목입니다!'),
-          backgroundColor: Colors.redAccent,
-        ),
+        const SnackBar(content: Text('이표번호와 이름은 필수 입력 항목입니다!')),
       );
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
-      
-      if (!userProvider.isLoggedIn || userProvider.accessToken == null) {
-        throw Exception('로그인이 필요합니다');
-      }
-
-      final apiUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
-      
       final cowData = {
         'ear_tag_number': earTagController.text.trim(),
         'name': nameController.text.trim(),
-        if (_selectedBirthdate != null) 
+        if (_selectedBirthdate != null)
           'birthdate': _selectedBirthdate!.toIso8601String().split('T')[0],
-        if (sensorController.text.trim().isNotEmpty) 
+        if (sensorController.text.trim().isNotEmpty)
           'sensor_number': sensorController.text.trim(),
-        if (_selectedHealthStatus != null) 
+        if (_selectedHealthStatus != null)
           'health_status': _selectedHealthStatus!.name,
-        if (_selectedBreedingStatus != null) 
+        if (_selectedBreedingStatus != null)
           'breeding_status': _selectedBreedingStatus!.name,
-        if (breedController.text.trim().isNotEmpty) 
+        if (breedController.text.trim().isNotEmpty)
           'breed': breedController.text.trim(),
-        if (notesController.text.trim().isNotEmpty) 
+        if (notesController.text.trim().isNotEmpty)
           'notes': notesController.text.trim(),
       };
 
-      final response = await http.post(
-        Uri.parse('$apiUrl/cows/'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${userProvider.accessToken}',
-        },
-        body: jsonEncode(cowData),
-      );
+      final response = await DioClient().dio.post('/cows/', data: cowData);
+
+      final newCow = Cow.fromJson(response.data);
+      final cowProvider = Provider.of<CowProvider>(context, listen: false);
+      cowProvider.addCow(newCow);
 
       if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+            builder: (context) =>
+                CowAddDonePage(cowName: nameController.text.trim())),
+      );
+    } on DioException catch (e) {
+      final detail = e.response?.data['detail'];
+      String message;
 
-      if (response.statusCode == 201) {
-        final responseData = jsonDecode(utf8.decode(response.bodyBytes));
-        final newCow = Cow.fromJson(responseData);
-        
-        // CowProvider에 새로운 소 추가
-        final cowProvider = Provider.of<CowProvider>(context, listen: false);
-        cowProvider.addCow(newCow);
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CowAddDonePage(cowName: nameController.text.trim()),
-          ),
-        );
+      if (detail is String) {
+        message = detail;
+      } else if (detail is List) {
+        // FastAPI 유효성 검사 오류 대응
+        message = detail.map((d) => d['msg'] ?? '알 수 없는 오류').join(', ');
       } else {
-        String errorMessage = '소 추가에 실패했습니다';
-        try {
-          final errorData = jsonDecode(utf8.decode(response.bodyBytes));
-          if (errorData['detail'] != null) {
-            errorMessage = errorData['detail'];
-          }
-        } catch (e) {
-          errorMessage = '오류: ${response.statusCode}';
-        }
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
+        message = '소 등록 실패: ${e.message}';
       }
-    } catch (e) {
+
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('에러 발생: $e'),
-          backgroundColor: Colors.redAccent,
-        ),
+        SnackBar(content: Text(message)),
       );
     } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -181,7 +144,7 @@ class _CowAddPageState extends State<CowAddPage> {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 24),
-            
+
             // 이표번호 (필수)
             const Text('이표번호 *', style: TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
@@ -195,7 +158,7 @@ class _CowAddPageState extends State<CowAddPage> {
               ),
             ),
             const SizedBox(height: 16),
-            
+
             // 이름 (필수)
             const Text('이름 *', style: TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
@@ -209,14 +172,15 @@ class _CowAddPageState extends State<CowAddPage> {
               ),
             ),
             const SizedBox(height: 16),
-            
+
             // 출생일
             const Text('출생일', style: TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
             InkWell(
               onTap: _selectBirthdate,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   border: Border.all(color: Colors.grey),
@@ -230,7 +194,9 @@ class _CowAddPageState extends State<CowAddPage> {
                           ? '${_selectedBirthdate!.year}-${_selectedBirthdate!.month.toString().padLeft(2, '0')}-${_selectedBirthdate!.day.toString().padLeft(2, '0')}'
                           : '출생일을 선택하세요',
                       style: TextStyle(
-                        color: _selectedBirthdate != null ? Colors.black : Colors.grey,
+                        color: _selectedBirthdate != null
+                            ? Colors.black
+                            : Colors.grey,
                       ),
                     ),
                     const Icon(Icons.calendar_today, color: Colors.grey),
@@ -239,7 +205,7 @@ class _CowAddPageState extends State<CowAddPage> {
               ),
             ),
             const SizedBox(height: 16),
-            
+
             // 센서 번호
             const Text('센서 번호', style: TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
@@ -253,7 +219,7 @@ class _CowAddPageState extends State<CowAddPage> {
               ),
             ),
             const SizedBox(height: 16),
-            
+
             // 건강 상태
             const Text('건강 상태', style: TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
@@ -296,7 +262,7 @@ class _CowAddPageState extends State<CowAddPage> {
               },
             ),
             const SizedBox(height: 16),
-            
+
             // 번식 상태
             const Text('번식 상태', style: TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
@@ -342,7 +308,7 @@ class _CowAddPageState extends State<CowAddPage> {
               },
             ),
             const SizedBox(height: 16),
-            
+
             // 품종
             const Text('품종', style: TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
@@ -356,7 +322,7 @@ class _CowAddPageState extends State<CowAddPage> {
               ),
             ),
             const SizedBox(height: 16),
-            
+
             // 메모
             const Text('메모', style: TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
@@ -371,7 +337,7 @@ class _CowAddPageState extends State<CowAddPage> {
               ),
             ),
             const SizedBox(height: 32),
-            
+
             // 저장 버튼
             SizedBox(
               width: double.infinity,
@@ -391,7 +357,8 @@ class _CowAddPageState extends State<CowAddPage> {
                         width: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       )
                     : const Text(
