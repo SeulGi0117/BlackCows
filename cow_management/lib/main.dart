@@ -13,6 +13,8 @@ import 'package:cow_management/models/cow.dart';
 import 'package:cow_management/widgets/app_wrapper.dart';
 import 'package:cow_management/widgets/floating_chatbot_button.dart';
 import 'package:cow_management/screens/cow_list/cow_edit_page.dart';
+import 'package:cow_management/screens/cow_list/Cow_Detail/cow_milk_add_page.dart';
+import 'package:cow_management/screens/cow_list/Cow_Detail/cow_milk_detail_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,14 +46,32 @@ class SoDamApp extends StatelessWidget {
         '/cows': (context) => const CowListPage(), // 소 목록
         '/analysis': (context) =>
             const Center(child: Text('분석 페이지')), // 분석 페이지 미구현
-        '/profile': (context) => const ProfilePage(), // 프로필필
+        '/profile': (context) => const ProfilePage(), // 프로필
         '/cows/detail': (context) {
           final cow = ModalRoute.of(context)!.settings.arguments as Cow;
           return CowDetailPage(cow: cow);
         },
         '/cows/edit': (context) {
+          // 기본 정보 수정
           final cow = ModalRoute.of(context)!.settings.arguments as Cow;
           return CowEditPage(cow: cow);
+        },
+        '/milking-record': (context) {
+          // 우유 기록 추가
+          final args =
+              ModalRoute.of(context)!.settings.arguments as Map<String, String>;
+          return MilkingRecordPage(
+            cowId: args['cowId']!,
+            cowName: args['cowName']!, // 👈 이 부분이 꼭 필요해!
+          );
+        },
+        '/milking-records': (context) {
+          // 우유 기록 조회
+          final args = ModalRoute.of(context)!.settings.arguments as Map;
+          return MilkingRecordListPage(
+            cowId: args['cowId'],
+            cowName: args['cowName'],
+          );
         },
       },
     );

@@ -12,7 +12,7 @@ class CowProvider with ChangeNotifier {
   }
 
   void removeCow(String id) {
-    _cows.removeWhere((cow) => cow.name == id);
+    _cows.removeWhere((cow) => cow.id == id);
     notifyListeners();
   }
 
