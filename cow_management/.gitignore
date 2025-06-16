@@ -140,6 +140,25 @@ macos/build/
 macos/Flutter/
 cow_management/macos/Flutter/ephemeral/flutter_export_environment.sh
 cow_management/macos/Flutter/ephemeral/Flutter-Generated.xcconfig
+**/ios/Flutter/Debug.xcconfig
+**/ios/Flutter/Release.xcconfig
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/Runner.xcworkspace/
+**/ios/Podfile
+**/ios/Podfile.lock
+**/ios/.symlinks/
+**/macos/Flutter/Flutter-Debug.xcconfig
+**/macos/Flutter/Flutter-Release.xcconfig
+**/macos/Flutter/ephemeral/
+**/macos/Podfile
+**/macos/Podfile.lock
+**/macos/Flutter/Generated.xcconfig
+**/macos/Flutter/flutter_export_environment.sh
+**/macos/Runner.xcworkspace/
+**/macos/Podfile
+**/macos/Podfile.lock
+**/macos/.symlinks/
 
 # =========================================
 # Windows / Linux 관련
@@ -152,6 +171,8 @@ linux/flutter/ephemeral/
 linux/flutter/generated_plugin_registrant.*
 linux/build/
 linux/flutter/
+**/windows/flutter/ephemeral/
+**/linux/flutter/ephemeral/
 
 # =========================================
 # Web 관련 (generated)
@@ -177,4 +198,8 @@ cow_management/ios/Flutter/flutter_export_environment.sh
 cow_management/ios/Flutter/Generated.xcconfig
 cow_management/macos/Flutter/ephemeral/flutter_export_environment.sh
 cow_management/macos/Flutter/ephemeral/Flutter-Generated.xcconfig
+
+ios/Podfile
+ios/Podfile.lock
+macos/Podfile
 
