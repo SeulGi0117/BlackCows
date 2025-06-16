@@ -25,8 +25,8 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    final apiBaseUrl = dotenv.env['API_BASE_URL'];
-    if (apiBaseUrl == null) {
+    baseUrl = dotenv.env['API_BASE_URL'] ?? '';
+    if (baseUrl.isEmpty) {
       _logger.warning('경고: API_BASE_URL이 설정되지 않았습니다. .env 파일을 확인해주세요.');
     }
 
