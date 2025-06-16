@@ -10,11 +10,13 @@ import 'package:cow_management/screens/profile/profile_page.dart';
 import 'package:cow_management/screens/cow_list/cow_list_page.dart';
 import 'package:cow_management/screens/cow_list/cow_detail_page.dart';
 import 'package:cow_management/models/cow.dart';
-import 'package:cow_management/widgets/app_wrapper.dart';
-import 'package:cow_management/widgets/floating_chatbot_button.dart';
+import 'package:cow_management/screens/ai_service/app_wrapper.dart';
+import 'package:cow_management/screens/ai_service/floating_chatbot_button.dart';
 import 'package:cow_management/screens/cow_list/cow_edit_page.dart';
 import 'package:cow_management/screens/cow_list/Cow_Detail/cow_milk_add_page.dart';
 import 'package:cow_management/screens/cow_list/Cow_Detail/cow_milk_detail_page.dart';
+import 'package:cow_management/screens/ai_analysis/analysis_page.dart';
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,8 +46,7 @@ class SoDamApp extends StatelessWidget {
         '/login': (context) => const LoginPage(), // 로그인
         '/signup': (context) => const SignupPage(), // 회원가입
         '/cows': (context) => const CowListPage(), // 소 목록
-        '/analysis': (context) =>
-            const Center(child: Text('분석 페이지')), // 분석 페이지 미구현
+        '/analysis': (context) => const AnalysisPage(), // AI 분석        
         '/profile': (context) => const ProfilePage(), // 프로필
         '/cows/detail': (context) {
           final cow = ModalRoute.of(context)!.settings.arguments as Cow;
@@ -91,7 +92,7 @@ class _MainScaffoldState extends State<MainScaffold> {
   final List<Widget> _pages = [
     const HomeScreen(),
     const CowListPage(),
-    const Center(child: Text('분석 페이지')), // 아직 미구현
+    const AnalysisPage(),
     const ProfilePage(),
   ];
 

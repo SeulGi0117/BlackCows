@@ -77,6 +77,25 @@ windows/flutter/generated_plugin_registrant.h
 linux/flutter/generated_plugin_registrant.cc
 linux/flutter/generated_plugin_registrant.h
 web/generated_plugin_registrant.dart
+pubspec.lock
+package_config_subset
+package_config_subset.json
+version
+
+# =========================================
+# Generated Plugin Files (자동 생성 플러그인 파일들)
+# =========================================
+**/generated_plugin_registrant.*
+**/GeneratedPluginRegistrant.*
+android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
+ios/Runner/GeneratedPluginRegistrant.h
+ios/Runner/GeneratedPluginRegistrant.m
+macos/Flutter/GeneratedPluginRegistrant.swift
+windows/flutter/generated_plugin_registrant.cc
+windows/flutter/generated_plugin_registrant.h
+linux/flutter/generated_plugin_registrant.cc
+linux/flutter/generated_plugin_registrant.h
+web/generated_plugin_registrant.dart
 
 # =========================================
 # Obfuscation & Symbolication
@@ -97,7 +116,12 @@ android/**/gradle-wrapper.jar
 android/captures/
 android/gradlew
 android/gradlew.bat
+android/**/gradle-wrapper.jar
+android/captures/
+android/gradlew
+android/gradlew.bat
 *.so
+cow_management/android/local.properties
 cow_management/android/local.properties
 
 # =========================================
@@ -112,9 +136,33 @@ ios/Flutter/app.flx
 ios/Flutter/app.zip
 ios/Flutter/flutter_assets/
 ios/Flutter/flutter_export_environment.sh
+ios/Flutter/ephemeral/
+ios/Flutter/App.framework
+ios/Flutter/app.flx
+ios/Flutter/app.zip
+ios/Flutter/flutter_assets/
+ios/Flutter/flutter_export_environment.sh
 ios/Pods/
 ios/Runner.xcworkspace/
 ios/build/
+ios/**/*.mode1v3
+ios/**/*.mode2v3
+ios/**/*.moved-aside
+ios/**/*.pbxuser
+ios/**/*.perspectivev3
+ios/**/*sync/
+ios/**/.sconsign.dblite
+ios/**/.tags*
+ios/**/.vagrant/
+ios/**/DerivedData/
+ios/**/Icon?
+ios/**/.symlinks/
+ios/**/profile
+ios/**/xcuserdata
+ios/.generated/
+ios/ServiceDefinitions.json
+cow_management/ios/Flutter/flutter_export_environment.sh
+cow_management/ios/Flutter/Generated.xcconfig
 ios/**/*.mode1v3
 ios/**/*.mode2v3
 ios/**/*.moved-aside
@@ -165,9 +213,11 @@ cow_management/macos/Flutter/ephemeral/Flutter-Generated.xcconfig
 # =========================================
 windows/flutter/ephemeral/
 windows/flutter/generated_plugin_registrant.*
+windows/flutter/generated_plugin_registrant.*
 windows/build/
 windows/flutter/
 linux/flutter/ephemeral/
+linux/flutter/generated_plugin_registrant.*
 linux/flutter/generated_plugin_registrant.*
 linux/build/
 linux/flutter/
@@ -178,6 +228,8 @@ linux/flutter/
 # Web 관련 (generated)
 # =========================================
 web/generated_plugin_registrant.dart
+lib/generated_plugin_registrant.dart
+
 lib/generated_plugin_registrant.dart
 
 
