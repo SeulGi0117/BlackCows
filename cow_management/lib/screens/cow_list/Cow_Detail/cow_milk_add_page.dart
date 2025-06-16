@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cow_management/providers/user_provider.dart';
+import 'package:logging/logging.dart';
 
 class MilkingRecordPage extends StatefulWidget {
   final String cowId;
@@ -21,6 +22,7 @@ class MilkingRecordPage extends StatefulWidget {
 
 class _MilkingRecordPageState extends State<MilkingRecordPage> {
   final _formKey = GlobalKey<FormState>();
+  final _logger = Logger('CowMilkAddPage');
 
   final TextEditingController _milkYieldController = TextEditingController();
   final TextEditingController _startTimeController = TextEditingController();
@@ -77,12 +79,12 @@ class _MilkingRecordPageState extends State<MilkingRecordPage> {
         data: body,
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
-      print('📦 생성 응답: ${response.data}');
+      _logger.info('📦 생성 응답: ${response.data}');
       if (response.statusCode == 201 || response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("착유 기록이 등록되었습니다.")),
         );
-        print("✅ 생성 성공, 서버에서 받은 데이터: ${response.data}");
+        _logger.info("✅ 생성 성공, 서버에서 받은 데이터: ${response.data}");
         // ✅ 등록 완료 후 기록 리스트 페이지로 이동
         Navigator.pushReplacementNamed(
           context,

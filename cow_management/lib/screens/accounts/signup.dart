@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:logging/logging.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -21,13 +22,14 @@ class _SignupPageState extends State<SignupPage> {
   bool _isPasswordVisible = false;
   bool _isPasswordConfirmVisible = false;
   late String baseUrl;
+  final _logger = Logger('SignupPage');
 
   @override
   void initState() {
     super.initState();
     baseUrl = dotenv.env['API_BASE_URL'] ?? '';
     if (baseUrl.isEmpty) {
-      print('경고: API_BASE_URL이 설정되지 않았습니다. .env 파일을 확인해주세요.');
+      _logger.warning('경고: API_BASE_URL이 설정되지 않았습니다. .env 파일을 확인해주세요.');
     }
   }
 
@@ -63,8 +65,8 @@ class _SignupPageState extends State<SignupPage> {
 
     try {
       final url = Uri.parse('$baseUrl/auth/register');
-      print('회원가입 요청 URL: $url');
-      print('요청 데이터: username=$username, email=$email, farm_name=$farmName');
+      _logger.info('회원가입 요청 URL: $url');
+      _logger.info('요청 데이터: username=$username, email=$email, farm_name=$farmName');
       
       final response = await http.post(
         url,
@@ -82,11 +84,11 @@ class _SignupPageState extends State<SignupPage> {
         }),
       );
 
-      print('응답 상태코드: ${response.statusCode}');
+      _logger.info('응답 상태코드: ${response.statusCode}');
       
       // UTF-8로 디코딩
       final responseBody = utf8.decode(response.bodyBytes);
-      print('응답 본문: $responseBody');
+      _logger.info('응답 본문: $responseBody');
       
       if (response.statusCode == 200 || response.statusCode == 201) {
         final responseData = jsonDecode(responseBody);
@@ -95,7 +97,7 @@ class _SignupPageState extends State<SignupPage> {
         );
         Navigator.pop(context, true); // 성공 시 true 반환
       } else {
-        print('회원가입 실패: ${response.statusCode} - $responseBody');
+        _logger.severe('회원가입 실패: ${response.statusCode} - $responseBody');
         
         String errorMessage = _getErrorMessage(response.statusCode, responseBody);
         
@@ -104,6 +106,7 @@ class _SignupPageState extends State<SignupPage> {
         );
       }
     } catch (e) {
+      _logger.severe('회원가입 실패: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('에러 발생: $e')),
       );

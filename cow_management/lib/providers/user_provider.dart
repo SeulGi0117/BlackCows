@@ -1,12 +1,12 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:cow_management/models/User.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart';
 import 'package:cow_management/services/dio_client.dart';
+import 'package:logging/logging.dart';
 
 class UserProvider with ChangeNotifier {
+  final _logger = Logger('UserProvider');
   User? _currentUser;
   String? _accessToken;
   String? _refreshToken;
@@ -66,14 +66,14 @@ class UserProvider with ChangeNotifier {
         _shouldShowWelcome = true;
         notifyListeners();
 
-        print('✅ 로그인 성공: ${_accessToken?.substring(0, 20)}...');
+        _logger.info('로그인 성공: ${_accessToken?.substring(0, 20)}...');
         return true;
       } else {
-        print('❌ 로그인 실패: ${response.statusCode} - ${response.data}');
+        _logger.warning('로그인 실패: ${response.statusCode} - ${response.data}');
         return false;
       }
     } on DioException catch (e) {
-      print('❌ 로그인 에러: ${e.response?.data ?? e.message}');
+      _logger.severe('로그인 에러: ${e.response?.data ?? e.message}');
       return false;
     }
   }
@@ -101,14 +101,14 @@ class UserProvider with ChangeNotifier {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        print('✅ 회원가입 성공');
+        _logger.info('✅ 회원가입 성공');
         return true;
       } else {
-        print('❌ 회원가입 실패: ${response.statusCode} - ${response.data}');
+        _logger.warning('❌ 회원가입 실패: ${response.statusCode} - ${response.data}');
         return false;
       }
     } on DioException catch (e) {
-      print('❌ 회원가입 에러: ${e.response?.data ?? e.message}');
+      _logger.severe('❌ 회원가입 에러: ${e.response?.data ?? e.message}');
       return false;
     }
   }
@@ -121,7 +121,7 @@ class UserProvider with ChangeNotifier {
     _shouldShowWelcome = false;
     await clearTokenFromStorage();
     notifyListeners();
-    print('로그아웃: 모든 데이터 삭제됨');
+    _logger.info('로그아웃: 모든 데이터 삭제됨');
   }
 
   Future<void> clearTokenFromStorage() async {

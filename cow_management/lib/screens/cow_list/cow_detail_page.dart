@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
+import 'package:logging/logging.dart';
 import 'package:cow_management/models/cow.dart';
 import 'package:cow_management/screens/cow_list/cow_edit_page.dart';
 import 'package:cow_management/providers/user_provider.dart';
 
 class CowDetailPage extends StatefulWidget {
   final Cow cow;
+  static final _logger = Logger('CowDetailPage');
 
   const CowDetailPage({super.key, required this.cow});
 
@@ -218,32 +219,32 @@ class _CowDetailPageState extends State<CowDetailPage> {
       ],
     );
   }
-}
 
-Future<bool> deleteCow(BuildContext context, String cowId) async {
-  final dio = Dio();
-  final String? apiUrl = dotenv.env['API_BASE_URL'];
-  final token = await Provider.of<UserProvider>(context, listen: false)
-      .loadTokenFromStorage();
+  Future<bool> deleteCow(BuildContext context, String cowId) async {
+    final dio = Dio();
+    final String? apiUrl = dotenv.env['API_BASE_URL'];
+    final token = await Provider.of<UserProvider>(context, listen: false)
+        .loadTokenFromStorage();
 
-  if (apiUrl == null || token == null) {
-    print("❌ API 주소 또는 토큰 없음");
-    return false;
-  }
+    if (apiUrl == null || token == null) {
+      CowDetailPage._logger.severe("API 주소 또는 토큰 없음");
+      return false;
+    }
 
-  try {
-    final response = await dio.delete(
-      '$apiUrl/cows/$cowId',
-      options: Options(
-        headers: {
-          'Authorization': 'Bearer $token',
-        },
-      ),
-    );
+    try {
+      final response = await dio.delete(
+        '$apiUrl/cows/$cowId',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
 
-    return response.statusCode == 200 || response.statusCode == 204;
-  } catch (e) {
-    print("❌ 삭제 중 오류 발생: $e");
-    return false;
+      return response.statusCode == 200 || response.statusCode == 204;
+    } catch (e) {
+      CowDetailPage._logger.severe("삭제 중 오류 발생: $e");
+      return false;
+    }
   }
 }

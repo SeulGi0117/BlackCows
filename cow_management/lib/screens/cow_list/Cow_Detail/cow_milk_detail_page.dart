@@ -3,7 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:cow_management/providers/user_provider.dart';
-import 'package:intl/intl.dart';
+import 'package:logging/logging.dart';
 
 class MilkingRecordListPage extends StatefulWidget {
   final String cowId;
@@ -17,6 +17,7 @@ class MilkingRecordListPage extends StatefulWidget {
 }
 
 class _MilkingRecordListPageState extends State<MilkingRecordListPage> {
+  final _logger = Logger('CowMilkDetailPage');
   List<dynamic> milkingRecords = [];
 
   @override
@@ -50,7 +51,7 @@ class _MilkingRecordListPageState extends State<MilkingRecordListPage> {
         throw Exception("조회 실패");
       }
     } catch (e) {
-      print("에러: $e");
+      _logger.severe("에러: $e");
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text("데이터를 불러오지 못했습니다")));
     }

@@ -4,9 +4,11 @@ import 'package:provider/provider.dart';
 import 'package:cow_management/providers/user_provider.dart';
 import 'package:cow_management/main.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:logging/logging.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  final bool isTestMode;
+  const LoginPage({super.key, this.isTestMode=false});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -18,17 +20,37 @@ class _LoginPageState extends State<LoginPage> {
   bool _isLoading = false;
   bool _isPasswordVisible = false;
   late String baseUrl;
+  final _logger = Logger('LoginPage');
 
   @override
   void initState() {
     super.initState();
-    baseUrl = dotenv.env['API_BASE_URL'] ?? '';
-    if (baseUrl.isEmpty) {
-      print('경고: API_BASE_URL이 설정되지 않았습니다. .env 파일을 확인해주세요.');
+    final apiBaseUrl = dotenv.env['API_BASE_URL'];
+    if (apiBaseUrl == null) {
+      _logger.warning('경고: API_BASE_URL이 설정되지 않았습니다. .env 파일을 확인해주세요.');
+    }
+
+    // 테스트 모드일 경우 자동 로그인
+    if (widget.isTestMode) {
+      _autoLogin();
     }
   }
 
+  Future<void> _autoLogin() async {
+    setState(() => _isLoading = true);
+    
+    final success = await Provider.of<UserProvider>(context, listen: false)
+        .login('test1234', 'qwer1234', '$baseUrl/auth/login');
 
+    setState(() => _isLoading = false);
+
+    if (success && mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const MainScaffold()),
+      );
+    }
+  }
 
   Future<void> _login() async {
     final username = _usernameController.text.trim();

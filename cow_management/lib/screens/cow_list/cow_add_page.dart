@@ -1,12 +1,8 @@
 // 필요한 위젯들 import
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:cow_management/screens/cow_list/cow_add_done_page.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cow_management/models/cow.dart';
 import 'package:provider/provider.dart';
-import 'package:cow_management/providers/user_provider.dart';
 import 'package:cow_management/providers/cow_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:cow_management/services/dio_client.dart';
@@ -88,10 +84,11 @@ class _CowAddPageState extends State<CowAddPage> {
       final response = await DioClient().dio.post('/cows/', data: cowData);
 
       final newCow = Cow.fromJson(response.data);
+      if (!mounted) return;
+      
       final cowProvider = Provider.of<CowProvider>(context, listen: false);
       cowProvider.addCow(newCow);
 
-      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(

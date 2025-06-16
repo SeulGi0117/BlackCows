@@ -11,7 +11,6 @@ import 'package:cow_management/screens/cow_list/cow_list_page.dart';
 import 'package:cow_management/screens/cow_list/cow_detail_page.dart';
 import 'package:cow_management/models/cow.dart';
 import 'package:cow_management/screens/ai_service/app_wrapper.dart';
-import 'package:cow_management/screens/ai_service/floating_chatbot_button.dart';
 import 'package:cow_management/screens/cow_list/cow_edit_page.dart';
 import 'package:cow_management/screens/cow_list/Cow_Detail/cow_milk_add_page.dart';
 import 'package:cow_management/screens/cow_list/Cow_Detail/cow_milk_detail_page.dart';
@@ -21,19 +20,24 @@ import 'package:cow_management/screens/ai_analysis/analysis_page.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: "assets/config/.env");
+  
+  // 테스트 모드 설정
+  const bool isTestMode = false; 
+
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => CowProvider()),
       ],
-      child: const SoDamApp(),
+      child: SoDamApp(isTestMode: isTestMode),
     ),
   );
 }
 
 class SoDamApp extends StatelessWidget {
-  const SoDamApp({super.key});
+  final bool isTestMode;
+  const SoDamApp({super.key, this.isTestMode=false});
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +47,7 @@ class SoDamApp extends StatelessWidget {
       initialRoute: '/login', // 시작 루트
       routes: {
         '/': (context) => const MainScaffold(), // 메인 홈
-        '/login': (context) => const LoginPage(), // 로그인
+        '/login': (context) => LoginPage(isTestMode: isTestMode), // 로그인
         '/signup': (context) => const SignupPage(), // 회원가입
         '/cows': (context) => const CowListPage(), // 소 목록
         '/analysis': (context) => const AnalysisPage(), // AI 분석        

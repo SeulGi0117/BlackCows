@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:cow_management/models/cow.dart';
+import 'package:logging/logging.dart';
 
 class CowListPage extends StatefulWidget {
   const CowListPage({super.key});
@@ -16,6 +17,7 @@ class CowListPage extends StatefulWidget {
 }
 
 class _CowListPageState extends State<CowListPage> {
+  final _logger = Logger('CowListPage');
   final TextEditingController _searchController = TextEditingController();
   String? _selectedStatus; // 문자열 상태 필터
 
@@ -30,12 +32,12 @@ class _CowListPageState extends State<CowListPage> {
     final apiUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
 
     if (apiUrl.isEmpty) {
-      print('API 주소가 없습니다');
+      _logger.warning('API 주소가 없습니다');
       return;
     }
 
     if (!userProvider.isLoggedIn || userProvider.accessToken == null) {
-      print('로그인이 필요합니다');
+      _logger.warning('로그인이 필요합니다');
       return;
     }
 
@@ -59,12 +61,12 @@ class _CowListPageState extends State<CowListPage> {
           cowProvider.setCows(cows);
         }
       } else {
-        print('API URL: $apiUrl');
-        print('❌ 요청 실패: ${response.statusCode}');
-        print('응답 내용: ${utf8.decode(response.bodyBytes)}');
+        _logger.severe('API 요청 실패: ${response.statusCode}');
+        _logger.severe('API URL: $apiUrl');
+        _logger.severe('응답 내용: ${utf8.decode(response.bodyBytes)}');
       }
     } catch (e) {
-      print('🐞 요청 중 오류 발생: $e');
+      _logger.severe('요청 중 오류 발생: $e');
     }
   }
 
