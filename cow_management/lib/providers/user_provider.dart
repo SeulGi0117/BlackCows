@@ -43,14 +43,14 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> login(String username, String password, String loginUrl) async {
+  Future<bool> login(String userId, String password, String loginUrl) async {
     try {
       final dio = DioClient().dio;
 
       final response = await dio.post(
         loginUrl,
         data: {
-          'username': username,
+          'user_id': userId,    // 로그인용 아이디로 변경
           'password': password,
         },
       );
@@ -79,11 +79,12 @@ class UserProvider with ChangeNotifier {
   }
 
   Future<bool> signup({
-    required String username,
-    required String email,
-    required String password,
-    required String passwordConfirm,
-    required String farmName,
+    required String username,        // 사용자 이름/실명
+    required String userId,          // 로그인용 아이디
+    required String email,           // 이메일
+    required String password,        // 비밀번호
+    required String passwordConfirm, // 비밀번호 확인
+    String? farmNickname,            // 목장 별명 (선택사항)
     required String signupUrl,
   }) async {
     try {
@@ -92,11 +93,12 @@ class UserProvider with ChangeNotifier {
       final response = await dio.post(
         signupUrl,
         data: {
-          'username': username,
-          'email': email,
-          'password': password,
-          'password_confirm': passwordConfirm,
-          'farm_name': farmName,
+          'username': username,           // 사용자 이름/실명
+          'user_id': userId,              // 로그인용 아이디
+          'email': email,                 // 이메일
+          'password': password,           // 비밀번호
+          'password_confirm': passwordConfirm, // 비밀번호 확인
+          'farm_nickname': farmNickname,  // 목장 별명 (선택사항)
         },
       );
 

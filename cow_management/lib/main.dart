@@ -22,7 +22,7 @@ Future<void> main() async {
   await dotenv.load(fileName: "assets/config/.env");
   
   // 테스트 모드 설정
-  const bool isTestMode = false; 
+  const bool isTestMode = true; 
 
   runApp(
     MultiProvider(

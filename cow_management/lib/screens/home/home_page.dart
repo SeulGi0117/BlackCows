@@ -25,7 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${userProvider.currentUser!.username}님 환영합니다!'),
+            content: Text('${userProvider.currentUser!.username}님 환영합니다!'), // 사용자 이름/실명으로 환영
             backgroundColor: Colors.pink,
             duration: const Duration(seconds: 3),
             behavior: SnackBarBehavior.floating,
@@ -61,50 +61,107 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
+    return Consumer<UserProvider>(
+      builder: (context, userProvider, child) {
+        final user = userProvider.currentUser;
+        
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Image.asset(
-                'assets/images/cow.png',
-                width: 36,
-                height: 36,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Icon(Icons.image_not_supported, size: 36);
-                },
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Image.asset(
+                        'assets/images/cow.png',
+                        width: 36,
+                        height: 36,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(Icons.image_not_supported, size: 36);
+                        },
+                      ),
+                      const SizedBox(width: 12),
+                      const Text(
+                        '소담소담',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Stack(
+                    alignment: Alignment.topRight,
+                    children: [
+                      const Icon(Icons.notifications_none, size: 28),
+                      Positioned(
+                        right: 0,
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      )
+                    ],
+                  )
+                ],
               ),
-              const SizedBox(width: 12),
-              const Text(
-                '소담소담',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          Stack(
-            alignment: Alignment.topRight,
-            children: [
-              const Icon(Icons.notifications_none, size: 28),
-              Positioned(
-                right: 0,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
+              
+              // 사용자 정보 표시
+              if (user != null) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.pink.shade50,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.pink.shade100),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.person, size: 16, color: Colors.pink.shade600),
+                      const SizedBox(width: 6),
+                      Text(
+                        '${user.username}님', // 사용자 이름/실명
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.pink.shade600,
+                        ),
+                      ),
+                      if (user.farmNickname != null && user.farmNickname!.isNotEmpty) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          width: 1,
+                          height: 12,
+                          color: Colors.pink.shade300,
+                        ),
+                        const SizedBox(width: 8),
+                        Icon(Icons.home, size: 16, color: Colors.pink.shade600),
+                        const SizedBox(width: 4),
+                        Text(
+                          user.farmNickname!, // 목장 별명
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.pink.shade600,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
-              )
+              ],
             ],
-          )
-        ],
-      ),
+          ),
+        );
+      },
     );
   }
 
