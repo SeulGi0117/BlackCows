@@ -228,11 +228,6 @@ linux/flutter/
 # Web 관련 (generated)
 # =========================================
 web/generated_plugin_registrant.dart
-lib/generated_plugin_registrant.dart
-
-lib/generated_plugin_registrant.dart
-
-
 # =========================================
 # Firebase 관련
 # =========================================
@@ -255,3 +250,5 @@ ios/Podfile
 ios/Podfile.lock
 macos/Podfile
 
+# 웹 배포를 위한 build/web/ 포함
+!build/web/
