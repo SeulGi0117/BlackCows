@@ -33,6 +33,54 @@ class _CowDetailPageState extends State<CowDetailPage> {
         title: Text('${currentCow.name} 상세 정보'),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
+        elevation: 1,
+        actions: [
+          TextButton.icon(
+            onPressed: () async {
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text("삭제 확인"),
+                  content: const Text("정말 이 젖소를 삭제하시겠습니까?"),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text("취소"),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      child:
+                          const Text("삭제", style: TextStyle(color: Colors.red)),
+                    ),
+                  ],
+                ),
+              );
+
+              if (confirmed == true) {
+                final success = await deleteCow(context, currentCow.id);
+                if (success && context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("젖소가 삭제되었습니다")),
+                  );
+                  Navigator.pop(context, true); // 이전 화면으로
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("삭제에 실패했습니다")),
+                  );
+                }
+              }
+            },
+            icon: const Icon(Icons.delete, color: Colors.red),
+            label: const Text(
+              '삭제하기',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.red,
+              ),
+            ),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -42,8 +90,6 @@ class _CowDetailPageState extends State<CowDetailPage> {
             _buildBasicInfoCard(),
             const SizedBox(height: 20),
             _buildMilkingInfoCard(),
-            const SizedBox(height: 30),
-            _buildActionButtons(context),
           ],
         ),
       ),
@@ -66,8 +112,10 @@ class _CowDetailPageState extends State<CowDetailPage> {
             children: [
               Icon(Icons.pets, size: 20),
               SizedBox(width: 6),
-              Text('기본 정보',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              Text(
+                '기본 정보',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -76,6 +124,32 @@ class _CowDetailPageState extends State<CowDetailPage> {
           _infoRow('품종', currentCow.breed ?? '미등록'),
           _infoRow('센서 번호', currentCow.sensor),
           _infoRow('상태', currentCow.status),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: () async {
+              final updatedCow = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CowEditPage(cow: currentCow),
+                ),
+              );
+
+              if (updatedCow != null && updatedCow is Cow) {
+                setState(() {
+                  currentCow = updatedCow;
+                });
+              }
+            },
+            icon: const Icon(Icons.edit, size: 18),
+            label: const Text('정보 수정하기'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blueAccent,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -165,23 +239,6 @@ class _CowDetailPageState extends State<CowDetailPage> {
   Widget _buildActionButtons(BuildContext context) {
     return Column(
       children: [
-        ElevatedButton(
-          onPressed: () async {
-            final updatedCow = await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => CowEditPage(cow: currentCow),
-              ),
-            );
-
-            if (updatedCow != null && updatedCow is Cow) {
-              setState(() {
-                currentCow = updatedCow;
-              });
-            }
-          },
-          child: const Text('🛠️ 정보 수정하기'),
-        ),
         const SizedBox(height: 10),
         ElevatedButton(
           onPressed: () async {
