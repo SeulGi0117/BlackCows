@@ -3,3 +3,4 @@
     "default": "blackcows-b20c8"
   }
 }
+firebase deploy --only hosting

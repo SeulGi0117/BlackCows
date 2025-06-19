@@ -250,5 +250,7 @@ ios/Podfile
 ios/Podfile.lock
 macos/Podfile
 
-# 웹 배포를 위한 build/web/ 포함
-!build/web/
+# Firebase local state
+.firebase/
+*.log
+build/
