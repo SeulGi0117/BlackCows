@@ -16,13 +16,12 @@ import 'package:cow_management/screens/cow_list/Cow_Detail/cow_milk_add_page.dar
 import 'package:cow_management/screens/cow_list/Cow_Detail/cow_milk_detail_page.dart';
 import 'package:cow_management/screens/ai_analysis/analysis_page.dart';
 
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: "assets/config/.env");
-  
+
   // 테스트 모드 설정
-  const bool isTestMode = false; 
+  const bool isTestMode = true;
 
   runApp(
     MultiProvider(
@@ -30,14 +29,14 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => CowProvider()),
       ],
-      child: SoDamApp(isTestMode: isTestMode),
+      child: const SoDamApp(isTestMode: isTestMode),
     ),
   );
 }
 
 class SoDamApp extends StatelessWidget {
   final bool isTestMode;
-  const SoDamApp({super.key, this.isTestMode=false});
+  const SoDamApp({super.key, this.isTestMode = false});
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +49,7 @@ class SoDamApp extends StatelessWidget {
         '/login': (context) => LoginPage(isTestMode: isTestMode), // 로그인
         '/signup': (context) => const SignupPage(), // 회원가입
         '/cows': (context) => const CowListPage(), // 소 목록
-        '/analysis': (context) => const AnalysisPage(), // AI 분석        
+        '/analysis': (context) => const AnalysisPage(), // AI 분석
         '/profile': (context) => const ProfilePage(), // 프로필
         '/cows/detail': (context) {
           final cow = ModalRoute.of(context)!.settings.arguments as Cow;

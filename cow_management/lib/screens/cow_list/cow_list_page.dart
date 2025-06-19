@@ -234,9 +234,23 @@ class _CowListPageState extends State<CowListPage> {
                 isFavorite ? Icons.star : Icons.star_border,
                 color: Colors.amber,
               ),
-              onPressed: () {
-                cowProvider.toggleFavoriteByName(cow.name);
-                setState(() {});
+              onPressed: () async {
+                final userProvider =
+                    Provider.of<UserProvider>(context, listen: false);
+                final cowProvider =
+                    Provider.of<CowProvider>(context, listen: false);
+
+                if (userProvider.accessToken == null) return;
+
+                try {
+                  await cowProvider.toggleFavoriteByName(
+                      cow.name, userProvider.accessToken!);
+                  setState(() {});
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('즐겨찾기 실패: $e')),
+                  );
+                }
               },
             ),
             const SizedBox(width: 12),

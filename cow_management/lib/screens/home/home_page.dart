@@ -25,7 +25,8 @@ class _HomeScreenState extends State<HomeScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${userProvider.currentUser!.username}님 환영합니다!'), // 사용자 이름/실명으로 환영
+            content: Text(
+                '${userProvider.currentUser!.username}님 환영합니다!'), // 사용자 이름/실명으로 환영
             backgroundColor: Colors.pink,
             duration: const Duration(seconds: 3),
             behavior: SnackBarBehavior.floating,
@@ -64,7 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Consumer<UserProvider>(
       builder: (context, userProvider, child) {
         final user = userProvider.currentUser;
-        
+
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
           child: Column(
@@ -80,7 +81,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         width: 36,
                         height: 36,
                         errorBuilder: (context, error, stackTrace) {
-                          return const Icon(Icons.image_not_supported, size: 36);
+                          return const Icon(Icons.image_not_supported,
+                              size: 36);
                         },
                       ),
                       const SizedBox(width: 12),
@@ -112,12 +114,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   )
                 ],
               ),
-              
+
               // 사용자 정보 표시
               if (user != null) ...[
                 const SizedBox(height: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
                     color: Colors.pink.shade50,
                     borderRadius: BorderRadius.circular(20),
@@ -136,7 +139,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: Colors.pink.shade600,
                         ),
                       ),
-                      if (user.farmNickname != null && user.farmNickname!.isNotEmpty) ...[
+                      if (user.farmNickname != null &&
+                          user.farmNickname!.isNotEmpty) ...[
                         const SizedBox(width: 8),
                         Container(
                           width: 1,
@@ -326,7 +330,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildFavoriteCows(BuildContext context) {
     final cowProvider = Provider.of<CowProvider>(context);
     final favorites = cowProvider.favorites;
-
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final token = userProvider.accessToken;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
       child: Column(
@@ -359,8 +364,17 @@ class _HomeScreenState extends State<HomeScreen> {
                           cow.isFavorite ? Icons.star : Icons.star_border,
                           color: Colors.amber,
                         ),
-                        onPressed: () {
-                          cowProvider.toggleFavorite(cow);
+                        onPressed: () async {
+                          if (token == null) return;
+
+                          try {
+                            await cowProvider.toggleFavorite(cow, token);
+                            setState(() {}); // UI 갱신
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('즐겨찾기 실패: $e')),
+                            );
+                          }
                         },
                       ),
                       const SizedBox(width: 12),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cow_management/models/cow.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:dio/dio.dart';
 
 class CowProvider with ChangeNotifier {
   final List<Cow> _cows = [];
@@ -42,17 +44,41 @@ class CowProvider with ChangeNotifier {
   List<Cow> get favorites => _cows.where((cow) => cow.isFavorite).toList();
 
   // 즐겨찾기 기능
-  void toggleFavorite(Cow cow) {
-    cow.isFavorite = !cow.isFavorite;
-    notifyListeners();
+  Future<void> toggleFavorite(Cow cow, String token) async {
+    final dio = Dio();
+    final apiUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
+
+    final newValue = !cow.isFavorite;
+
+    try {
+      final response = await dio.post(
+        '$apiUrl/cows/${cow.id}/favorite',
+        data: {'favorite': true}, // 또는 false
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        cow.isFavorite = newValue;
+        notifyListeners();
+      } else {
+        throw Exception('즐겨찾기 변경 실패: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('API 오류: $e');
+    }
   }
 
   bool isFavoriteByName(String cowname) {
     return favorites.any((cow) => cow.name == cowname);
   }
 
-  void toggleFavoriteByName(String cowname) {
+  Future<void> toggleFavoriteByName(String cowname, String token) async {
     final cow = cows.firstWhere((c) => c.name == cowname);
-    toggleFavorite(cow); // 기존에 정의된 toggleFavorite 사용
+    await toggleFavorite(cow, token);
   }
 }
