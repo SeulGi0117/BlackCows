@@ -158,26 +158,29 @@ class ProfilePage extends StatelessWidget {
 
   Widget _buildInfoRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 80,
+            width: 100, // 80에서 100으로 증가
             child: Text(
               '$label:',
               style: const TextStyle(
                 color: Colors.grey,
                 fontSize: 14,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
+          const SizedBox(width: 8), // 라벨과 값 사이 간격 추가
           Expanded(
             child: Text(
               value,
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
+                color: Colors.black87,
               ),
             ),
           ),
