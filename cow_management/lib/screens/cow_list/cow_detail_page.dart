@@ -62,7 +62,7 @@ class _CowDetailPageState extends State<CowDetailPage> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("젖소가 삭제되었습니다")),
                   );
-                  Navigator.pop(context, true); // 이전 화면으로
+                  Navigator.pop(context, true);
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("삭제에 실패했습니다")),
@@ -89,7 +89,13 @@ class _CowDetailPageState extends State<CowDetailPage> {
           children: [
             _buildBasicInfoCard(),
             const SizedBox(height: 20),
+            _buildHealthInfoCard(),
+            const SizedBox(height: 20),
             _buildMilkingInfoCard(),
+            const SizedBox(height: 20),
+            _buildBreedingInfoCard(),
+            const SizedBox(height: 20),
+            _buildFeedingInfoCard(),
           ],
         ),
       ),
@@ -152,6 +158,281 @@ class _CowDetailPageState extends State<CowDetailPage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _infoCardBase({
+    required IconData icon,
+    required String title,
+    required List<Widget> children,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 20),
+              const SizedBox(width: 6),
+              Text(title,
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHealthInfoCard() {
+    return _infoCardBase(
+      icon: Icons.healing,
+      title: '건강 정보',
+      children: [
+        _healthRecordButton(
+          title: '건강검진 기록',
+          icon: Icons.monitor_heart,
+          route: '/health-check/detail',
+          addRoute: '/health-check/add',
+        ),
+        const SizedBox(height: 8),
+        _healthRecordButton(
+          title: '백신접종 기록',
+          icon: Icons.vaccines,
+          route: '/vaccination/detail',
+          addRoute: '/vaccination/add',
+        ),
+        const SizedBox(height: 8),
+        _healthRecordButton(
+          title: '체중 측정 기록',
+          icon: Icons.monitor_weight,
+          route: '/weight/detail',
+          addRoute: '/weight/add',
+        ),
+        const SizedBox(height: 8),
+        _healthRecordButton(
+          title: '치료 기록',
+          icon: Icons.medical_services,
+          route: '/treatment/detail',
+          addRoute: '/treatment/add',
+        ),
+      ],
+    );
+  }
+
+  Widget _healthRecordButton({
+    required String title,
+    required IconData icon,
+    required String route,
+    required String addRoute,
+  }) {
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: () {
+              Navigator.pushNamed(
+                context,
+                route,
+                arguments: {
+                  'cowId': currentCow.id,
+                  'cowName': currentCow.name,
+                },
+              );
+            },
+            icon: Icon(icon),
+            label: Text(title),
+          ),
+        ),
+        const SizedBox(width: 10),
+        OutlinedButton(
+          onPressed: () {
+            Navigator.pushNamed(
+              context,
+              addRoute,
+              arguments: {
+                'cowId': currentCow.id,
+                'cowName': currentCow.name,
+              },
+            );
+          },
+          child: const Text('기록 추가'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHealthSection({
+    required String title,
+    required bool hasRecord,
+    required VoidCallback onViewPressed,
+    required VoidCallback onAddPressed,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        hasRecord
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('최근 기록이 있습니다'),
+                  TextButton(
+                      onPressed: onViewPressed, child: const Text('자세히 보기')),
+                ],
+              )
+            : OutlinedButton.icon(
+                onPressed: onAddPressed,
+                icon: const Icon(Icons.add),
+                label: const Text('기록 추가하기'),
+              ),
+      ],
+    );
+  }
+
+  Widget _buildBreedingInfoCard() {
+    return _infoCardBase(
+      icon: Icons.pregnant_woman,
+      title: '번식 정보',
+      children: [
+        _breedingRecordButton(
+          title: '발정 기록',
+          icon: Icons.waves,
+          route: '/estrus-record/detail',
+          addRoute: '/estrus-record/add',
+        ),
+        const SizedBox(height: 8),
+        _breedingRecordButton(
+          title: '인공수정 기록',
+          icon: Icons.medical_services_outlined,
+          route: '/insemination-record/detail',
+          addRoute: '/insemination-record/add',
+        ),
+        const SizedBox(height: 8),
+        _breedingRecordButton(
+          title: '임신감정 기록',
+          icon: Icons.search,
+          route: '/pregnancy-check-record/detail',
+          addRoute: '/pregnancy-check-record/add',
+        ),
+        const SizedBox(height: 8),
+        _breedingRecordButton(
+          title: '분만 기록',
+          icon: Icons.child_care,
+          route: '/calving-record/detail',
+          addRoute: '/calving-record/add',
+        ),
+      ],
+    );
+  }
+
+  Widget _breedingRecordButton({
+    required String title,
+    required IconData icon,
+    required String route,
+    required String addRoute,
+  }) {
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: () {
+              Navigator.pushNamed(
+                context,
+                route,
+                arguments: {
+                  'cowId': currentCow.id,
+                  'cowName': currentCow.name,
+                },
+              );
+            },
+            icon: Icon(icon),
+            label: Text(title),
+          ),
+        ),
+        const SizedBox(width: 10),
+        OutlinedButton(
+          onPressed: () {
+            Navigator.pushNamed(
+              context,
+              addRoute,
+              arguments: {
+                'cowId': currentCow.id,
+                'cowName': currentCow.name,
+              },
+            );
+          },
+          child: const Text('기록 추가'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFeedingInfoCard() {
+    final feedingRecords = currentCow.feedingRecords;
+    final hasRecords = feedingRecords.isNotEmpty;
+
+    return _infoCardBase(
+      icon: Icons.rice_bowl,
+      title: '사료 정보',
+      children: [
+        if (hasRecords)
+          ...feedingRecords.map((record) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Text(
+                    '📅 ${record.feedingDate} - ${record.feedType} ${record.amount}kg'),
+              ))
+        else
+          const Text('사료 섭취 기록이 없습니다.'),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.pushNamed(
+                    context,
+                    '/feeding-record/list',
+                    arguments: {
+                      'cowId': currentCow.id,
+                      'cowName': currentCow.name,
+                    },
+                  );
+                },
+                icon: const Icon(Icons.list),
+                label: const Text('기록 보기'),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.pushNamed(
+                    context,
+                    '/feeding-record/add',
+                    arguments: {
+                      'cowId': currentCow.id,
+                      'cowName': currentCow.name,
+                    },
+                  );
+                },
+                icon: const Icon(Icons.add),
+                label: const Text('기록 추가'),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
