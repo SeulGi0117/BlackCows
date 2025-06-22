@@ -21,6 +21,11 @@ class Cow {
   final DateTime updatedAt;
   final bool isActive;
   
+  // 축산물이력제 관련 필드 추가
+  final bool registeredFromLivestockTrace;
+  final Map<String, dynamic>? livestockTraceData;
+  final DateTime? livestockTraceRegisteredAt;
+  
   // 기존 호환성을 위한 필드들
   final String number;
   final String sensor;
@@ -44,6 +49,10 @@ class Cow {
     required this.createdAt,
     required this.updatedAt,
     required this.isActive,
+    // 축산물이력제 관련 필드
+    this.registeredFromLivestockTrace = false,
+    this.livestockTraceData,
+    this.livestockTraceRegisteredAt,
     // 기존 호환성을 위한 기본값들
     String? number,
     String? sensor,
@@ -125,6 +134,12 @@ class Cow {
       createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
       updatedAt: DateTime.tryParse(json['updated_at'] ?? '') ?? DateTime.now(),
       isActive: json['is_active'] ?? true,
+      // 축산물이력제 관련 필드
+      registeredFromLivestockTrace: json['registered_from_livestock_trace'] ?? false,
+      livestockTraceData: json['livestock_trace_data'],
+      livestockTraceRegisteredAt: json['livestock_trace_registered_at'] != null 
+          ? DateTime.tryParse(json['livestock_trace_registered_at']) 
+          : null,
       // 기존 필드들 매핑
       number: json['number'],
       sensor: json['sensor'],
@@ -151,6 +166,10 @@ class Cow {
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
       'is_active': isActive,
+      // 축산물이력제 관련 필드
+      'registered_from_livestock_trace': registeredFromLivestockTrace,
+      'livestock_trace_data': livestockTraceData,
+      'livestock_trace_registered_at': livestockTraceRegisteredAt?.toIso8601String(),
       // 기존 호환성
       'number': number,
       'sensor': sensor,
@@ -170,6 +189,18 @@ class Cow {
       if (breedingStatus != null) 'breeding_status': breedingStatus!.name,
       if (breed != null) 'breed': breed,
       if (notes != null) 'notes': notes,
+      // 축산물이력제 정보는 생성 시 포함하지 않음 (서버에서 설정)
     };
+  }
+
+  // 축산물이력제 등록 여부를 확인하는 편의 메서드
+  bool get isFromLivestockTrace => registeredFromLivestockTrace;
+  
+  // 축산물이력제 데이터가 있는지 확인하는 편의 메서드
+  bool get hasLivestockTraceData => livestockTraceData != null && livestockTraceData!.isNotEmpty;
+  
+  // 축산물이력제 등록일을 문자열로 반환하는 편의 메서드
+  String get livestockTraceRegisteredDateString {
+    return livestockTraceRegisteredAt?.toIso8601String().split('T')[0] ?? '';
   }
 }

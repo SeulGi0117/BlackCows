@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -12,6 +13,7 @@ import 'package:cow_management/screens/cow_list/cow_detail_page.dart';
 import 'package:cow_management/models/cow.dart';
 import 'package:cow_management/screens/ai_service/app_wrapper.dart';
 import 'package:cow_management/screens/cow_list/cow_edit_page.dart';
+import 'package:cow_management/screens/cow_list/cow_registration_flow_page.dart';
 import 'package:cow_management/screens/cow_list/Cow_Detail/cow_milk_add_page.dart';
 import 'package:cow_management/screens/cow_list/Cow_Detail/cow_milk_detail_page.dart';
 import 'package:cow_management/screens/ai_analysis/analysis_page.dart';
@@ -21,7 +23,7 @@ Future<void> main() async {
   await dotenv.load(fileName: "assets/config/.env");
 
   // 테스트 모드 설정
-  const bool isTestMode = true;
+  const bool isTestMode = false;
 
   runApp(
     MultiProvider(
@@ -51,6 +53,7 @@ class SoDamApp extends StatelessWidget {
         '/cows': (context) => const CowListPage(), // 소 목록
         '/analysis': (context) => const AnalysisPage(), // AI 분석
         '/profile': (context) => const ProfilePage(), // 프로필
+        '/cow-registration': (context) => const CowRegistrationFlowPage(), // 새로운 젖소 등록 플로우
         '/cows/detail': (context) {
           final cow = ModalRoute.of(context)!.settings.arguments as Cow;
           return CowDetailPage(cow: cow);
@@ -66,7 +69,7 @@ class SoDamApp extends StatelessWidget {
               ModalRoute.of(context)!.settings.arguments as Map<String, String>;
           return MilkingRecordPage(
             cowId: args['cowId']!,
-            cowName: args['cowName']!, // 👈 이 부분이 꼭 필요해!
+            cowName: args['cowName']!,
           );
         },
         '/milking-records': (context) {
