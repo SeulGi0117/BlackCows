@@ -25,6 +25,8 @@ import 'package:cow_management/screens/profile/profile_page.dart';
 
 import 'package:cow_management/screens/cow_list/cow_list_page.dart';
 import 'package:cow_management/screens/cow_list/cow_detail_page.dart';
+import 'package:cow_management/models/cow.dart';
+import 'package:cow_management/screens/ai_chatbot/app_wrapper.dart';
 import 'package:cow_management/screens/cow_list/cow_edit_page.dart';
 
 import 'package:cow_management/screens/cow_list/Cow_Detail/Milk/milk_add_page.dart';
@@ -241,6 +243,7 @@ class _MainScaffoldState extends State<MainScaffold> {
     const HomeScreen(),
     const CowListPage(),
     const AnalysisPage(),
+    const ChatbotHistoryPage(),
     const ProfilePage(),
   ];
 
@@ -264,7 +267,8 @@ class _MainScaffoldState extends State<MainScaffold> {
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: '홈'),
             BottomNavigationBarItem(icon: Icon(Icons.list), label: '소 관리'),
-            BottomNavigationBarItem(icon: Icon(Icons.pie_chart), label: '분석'),
+            BottomNavigationBarItem(icon: Icon(Icons.analytics), label: 'AI예측'),
+            BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline), label: '챗봇'),
             BottomNavigationBarItem(icon: Icon(Icons.person), label: '내 정보'),
           ],
         ),
