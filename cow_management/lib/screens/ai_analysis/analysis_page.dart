@@ -17,7 +17,10 @@ class _AnalysisPageState extends State<AnalysisPage> {
   String inputMode = '소 선택';
 
   void _predict(String? temperature, String? milkVolume) {
-    if (temperature == null || temperature.isEmpty || milkVolume == null || milkVolume.isEmpty) {
+    if (temperature == null ||
+        temperature.isEmpty ||
+        milkVolume == null ||
+        milkVolume.isEmpty) {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
@@ -39,19 +42,20 @@ class _AnalysisPageState extends State<AnalysisPage> {
       const SnackBar(
         content: Text('AI 예측을 시작합니다.'),
         backgroundColor: Colors.grey,
-        ),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final selectedService = analysisTabs.firstWhere((s) => s.id == selectedServiceId);
+    final selectedService =
+        analysisTabs.firstWhere((s) => s.id == selectedServiceId);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('분석 서비스'),
         backgroundColor: Colors.white,
-        ),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -66,7 +70,8 @@ class _AnalysisPageState extends State<AnalysisPage> {
                 return GestureDetector(
                   onTap: () => setState(() => selectedServiceId = service.id),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 14),
                     decoration: BoxDecoration(
                       color: isSelected ? Colors.grey[200] : Colors.white,
                       borderRadius: BorderRadius.circular(20),
@@ -74,7 +79,7 @@ class _AnalysisPageState extends State<AnalysisPage> {
                     ),
                     child: Text(
                       service.label,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
                       ),

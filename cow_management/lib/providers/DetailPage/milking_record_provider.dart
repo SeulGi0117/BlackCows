@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:cow_management/models/milking_record.dart';
+import 'package:cow_management/models/Detail/milking_record.dart';
 
 class MilkingRecordProvider with ChangeNotifier {
   final List<MilkingRecord> _records = [];

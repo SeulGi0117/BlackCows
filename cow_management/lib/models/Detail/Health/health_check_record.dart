@@ -64,6 +64,26 @@ class HealthCheckRecord {
       notes: json['notes'],
     );
   }
+  Map<String, dynamic> toRecordDataJson() {
+    return {
+      'check_time': checkTime,
+      'body_temperature': bodyTemperature,
+      'heart_rate': heartRate,
+      'respiratory_rate': respiratoryRate,
+      'body_condition_score': bodyConditionScore,
+      'udder_condition': udderCondition,
+      'hoof_condition': hoofCondition,
+      'coat_condition': coatCondition,
+      'eye_condition': eyeCondition,
+      'nose_condition': noseCondition,
+      'appetite': appetite,
+      'activity_level': activityLevel,
+      'abnormal_symptoms': abnormalSymptoms,
+      'examiner': examiner,
+      'next_check_date': nextCheckDate,
+      'notes': notes,
+    };
+  }
 
   Map<String, dynamic> toJson() {
     return {

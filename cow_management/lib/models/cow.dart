@@ -1,8 +1,8 @@
-import 'package:cow_management/models/feeding_record.dart';
+import 'package:cow_management/models/Detail/feeding_record.dart';
 
 enum CowStatus { healthy, danger, unknown }
 
-enum HealthStatus { excellent, good, average, poor, sick }
+enum HealthStatus { normal, warning, danger }
 
 enum BreedingStatus { calf, heifer, pregnant, lactating, dry, breeding }
 
@@ -61,13 +61,11 @@ class Cow {
 
   static String _healthStatusToString(HealthStatus? healthStatus) {
     switch (healthStatus) {
-      case HealthStatus.excellent:
-      case HealthStatus.good:
+      case HealthStatus.normal:
         return '양호';
-      case HealthStatus.average:
-        return '보통';
-      case HealthStatus.poor:
-      case HealthStatus.sick:
+      case HealthStatus.warning:
+        return '경고';
+      case HealthStatus.danger:
         return '위험';
       default:
         return '알 수 없음';
@@ -76,16 +74,12 @@ class Cow {
 
   static HealthStatus? _stringToHealthStatus(String? status) {
     switch (status?.toLowerCase()) {
-      case 'excellent':
-        return HealthStatus.excellent;
-      case 'good':
-        return HealthStatus.good;
-      case 'average':
-        return HealthStatus.average;
-      case 'poor':
-        return HealthStatus.poor;
-      case 'sick':
-        return HealthStatus.sick;
+      case 'normal':
+        return HealthStatus.normal;
+      case 'warning':
+        return HealthStatus.warning;
+      case 'danger':
+        return HealthStatus.danger;
       default:
         return null;
     }

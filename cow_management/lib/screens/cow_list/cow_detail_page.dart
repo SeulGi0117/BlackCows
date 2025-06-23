@@ -89,7 +89,7 @@ class _CowDetailPageState extends State<CowDetailPage> {
           children: [
             _buildBasicInfoCard(),
             const SizedBox(height: 20),
-            _buildHealthInfoCard(),
+            _buildHealthInfoCard(context, currentCow.id, currentCow.name),
             const SizedBox(height: 20),
             _buildMilkingInfoCard(),
             const SizedBox(height: 20),
@@ -193,109 +193,101 @@ class _CowDetailPageState extends State<CowDetailPage> {
     );
   }
 
-  Widget _buildHealthInfoCard() {
+  Widget _buildHealthInfoCard(
+      BuildContext context, String cowId, String cowName) {
     return _infoCardBase(
       icon: Icons.healing,
       title: '건강 정보',
       children: [
         _healthRecordButton(
+          context: context,
           title: '건강검진 기록',
           icon: Icons.monitor_heart,
-          route: '/health-check/detail',
+          listRoute: '/health-check/list',
           addRoute: '/health-check/add',
+          cowId: cowId,
+          cowName: cowName,
+          recordType: 'health_check',
         ),
         const SizedBox(height: 8),
         _healthRecordButton(
+          context: context,
           title: '백신접종 기록',
           icon: Icons.vaccines,
-          route: '/vaccination/detail',
+          listRoute: '/vaccination/list',
           addRoute: '/vaccination/add',
+          cowId: cowId,
+          cowName: cowName,
+          recordType: 'vaccination',
         ),
         const SizedBox(height: 8),
         _healthRecordButton(
+          context: context,
           title: '체중 측정 기록',
           icon: Icons.monitor_weight,
-          route: '/weight/detail',
+          listRoute: '/weight/list',
           addRoute: '/weight/add',
+          cowId: cowId,
+          cowName: cowName,
+          recordType: 'weight',
         ),
         const SizedBox(height: 8),
         _healthRecordButton(
+          context: context,
           title: '치료 기록',
           icon: Icons.medical_services,
-          route: '/treatment/detail',
+          listRoute: '/treatment/list',
           addRoute: '/treatment/add',
+          cowId: cowId,
+          cowName: cowName,
+          recordType: 'treatment',
         ),
       ],
     );
   }
 
   Widget _healthRecordButton({
+    required BuildContext context,
     required String title,
     required IconData icon,
-    required String route,
+    required String listRoute,
     required String addRoute,
+    required String cowId,
+    required String cowName,
+    required String recordType,
   }) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Expanded(
-          child: OutlinedButton.icon(
-            onPressed: () {
-              Navigator.pushNamed(
-                context,
-                route,
-                arguments: {
-                  'cowId': currentCow.id,
-                  'cowName': currentCow.name,
-                },
-              );
-            },
-            icon: Icon(icon),
-            label: Text(title),
-          ),
+        ElevatedButton.icon(
+          icon: Icon(icon),
+          label: Text('$title 보기'),
+          onPressed: () {
+            Navigator.pushNamed(
+              context,
+              listRoute,
+              arguments: {
+                'cowId': cowId,
+                'cowName': cowName,
+                'recordType': recordType,
+              },
+            );
+          },
         ),
-        const SizedBox(width: 10),
-        OutlinedButton(
+        OutlinedButton.icon(
+          icon: const Icon(Icons.add),
+          label: const Text('추가'),
           onPressed: () {
             Navigator.pushNamed(
               context,
               addRoute,
               arguments: {
-                'cowId': currentCow.id,
-                'cowName': currentCow.name,
+                'cowId': cowId,
+                'cowName': cowName,
               },
             );
           },
-          child: const Text('기록 추가'),
         ),
-      ],
-    );
-  }
-
-  Widget _buildHealthSection({
-    required String title,
-    required bool hasRecord,
-    required VoidCallback onViewPressed,
-    required VoidCallback onAddPressed,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
-        hasRecord
-            ? Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('최근 기록이 있습니다'),
-                  TextButton(
-                      onPressed: onViewPressed, child: const Text('자세히 보기')),
-                ],
-              )
-            : OutlinedButton.icon(
-                onPressed: onAddPressed,
-                icon: const Icon(Icons.add),
-                label: const Text('기록 추가하기'),
-              ),
       ],
     );
   }

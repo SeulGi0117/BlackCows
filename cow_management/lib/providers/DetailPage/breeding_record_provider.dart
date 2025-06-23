@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
-import 'package:cow_management/models/breeding_record.dart';
+import 'package:cow_management/models/Detail/breeding_record.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class BreedingRecordProvider with ChangeNotifier {

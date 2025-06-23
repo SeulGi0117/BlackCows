@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:cow_management/models/milking_record.dart';
-import 'package:cow_management/providers/milking_record_provider.dart';
+import 'package:cow_management/models/Detail/milking_record.dart';
+import 'package:cow_management/providers/DetailPage/milking_record_provider.dart';
 import 'package:cow_management/providers/user_provider.dart';
 
 class MilkingRecordListPage extends StatefulWidget {

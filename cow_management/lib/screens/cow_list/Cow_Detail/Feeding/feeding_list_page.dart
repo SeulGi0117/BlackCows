@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:cow_management/providers/feeding_record_provider.dart';
+import 'package:cow_management/providers/DetailPage/feeding_record_provider.dart';
 import 'package:cow_management/providers/user_provider.dart';
-import 'package:cow_management/models/feeding_record.dart';
+import 'package:cow_management/models/Detail/feeding_record.dart';
 
 class FeedingRecordListPage extends StatefulWidget {
   final String cowId;

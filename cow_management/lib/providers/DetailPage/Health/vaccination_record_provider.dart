@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:cow_management/models/vaccination_record.dart';
+import 'package:cow_management/models/Detail/Health/vaccination_record.dart';
 
 class VaccinationRecordProvider with ChangeNotifier {
   final List<VaccinationRecord> _records = [];
@@ -14,14 +14,18 @@ class VaccinationRecordProvider with ChangeNotifier {
 
     try {
       final response = await dio.get(
-        '$baseUrl/records/vaccination?cow_id=$cowId',
+        '$baseUrl/records/cow/$cowId',
+        queryParameters: {'record_type': 'vaccination'},
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       if (response.statusCode == 200) {
         _records.clear();
-        for (var recordJson in response.data) {
-          _records.add(VaccinationRecord.fromJson(recordJson));
+        for (var item in response.data) {
+          final data = item['record_data']; // record_data만 파싱
+          data['record_date'] = item['record_date']; // 날짜도 넣어줌
+          data['cow_id'] = cowId;
+          _records.add(VaccinationRecord.fromJson(data));
         }
         notifyListeners();
       }
@@ -36,13 +40,18 @@ class VaccinationRecordProvider with ChangeNotifier {
 
     try {
       final response = await dio.post(
-        '$baseUrl/records/vaccination',
-        data: record.toJson(),
+        '$baseUrl/records',
+        data: {
+          'cow_id': record.cowId,
+          'record_type': 'vaccination',
+          'record_date': record.recordDate,
+          'record_data': record.toRecordDataJson(),
+        },
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       if (response.statusCode == 201) {
-        _records.add(VaccinationRecord.fromJson(response.data));
+        _records.add(VaccinationRecord.fromJson(response.data['record_data']));
         notifyListeners();
       }
     } catch (e) {

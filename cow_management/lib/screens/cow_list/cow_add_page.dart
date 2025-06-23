@@ -85,7 +85,7 @@ class _CowAddPageState extends State<CowAddPage> {
 
       final newCow = Cow.fromJson(response.data);
       if (!mounted) return;
-      
+
       final cowProvider = Provider.of<CowProvider>(context, listen: false);
       cowProvider.addCow(newCow);
 
@@ -231,20 +231,14 @@ class _CowAddPageState extends State<CowAddPage> {
               items: HealthStatus.values.map((status) {
                 String displayName;
                 switch (status) {
-                  case HealthStatus.excellent:
-                    displayName = '최상';
-                    break;
-                  case HealthStatus.good:
+                  case HealthStatus.normal:
                     displayName = '양호';
                     break;
-                  case HealthStatus.average:
-                    displayName = '보통';
+                  case HealthStatus.warning:
+                    displayName = '경고';
                     break;
-                  case HealthStatus.poor:
-                    displayName = '나쁨';
-                    break;
-                  case HealthStatus.sick:
-                    displayName = '병환';
+                  case HealthStatus.danger:
+                    displayName = '위험';
                     break;
                 }
                 return DropdownMenuItem(

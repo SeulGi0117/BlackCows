@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:cow_management/models/breeding_record.dart';
-import 'package:cow_management/providers/breeding_record_provider.dart';
+import 'package:cow_management/models/Detail/breeding_record.dart';
+import 'package:cow_management/providers/DetailPage/breeding_record_provider.dart';
 import 'package:cow_management/providers/user_provider.dart';
 
 class BreedingRecordDetailPage extends StatefulWidget {

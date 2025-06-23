@@ -3,15 +3,15 @@ import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'package:cow_management/models/cow.dart';
-import 'package:cow_management/models/feeding_record.dart';
+import 'package:cow_management/models/Detail/feeding_record.dart';
 
 import 'package:cow_management/providers/user_provider.dart';
 import 'package:cow_management/providers/cow_provider.dart';
-import 'package:cow_management/providers/breeding_record_provider.dart';
-import 'package:cow_management/providers/milking_record_provider.dart';
-import 'package:cow_management/providers/health_check_provider.dart';
-import 'package:cow_management/providers/vaccination_record_provider.dart';
-import 'package:cow_management/providers/feeding_record_provider.dart';
+import 'package:cow_management/providers/DetailPage/breeding_record_provider.dart';
+import 'package:cow_management/providers/DetailPage/milking_record_provider.dart';
+import 'package:cow_management/providers/DetailPage/Health/health_check_provider.dart';
+import 'package:cow_management/providers/DetailPage/Health/vaccination_record_provider.dart';
+import 'package:cow_management/providers/DetailPage/feeding_record_provider.dart';
 
 import 'package:cow_management/screens/ai_analysis/analysis_page.dart';
 import 'package:cow_management/screens/ai_service/app_wrapper.dart';
@@ -37,9 +37,11 @@ import 'package:cow_management/screens/cow_list/Cow_Detail/Breeding/breeding_add
 
 import 'package:cow_management/screens/cow_list/Cow_Detail/Health/health_check_add_page.dart';
 import 'package:cow_management/screens/cow_list/Cow_Detail/Health/health_check_detail_page.dart';
+import 'package:cow_management/screens/cow_list/Cow_Detail/Health/health_check_list_page.dart';
 
 import 'package:cow_management/screens/cow_list/Cow_Detail/Vaccination/vaccination_add_page.dart';
 import 'package:cow_management/screens/cow_list/Cow_Detail/Vaccination/vaccination_detail_page.dart';
+import 'package:cow_management/screens/cow_list/Cow_Detail/Vaccination/vaccination_list_page.dart';
 
 import 'package:cow_management/screens/cow_list/Cow_Detail/Feeding/feeding_add_page.dart';
 import 'package:cow_management/screens/cow_list/Cow_Detail/Feeding/feeding_list_page.dart';
@@ -145,10 +147,37 @@ class SoDamApp extends StatelessWidget {
           '/health-check/detail': (context) {
             final args = ModalRoute.of(context)!.settings.arguments as Map;
             return HealthCheckDetailPage(
+              record: args['record'],
+            );
+          },
+          '/health-check/list': (context) {
+            final args = ModalRoute.of(context)!.settings.arguments as Map;
+            return HealthCheckListPage(
               cowId: args['cowId'],
               cowName: args['cowName'],
             );
           },
+          '/vaccination/list': (context) {
+            final args = ModalRoute.of(context)!.settings.arguments as Map;
+            return VaccinationListPage(
+              cowId: args['cowId'],
+              cowName: args['cowName'],
+            );
+          },
+          // '/weight/list': (context) {
+          //   final args = ModalRoute.of(context)!.settings.arguments as Map;
+          //   return WeightListPage(
+          //     cowId: args['cowId'],
+          //     cowName: args['cowName'],
+          //   );
+          // },
+          // '/treatment/list': (context) {
+          //   final args = ModalRoute.of(context)!.settings.arguments as Map;
+          //   return TreatmentListPage(
+          //     cowId: args['cowId'],
+          //     cowName: args['cowName'],
+          //   );
+          // },
 
           '/vaccination/add': (context) {
             final args = ModalRoute.of(context)!.settings.arguments as Map;
