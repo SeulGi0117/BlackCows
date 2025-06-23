@@ -51,7 +51,7 @@ class CowProvider with ChangeNotifier {
     final newValue = !cow.isFavorite;
 
     try {
-      final response = await dio.post(
+      final response = await dio.patch(
         '$apiUrl/cows/${cow.id}/favorite',
         data: {'favorite': true}, // 또는 false
         options: Options(
