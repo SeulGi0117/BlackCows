@@ -105,6 +105,15 @@ class SoDamApp extends StatelessWidget {
               cowName: args['cowName']!,
             );
           },
+          '/milking-record-add': (context) {
+            // 우유 기록 추가 (새 라우트 이름)
+            final args = ModalRoute.of(context)!.settings.arguments
+                as Map<String, String>;
+            return MilkingRecordPage(
+              cowId: args['cowId']!,
+              cowName: args['cowName']!,
+            );
+          },
           '/milking-records': (context) {
             // 우유 기록 조회
             final args = ModalRoute.of(context)!.settings.arguments as Map;

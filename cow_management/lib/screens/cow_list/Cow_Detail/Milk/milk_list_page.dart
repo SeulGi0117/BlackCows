@@ -64,7 +64,7 @@ class _MilkingRecordListPageState extends State<MilkingRecordListPage> {
                         Navigator.pushNamed(
                           context,
                           '/milking-record-detail',
-                          arguments: {'record': record},
+                          arguments: {'recordId': record.id},
                         );
                       },
                     );

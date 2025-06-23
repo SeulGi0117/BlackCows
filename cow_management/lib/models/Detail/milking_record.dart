@@ -43,28 +43,57 @@ class MilkingRecord {
     required this.notes,
   });
 
+  // 문자열에서 숫자를 안전하게 추출하는 helper 함수
+  static double _parseDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) {
+      // "41.0L", "12.5kg" 등의 단위가 포함된 문자열에서 숫자만 추출
+      String cleanValue = value.replaceAll(RegExp(r'[^\d.-]'), '');
+      return double.tryParse(cleanValue) ?? 0.0;
+    }
+    return 0.0;
+  }
+
+  static int _parseInt(dynamic value) {
+    if (value == null) return 0;
+    if (value is int) return value;
+    if (value is double) return value.toInt();
+    if (value is String) {
+      // 문자열에서 숫자만 추출
+      String cleanValue = value.replaceAll(RegExp(r'[^\d-]'), '');
+      return int.tryParse(cleanValue) ?? 0;
+    }
+    return 0;
+  }
+
   factory MilkingRecord.fromJson(Map<String, dynamic> json) {
     final data = json['key_values'] ?? {};
+    
     return MilkingRecord(
       id: json['id'],
       cowId: json['cow_id'],
       recordDate: json['record_date'],
-      milkYield: (data['milk_yield'] ?? 0).toDouble(),
+      // 서버에서 실제로 보내는 필드들
+      milkYield: _parseDouble(data['milk_yield']),
+      milkingSession: _parseInt(data['session']), // 서버: "session"
+      fatPercentage: _parseDouble(data['fat']), // 서버: "fat"
+      
+      // 서버에서 보내지 않는 필드들은 기본값 또는 빈 문자열
       milkingStartTime: data['milking_start_time'] ?? '',
       milkingEndTime: data['milking_end_time'] ?? '',
-      milkingSession: data['milking_session'] ?? 0,
-      conductivity: (data['conductivity'] ?? 0).toDouble(),
-      somaticCellCount: data['somatic_cell_count'] ?? 0,
+      conductivity: _parseDouble(data['conductivity']),
+      somaticCellCount: _parseInt(data['somatic_cell_count']),
       bloodFlowDetected: data['blood_flow_detected'] ?? false,
       colorValue: data['color_value'] ?? '',
-      temperature: (data['temperature'] ?? 0).toDouble(),
-      fatPercentage: (data['fat_percentage'] ?? 0).toDouble(),
-      proteinPercentage: (data['protein_percentage'] ?? 0).toDouble(),
-      airFlowValue: (data['air_flow_value'] ?? 0).toDouble(),
-      lactationNumber: data['lactation_number'] ?? 0,
-      ruminationTime: data['rumination_time'] ?? 0,
+      temperature: _parseDouble(data['temperature']),
+      proteinPercentage: _parseDouble(data['protein_percentage']),
+      airFlowValue: _parseDouble(data['air_flow_value']),
+      lactationNumber: _parseInt(data['lactation_number']),
+      ruminationTime: _parseInt(data['rumination_time']),
       collectionCode: data['collection_code'] ?? '',
-      collectionCount: data['collection_count'] ?? 0,
+      collectionCount: _parseInt(data['collection_count']),
       notes: data['notes'] ?? '',
     );
   }
