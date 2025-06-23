@@ -169,11 +169,9 @@ class _CowListPageState extends State<CowListPage> {
   Widget _buildFilterChips() {
     final filters = {
       '전체': null,
-      '최상': '최상',
-      '양호': '양호',
-      '보통': '보통',
-      '나쁨': '나쁨',
-      '병환': '병환',
+      '정상': '정상',
+      '경고': '경고',
+      '위험': '위험',
     };
 
     return Wrap(

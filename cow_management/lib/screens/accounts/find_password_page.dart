@@ -14,27 +14,30 @@ class FindPasswordPage extends StatefulWidget {
 
 class _FindPasswordPageState extends State<FindPasswordPage> {
   final PageController _pageController = PageController();
-  
+
   // 1단계: 사용자 정보 확인 폼
-  final TextEditingController _usernameController = TextEditingController(); // 사용자 이름/실명
-  final TextEditingController _userIdController = TextEditingController();   // 로그인용 아이디
-  final TextEditingController _emailController = TextEditingController();    // 이메일
-  
+  final TextEditingController _usernameController =
+      TextEditingController(); // 사용자 이름/실명
+  final TextEditingController _userIdController =
+      TextEditingController(); // 로그인용 아이디
+  final TextEditingController _emailController = TextEditingController(); // 이메일
+
   // 2단계: 토큰 입력 폼
   final TextEditingController _tokenController = TextEditingController();
-  
+
   // 3단계: 새 비밀번호 설정 폼
   final TextEditingController _newPasswordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
-  
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+
   bool _isLoading = false;
   bool _isNewPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
-  
+
   String? _resetToken;
   String? _verifiedUsername;
   String? _verifiedUserId;
-  
+
   late String baseUrl;
   final _logger = Logger('FindPasswordPage');
 
@@ -50,8 +53,8 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
   // 1단계: 사용자 정보 확인 및 재설정 토큰 요청
   Future<void> _requestPasswordReset() async {
     final username = _usernameController.text.trim(); // 사용자 이름/실명
-    final userId = _userIdController.text.trim();     // 로그인용 아이디
-    final email = _emailController.text.trim();       // 이메일
+    final userId = _userIdController.text.trim(); // 로그인용 아이디
+    final email = _emailController.text.trim(); // 이메일
 
     // 입력 검증
     if (username.isEmpty || userId.isEmpty || email.isEmpty) {
@@ -62,7 +65,8 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
     }
 
     // 이름 유효성 검사 (한글, 영문만 허용)
-    if (!RegExp(r'^[\u1100-\u11FF\u3130-\u318F\uAC00-\uD7AFa-zA-Z\s]+$').hasMatch(username)) {
+    if (!RegExp(r'^[\u1100-\u11FF\u3130-\u318F\uAC00-\uD7AFa-zA-Z\s]+$')
+        .hasMatch(username)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('이름은 한글, 영문만 입력 가능합니다.')),
       );
@@ -91,7 +95,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
       final url = Uri.parse('$baseUrl/auth/request-password-reset');
       _logger.info('비밀번호 재설정 요청 URL: $url');
       _logger.info('요청 데이터: username=$username, user_id=$userId, email=$email');
-      
+
       final response = await http.post(
         url,
         headers: {
@@ -100,40 +104,39 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
           'Accept-Charset': 'utf-8',
         },
         body: jsonEncode({
-          'username': username,  // 사용자 이름/실명
-          'user_id': userId,     // 로그인용 아이디
-          'email': email,        // 이메일
+          'username': username, // 사용자 이름/실명
+          'user_id': userId, // 로그인용 아이디
+          'email': email, // 이메일
         }),
       );
 
       _logger.info('응답 상태코드: ${response.statusCode}');
-      
+
       // UTF-8로 디코딩
       final responseBody = utf8.decode(response.bodyBytes);
       _logger.info('응답 본문: $responseBody');
-      
+
       if (response.statusCode == 200) {
         final responseData = jsonDecode(responseBody);
-        
+
         setState(() {
           _resetToken = responseData['reset_token']; // 임시 토큰
           _verifiedUsername = responseData['username'];
           _verifiedUserId = responseData['user_id'];
         });
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(responseData['message'] ?? '재설정 토큰이 발급되었습니다.'),
             backgroundColor: Colors.green,
           ),
         );
-        
+
         // 2단계로 이동 (토큰 입력)
         _pageController.nextPage(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
         );
-        
       } else if (response.statusCode == 404) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -142,10 +145,12 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
           ),
         );
       } else {
-        _logger.severe('비밀번호 재설정 요청 실패: ${response.statusCode} - $responseBody');
-        
-        String errorMessage = _getErrorMessage(response.statusCode, responseBody);
-        
+        _logger
+            .severe('비밀번호 재설정 요청 실패: ${response.statusCode} - $responseBody');
+
+        String errorMessage =
+            _getErrorMessage(response.statusCode, responseBody);
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMessage),
@@ -182,7 +187,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
     try {
       final url = Uri.parse('$baseUrl/auth/verify-reset-token');
       _logger.info('토큰 확인 요청 URL: $url');
-      
+
       final response = await http.post(
         url,
         headers: {
@@ -196,26 +201,25 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
       );
 
       _logger.info('응답 상태코드: ${response.statusCode}');
-      
+
       final responseBody = utf8.decode(response.bodyBytes);
       _logger.info('응답 본문: $responseBody');
-      
+
       if (response.statusCode == 200) {
         final responseData = jsonDecode(responseBody);
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(responseData['message'] ?? '토큰이 확인되었습니다.'),
             backgroundColor: Colors.green,
           ),
         );
-        
+
         // 3단계로 이동 (새 비밀번호 설정)
         _pageController.nextPage(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
         );
-        
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -270,7 +274,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
     try {
       final url = Uri.parse('$baseUrl/auth/reset-password');
       _logger.info('비밀번호 재설정 URL: $url');
-      
+
       final response = await http.post(
         url,
         headers: {
@@ -286,28 +290,28 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
       );
 
       _logger.info('응답 상태코드: ${response.statusCode}');
-      
+
       final responseBody = utf8.decode(response.bodyBytes);
       _logger.info('응답 본문: $responseBody');
-      
+
       if (response.statusCode == 200) {
         final responseData = jsonDecode(responseBody);
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(responseData['message'] ?? '비밀번호가 성공적으로 변경되었습니다.'),
             backgroundColor: Colors.green,
           ),
         );
-        
+
         // 성공 다이얼로그 표시
         _showSuccessDialog();
-        
       } else {
         _logger.severe('비밀번호 재설정 실패: ${response.statusCode} - $responseBody');
-        
-        String errorMessage = _getErrorMessage(response.statusCode, responseBody);
-        
+
+        String errorMessage =
+            _getErrorMessage(response.statusCode, responseBody);
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMessage),
@@ -342,7 +346,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
             ],
           ),
           content: Text(
-            '${_verifiedUsername}님의 비밀번호가 성공적으로 변경되었습니다.\n'
+            '$_verifiedUsername님의 비밀번호가 성공적으로 변경되었습니다.\n'
             '새로운 비밀번호로 로그인해주세요.',
           ),
           actions: [
@@ -433,7 +437,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
             ),
           ),
           const SizedBox(height: 32),
-          
+
           // 이름 입력 필드
           TextField(
             controller: _usernameController,
@@ -451,7 +455,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
             ),
           ),
           const SizedBox(height: 16),
-          
+
           // 아이디 입력 필드
           TextField(
             controller: _userIdController,
@@ -469,7 +473,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
             ),
           ),
           const SizedBox(height: 16),
-          
+
           // 이메일 입력 필드
           TextField(
             controller: _emailController,
@@ -482,7 +486,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
             ),
           ),
           const SizedBox(height: 32),
-          
+
           // 다음 단계 버튼
           SizedBox(
             width: double.infinity,
@@ -526,7 +530,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
           ),
           const SizedBox(height: 24),
           Text(
-            '${_verifiedUsername}님,\n발급된 재설정 토큰을 입력해주세요.',
+            '$_verifiedUsername님,\n발급된 재설정 토큰을 입력해주세요.',
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 16,
@@ -567,7 +571,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
             ),
           ),
           const SizedBox(height: 24),
-          
+
           // 토큰 입력 필드
           TextField(
             controller: _tokenController,
@@ -579,7 +583,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
             ),
           ),
           const SizedBox(height: 32),
-          
+
           // 확인 버튼
           SizedBox(
             width: double.infinity,
@@ -605,7 +609,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
             ),
           ),
           const SizedBox(height: 16),
-          
+
           // 이전 단계 버튼
           SizedBox(
             width: double.infinity,
@@ -652,7 +656,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
           ),
           const SizedBox(height: 24),
           Text(
-            '${_verifiedUsername}님,\n새로운 비밀번호를 설정해주세요.',
+            '$_verifiedUsername님,\n새로운 비밀번호를 설정해주세요.',
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 16,
@@ -660,7 +664,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
             ),
           ),
           const SizedBox(height: 32),
-          
+
           // 새 비밀번호 입력 필드
           TextField(
             controller: _newPasswordController,
@@ -691,7 +695,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
             ),
           ),
           const SizedBox(height: 16),
-          
+
           // 비밀번호 확인 입력 필드
           TextField(
             controller: _confirmPasswordController,
@@ -722,7 +726,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
             ),
           ),
           const SizedBox(height: 32),
-          
+
           // 비밀번호 변경 버튼
           SizedBox(
             width: double.infinity,
@@ -748,7 +752,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
             ),
           ),
           const SizedBox(height: 16),
-          
+
           // 이전 단계 버튼
           SizedBox(
             width: double.infinity,

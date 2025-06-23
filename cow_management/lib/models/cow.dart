@@ -1,6 +1,8 @@
+import 'package:cow_management/models/Detail/feeding_record.dart';
+
 enum CowStatus { healthy, danger, unknown }
 
-enum HealthStatus { excellent, good, average, poor, sick }
+enum HealthStatus { normal, warning, danger }
 
 enum BreedingStatus { calf, heifer, pregnant, lactating, dry, breeding }
 
@@ -20,7 +22,7 @@ class Cow {
   final DateTime createdAt;
   final DateTime updatedAt;
   final bool isActive;
-  
+  final List<FeedingRecord> feedingRecords;
   // 기존 호환성을 위한 필드들
   final String number;
   final String sensor;
@@ -39,6 +41,7 @@ class Cow {
     this.breed,
     this.notes,
     this.isFavorite = false,
+    this.feedingRecords = const [],
     required this.farmId,
     required this.ownerId,
     required this.createdAt,
@@ -50,22 +53,19 @@ class Cow {
     String? date,
     String? status,
     String? milk,
-  }) : 
-    number = number ?? earTagNumber,
-    sensor = sensor ?? sensorNumber ?? '',
-    date = date ?? (birthdate?.toIso8601String().split('T')[0] ?? ''),
-    status = status ?? _healthStatusToString(healthStatus),
-    milk = milk ?? '';
+  })  : number = number ?? earTagNumber,
+        sensor = sensor ?? sensorNumber ?? '',
+        date = date ?? (birthdate?.toIso8601String().split('T')[0] ?? ''),
+        status = status ?? _healthStatusToString(healthStatus),
+        milk = milk ?? '';
 
   static String _healthStatusToString(HealthStatus? healthStatus) {
     switch (healthStatus) {
-      case HealthStatus.excellent:
-      case HealthStatus.good:
+      case HealthStatus.normal:
         return '양호';
-      case HealthStatus.average:
-        return '보통';
-      case HealthStatus.poor:
-      case HealthStatus.sick:
+      case HealthStatus.warning:
+        return '경고';
+      case HealthStatus.danger:
         return '위험';
       default:
         return '알 수 없음';
@@ -74,16 +74,12 @@ class Cow {
 
   static HealthStatus? _stringToHealthStatus(String? status) {
     switch (status?.toLowerCase()) {
-      case 'excellent':
-        return HealthStatus.excellent;
-      case 'good':
-        return HealthStatus.good;
-      case 'average':
-        return HealthStatus.average;
-      case 'poor':
-        return HealthStatus.poor;
-      case 'sick':
-        return HealthStatus.sick;
+      case 'normal':
+        return HealthStatus.normal;
+      case 'warning':
+        return HealthStatus.warning;
+      case 'danger':
+        return HealthStatus.danger;
       default:
         return null;
     }
@@ -114,7 +110,9 @@ class Cow {
       name: json['name'] ?? '',
       earTagNumber: json['ear_tag_number'] ?? '',
       sensorNumber: json['sensor_number'],
-      birthdate: json['birthdate'] != null ? DateTime.tryParse(json['birthdate']) : null,
+      birthdate: json['birthdate'] != null
+          ? DateTime.tryParse(json['birthdate'])
+          : null,
       healthStatus: _stringToHealthStatus(json['health_status']),
       breedingStatus: _stringToBreedingStatus(json['breeding_status']),
       breed: json['breed'],
@@ -125,6 +123,11 @@ class Cow {
       createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
       updatedAt: DateTime.tryParse(json['updated_at'] ?? '') ?? DateTime.now(),
       isActive: json['is_active'] ?? true,
+      feedingRecords: json['feeding_records'] != null
+          ? (json['feeding_records'] as List)
+              .map((item) => FeedingRecord.fromJson(item))
+              .toList()
+          : [],
       // 기존 필드들 매핑
       number: json['number'],
       sensor: json['sensor'],
@@ -164,7 +167,8 @@ class Cow {
     return {
       'ear_tag_number': earTagNumber,
       'name': name,
-      if (birthdate != null) 'birthdate': birthdate!.toIso8601String().split('T')[0],
+      if (birthdate != null)
+        'birthdate': birthdate!.toIso8601String().split('T')[0],
       if (sensorNumber != null) 'sensor_number': sensorNumber,
       if (healthStatus != null) 'health_status': healthStatus!.name,
       if (breedingStatus != null) 'breeding_status': breedingStatus!.name,
