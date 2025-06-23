@@ -14,7 +14,7 @@ import 'package:cow_management/providers/DetailPage/Health/vaccination_record_pr
 import 'package:cow_management/providers/DetailPage/feeding_record_provider.dart';
 
 import 'package:cow_management/screens/ai_analysis/analysis_page.dart';
-import 'package:cow_management/screens/ai_service/app_wrapper.dart';
+import 'package:cow_management/screens/ai_chatbot/app_wrapper.dart';
 
 import 'package:cow_management/screens/accounts/login.dart';
 import 'package:cow_management/screens/accounts/signup.dart';
@@ -25,8 +25,6 @@ import 'package:cow_management/screens/profile/profile_page.dart';
 
 import 'package:cow_management/screens/cow_list/cow_list_page.dart';
 import 'package:cow_management/screens/cow_list/cow_detail_page.dart';
-import 'package:cow_management/models/cow.dart';
-import 'package:cow_management/screens/ai_chatbot/app_wrapper.dart';
 import 'package:cow_management/screens/cow_list/cow_edit_page.dart';
 
 import 'package:cow_management/screens/cow_list/Cow_Detail/Milk/milk_add_page.dart';
@@ -243,7 +241,7 @@ class _MainScaffoldState extends State<MainScaffold> {
     const HomeScreen(),
     const CowListPage(),
     const AnalysisPage(),
-    const ChatbotHistoryPage(),
+    // const ChatbotHistoryPage(),
     const ProfilePage(),
   ];
 
