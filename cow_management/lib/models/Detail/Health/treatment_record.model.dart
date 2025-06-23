@@ -64,34 +64,36 @@ class TreatmentRecord {
 
   factory TreatmentRecord.fromJson(Map<String, dynamic> json) {
     return TreatmentRecord(
-      cowId: json['cow_id'],
-      recordDate: json['record_date'],
-      treatmentTime: json['treatment_time'],
-      treatmentType: json['treatment_type'],
+      cowId: json['cow_id']?.toString() ?? '',
+      recordDate: json['record_date']?.toString() ?? '',
+      treatmentTime: json['treatment_time']?.toString(),
+      treatmentType: json['treatment_type']?.toString(),
       symptoms:
           json['symptoms'] != null ? List<String>.from(json['symptoms']) : null,
-      diagnosis: json['diagnosis'],
+      diagnosis: json['diagnosis']?.toString(),
       medicationUsed: json['medication_used'] != null
           ? List<String>.from(json['medication_used'])
           : null,
       dosageInfo: json['dosage_info'] != null
-          ? Map<String, String>.from(json['dosage_info'])
+          ? Map<String, String>.from((json['dosage_info'] as Map)
+              .map((key, value) => MapEntry(key.toString(), value.toString())))
           : null,
-      treatmentMethod: json['treatment_method'],
+      treatmentMethod: json['treatment_method']?.toString(),
       treatmentDuration: json['treatment_duration'],
-      veterinarian: json['veterinarian'],
-      treatmentResponse: json['treatment_response'],
-      sideEffects: json['side_effects'],
+      veterinarian: json['veterinarian']?.toString(),
+      treatmentResponse: json['treatment_response']?.toString(),
+      sideEffects: json['side_effects']?.toString(),
       followUpRequired: json['follow_up_required'],
-      followUpDate: json['follow_up_date'],
+      followUpDate: json['follow_up_date']?.toString(),
       treatmentCost: json['treatment_cost'],
       withdrawalPeriod: json['withdrawal_period'],
-      notes: json['notes'],
+      notes: json['notes']?.toString(),
     );
   }
-
-  Map<String, dynamic> toRecordDataJson() {
+  Map<String, dynamic> toJson() {
     return {
+      'cow_id': cowId,
+      'record_date': recordDate,
       if (treatmentTime != null) 'treatment_time': treatmentTime,
       if (treatmentType != null) 'treatment_type': treatmentType,
       if (symptoms != null) 'symptoms': symptoms,

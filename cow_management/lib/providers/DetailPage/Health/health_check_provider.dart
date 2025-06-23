@@ -43,7 +43,7 @@ class HealthCheckProvider with ChangeNotifier {
 
       final response = await dio.get(
         '$apiUrl/records/cow/$cowId',
-        queryParameters: {'record_data': recordType},
+        queryParameters: {'record_type': recordType},
       );
 
       if (response.statusCode == 200) {
@@ -67,13 +67,8 @@ class HealthCheckProvider with ChangeNotifier {
 
     try {
       final response = await dio.post(
-        '$baseUrl/records',
-        data: {
-          'cow_id': record.cowId,
-          'record_type': 'health_check',
-          'record_date': record.recordDate,
-          'record_data': record.toRecordDataJson(),
-        },
+        '$baseUrl/records/health-check',
+        data: record.toJson(),
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 

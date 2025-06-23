@@ -12,9 +12,12 @@ import 'package:cow_management/providers/DetailPage/milking_record_provider.dart
 import 'package:cow_management/providers/DetailPage/Health/health_check_provider.dart';
 import 'package:cow_management/providers/DetailPage/Health/vaccination_record_provider.dart';
 import 'package:cow_management/providers/DetailPage/feeding_record_provider.dart';
+import 'package:cow_management/providers/DetailPage/Health/weight_record_provider.dart';
+import 'package:cow_management/providers/DetailPage/Health/treatment_record_provider.dart';
 
 import 'package:cow_management/screens/ai_analysis/analysis_page.dart';
-import 'package:cow_management/screens/ai_service/app_wrapper.dart';
+import 'package:cow_management/screens/ai_chatbot/app_wrapper.dart';
+import 'package:cow_management/screens/ai_chatbot/chatbot_history_page.dart';
 
 import 'package:cow_management/screens/accounts/login.dart';
 import 'package:cow_management/screens/accounts/signup.dart';
@@ -49,6 +52,14 @@ import 'package:cow_management/screens/cow_list/Cow_Detail/Feeding/feeding_add_p
 import 'package:cow_management/screens/cow_list/Cow_Detail/Feeding/feeding_list_page.dart';
 import 'package:cow_management/screens/cow_list/Cow_Detail/Feeding/feeding_detail_page.dart';
 
+import 'package:cow_management/screens/cow_list/Cow_Detail/Weight/weight_add_page.dart';
+import 'package:cow_management/screens/cow_list/Cow_Detail/Weight/weight_list_page.dart';
+import 'package:cow_management/screens/cow_list/Cow_Detail/Weight/weight_detail_page.dart';
+
+import 'package:cow_management/screens/cow_list/Cow_Detail/Treatment/treatment_add_page.dart';
+import 'package:cow_management/screens/cow_list/Cow_Detail/Treatment/treatment_list_page.dart';
+// import 'package:cow_management/screens/cow_list/Cow_Detail/Treatment/treatment_detail_page.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: "assets/config/.env");
@@ -66,6 +77,8 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => HealthCheckProvider()),
         ChangeNotifierProvider(create: (_) => VaccinationRecordProvider()),
         ChangeNotifierProvider(create: (_) => FeedingRecordProvider()),
+        ChangeNotifierProvider(create: (_) => WeightRecordProvider()),
+        ChangeNotifierProvider(create: (_) => TreatmentRecordProvider()),
       ],
       child: const SoDamApp(isTestMode: isTestMode),
     ),
@@ -175,20 +188,28 @@ class SoDamApp extends StatelessWidget {
               cowName: args['cowName'],
             );
           },
-          // '/weight/list': (context) {
-          //   final args = ModalRoute.of(context)!.settings.arguments as Map;
-          //   return WeightListPage(
-          //     cowId: args['cowId'],
-          //     cowName: args['cowName'],
-          //   );
-          // },
-          // '/treatment/list': (context) {
-          //   final args = ModalRoute.of(context)!.settings.arguments as Map;
-          //   return TreatmentListPage(
-          //     cowId: args['cowId'],
-          //     cowName: args['cowName'],
-          //   );
-          // },
+          '/weight/list': (context) {
+            final args = ModalRoute.of(context)!.settings.arguments as Map;
+            return WeightListPage(
+              cowId: args['cowId'],
+              cowName: args['cowName'],
+            );
+          },
+          '/treatment/list': (context) {
+            final args = ModalRoute.of(context)!.settings.arguments as Map;
+            return TreatmentListPage(
+              cowId: args['cowId'],
+              cowName: args['cowName'],
+            );
+          },
+
+          '/treatment/add': (context) {
+            final args = ModalRoute.of(context)!.settings.arguments as Map;
+            return TreatmentAddPage(
+              cowId: args['cowId'],
+              cowName: args['cowName'],
+            );
+          },
 
           '/vaccination/add': (context) {
             final args = ModalRoute.of(context)!.settings.arguments as Map;
@@ -224,6 +245,13 @@ class SoDamApp extends StatelessWidget {
             final record =
                 ModalRoute.of(context)!.settings.arguments as FeedingRecord;
             return FeedingRecordDetailPage(record: record);
+          },
+          '/weight/add': (context) {
+            final args = ModalRoute.of(context)!.settings.arguments as Map;
+            return WeightAddPage(
+              cowId: args['cowId'],
+              cowName: args['cowName'],
+            );
           },
         });
   }
@@ -268,7 +296,8 @@ class _MainScaffoldState extends State<MainScaffold> {
             BottomNavigationBarItem(icon: Icon(Icons.home), label: '홈'),
             BottomNavigationBarItem(icon: Icon(Icons.list), label: '소 관리'),
             BottomNavigationBarItem(icon: Icon(Icons.analytics), label: 'AI예측'),
-            BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline), label: '챗봇'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.chat_bubble_outline), label: '챗봇'),
             BottomNavigationBarItem(icon: Icon(Icons.person), label: '내 정보'),
           ],
         ),
