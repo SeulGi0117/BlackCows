@@ -146,7 +146,7 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
         });
 
         // 백그라운드에서 상세 정보 조회 요청
-        _requestDetailedInfoInBackground(earTag, token);
+        await _requestDetailedInfoInBackground(earTag, token);
         
       } else {
         // 정보 없음
@@ -165,9 +165,20 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
   }
 
   // 백그라운드에서 상세 정보 조회 요청
-  void _requestDetailedInfoInBackground(String earTag, String token) {
+  String? _detailedInfoTaskId;
+  
+  Future<void> _requestDetailedInfoInBackground(String earTag, String token) async {
     _logger.info('백그라운드에서 상세 정보 조회 요청');
-    _livestockService.requestDetailedInfo(earTag, token);
+    try {
+      _detailedInfoTaskId = await _livestockService.requestDetailedInfo(earTag, token);
+      if (_detailedInfoTaskId != null) {
+        _logger.info('상세 정보 조회 태스크 시작: $_detailedInfoTaskId');
+      } else {
+        _logger.warning('상세 정보 조회 요청 실패');
+      }
+    } catch (e) {
+      _logger.warning('상세 정보 조회 요청 오류: $e');
+    }
   }
 
   // 상세 정보 조회 상태 확인 및 대기
@@ -196,7 +207,12 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
           _loadingMessage = '상세 정보 처리 중... (${i * 5 + 5}초)';
         });
 
-        final statusInfo = await _livestockService.checkDetailedInfoStatus(_currentEarTag!, token);
+        if (_detailedInfoTaskId == null) {
+          _logger.warning('상세 정보 태스크 ID가 없음');
+          break;
+        }
+        
+        final statusInfo = await _livestockService.checkDetailedInfoStatus(_detailedInfoTaskId!, token);
         
         if (statusInfo != null && statusInfo['status'] == 'completed') {
           _detailedCowInfo = statusInfo['data'];
@@ -462,7 +478,7 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
             LengthLimitingTextInputFormatter(12),
           ],
           decoration: const InputDecoration(
-            hintText: '002123456789',
+            hintText: '002를 포함한 12자리를 입력해주세요',
             border: OutlineInputBorder(),
             filled: true,
             fillColor: Colors.white,
@@ -884,7 +900,7 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
             LengthLimitingTextInputFormatter(12),
           ],
           decoration: const InputDecoration(
-            hintText: '002123456789',
+            hintText: '002를 포함한 12자리를 입력해주세요',
             border: OutlineInputBorder(),
             filled: true,
             fillColor: Colors.white,

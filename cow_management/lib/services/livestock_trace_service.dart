@@ -51,7 +51,7 @@ class LivestockTraceService {
       _logger.info('빠른 기본 정보 조회 시작: $earTagNumber');
       
       final response = await dio.get(
-        '/cows/quick-info/$earTagNumber',
+        '/api/livestock-trace/livestock-quick-check/$earTagNumber',
         options: Options(
           headers: {'Authorization': 'Bearer $token'},
         ),
@@ -71,39 +71,43 @@ class LivestockTraceService {
   }
 
   // 상세 정보 조회 요청 (백그라운드)
-  Future<void> requestDetailedInfo(
+  Future<String?> requestDetailedInfo(
     String earTagNumber,
     String token,
   ) async {
     try {
       _logger.info('상세 정보 조회 요청 시작: $earTagNumber');
       
-      // 백그라운드에서 상세 정보 조회 요청 (응답을 기다리지 않음)
-      dio.post(
-        '/cows/request-detailed-info',
-        data: {'ear_tag_number': earTagNumber},
+      // 비동기 전체정보 조회 요청
+      final response = await dio.post(
+        '/api/livestock-trace/livestock-trace-async/$earTagNumber',
         options: Options(
           headers: {'Authorization': 'Bearer $token'},
         ),
-      ).then((response) {
+      );
+      
+      if (response.statusCode == 200) {
         _logger.info('상세 정보 조회 요청 완료: ${response.statusCode}');
-      }).catchError((error) {
-        _logger.warning('상세 정보 조회 요청 실패: $error');
-      });
+        return response.data['task_id'] as String?;
+      } else {
+        _logger.warning('상세 정보 조회 요청 실패: ${response.statusCode}');
+        return null;
+      }
       
     } catch (e) {
       _logger.warning('상세 정보 조회 요청 오류: $e');
+      return null;
     }
   }
 
   // 상세 정보 조회 상태 확인
   Future<Map<String, dynamic>?> checkDetailedInfoStatus(
-    String earTagNumber,
+    String taskId,
     String token,
   ) async {
     try {
       final response = await dio.get(
-        '/cows/detailed-info-status/$earTagNumber',
+        '/api/livestock-trace/livestock-trace-status/$taskId',
         options: Options(
           headers: {'Authorization': 'Bearer $token'},
         ),
@@ -130,7 +134,7 @@ class LivestockTraceService {
       _logger.info('축산물이력제 기반 등록 시작: $earTagNumber, $cowName');
       
       final response = await dio.post(
-        '/cows/register-from-livestock-trace-v2',
+        '/cows/register-from-livestock-trace',
         data: {
           'ear_tag_number': earTagNumber,
           'user_provided_name': cowName,

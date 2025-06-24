@@ -9,6 +9,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:cow_management/models/cow.dart';
 import 'package:logging/logging.dart';
+import 'package:cow_management/utils/error_utils.dart';
 
 class CowListPage extends StatefulWidget {
   const CowListPage({super.key});
@@ -82,8 +83,11 @@ class _CowListPageState extends State<CowListPage> {
     } catch (e) {
       _logger.severe('요청 중 오류 발생: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('네트워크 오류가 발생했습니다: $e')),
+        ErrorUtils.handleError(
+          context, 
+          e, 
+          customMessage: '젖소 목록을 불러오는 중 오류가 발생했습니다',
+          defaultMessage: '네트워크 오류가 발생했습니다',
         );
       }
     } finally {

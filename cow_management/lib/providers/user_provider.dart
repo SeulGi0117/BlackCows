@@ -82,21 +82,50 @@ class UserProvider with ChangeNotifier {
 
       if (response.statusCode == 200) {
         final data = response.data;
-
-        _currentUser = User.fromJson(data['user']);
-        _accessToken = data['access_token'];
-        _refreshToken = data['refresh_token'];
         
-        // 토큰 저장을 백그라운드에서 처리
-        saveTokenToStorage(_accessToken!).catchError((error) {
-          _logger.warning('토큰 저장 실패: $error');
-        });
+        // 응답 데이터 null 체크
+        if (data == null) {
+          _logger.warning('로그인 응답 데이터가 null입니다');
+          return LoginResult(
+            success: false,
+            errorType: LoginErrorType.serverError,
+            message: '서버 응답이 올바르지 않습니다.',
+          );
+        }
 
-        _shouldShowWelcome = true;
-        notifyListeners();
+        // 필수 필드 존재 확인
+        if (data['user'] == null || data['access_token'] == null || data['refresh_token'] == null) {
+          _logger.warning('로그인 응답에 필수 필드가 누락됨: ${data.keys.toList()}');
+          return LoginResult(
+            success: false,
+            errorType: LoginErrorType.serverError,
+            message: '서버 응답 형식이 올바르지 않습니다.',
+          );
+        }
 
-        _logger.info('로그인 성공: ${_currentUser?.username}');
-        return LoginResult(success: true, message: '로그인 성공');
+        try {
+          _currentUser = User.fromJson(data['user']);
+          _accessToken = data['access_token'];
+          _refreshToken = data['refresh_token'];
+          
+          // 토큰 저장을 백그라운드에서 처리
+          saveTokenToStorage(_accessToken!).catchError((error) {
+            _logger.warning('토큰 저장 실패: $error');
+          });
+
+          _shouldShowWelcome = true;
+          notifyListeners();
+
+          _logger.info('로그인 성공: ${_currentUser?.username}');
+          return LoginResult(success: true, message: '로그인 성공');
+        } catch (e) {
+          _logger.warning('사용자 데이터 파싱 실패: $e');
+          return LoginResult(
+            success: false,
+            errorType: LoginErrorType.serverError,
+            message: '사용자 정보를 처리하는 중 오류가 발생했습니다.',
+          );
+        }
       } else {
         _logger.warning('로그인 실패: ${response.statusCode}');
         return LoginResult(

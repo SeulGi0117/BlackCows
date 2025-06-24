@@ -19,6 +19,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _userIdController = TextEditingController(); // 아이디 컨트롤러로 변경
   final TextEditingController _passwordController = TextEditingController();
+  final FocusNode _passwordFocusNode = FocusNode();
   bool _isLoading = false;
   bool _isPasswordVisible = false;
   late String baseUrl;
@@ -41,13 +42,52 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _autoLogin() async {
     setState(() => _isLoading = true);
     
-    final success = await Provider.of<UserProvider>(context, listen: false)
-        .login('tttt', 'tttt1234', '$baseUrl/auth/login');
+    try {
+      _logger.info('자동 로그인 시작 - 서버 URL: $baseUrl');
+      
+      if (baseUrl.isEmpty) {
+        throw Exception('API_BASE_URL이 설정되지 않았습니다');
+      }
+      
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final result = await userProvider.loginWithResult('tttt', 'tttt1234', '$baseUrl/auth/login');
 
-    setState(() => _isLoading = false);
+      setState(() => _isLoading = false);
 
-    if (success && mounted) {
-      Navigator.pushReplacementNamed(context, '/main');
+      if (result.success && mounted) {
+        _logger.info('자동 로그인 성공');
+        Navigator.pushReplacementNamed(context, '/main');
+      } else {
+        _logger.warning('자동 로그인 실패: ${result.message} (ErrorType: ${result.errorType})');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('개발자 모드 로그인 실패: ${result.message}'),
+              backgroundColor: Colors.orange,
+              duration: const Duration(seconds: 5),
+              action: SnackBarAction(
+                label: '수동 로그인',
+                onPressed: () {
+                  // 스낵바를 닫고 수동 로그인 모드로 전환
+                },
+              ),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      _logger.severe('자동 로그인 예외 발생: $e');
+      setState(() => _isLoading = false);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('개발자 모드 오류: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
     }
   }
 
@@ -218,6 +258,7 @@ class _LoginPageState extends State<LoginPage> {
   void dispose() {
     _userIdController.dispose();
     _passwordController.dispose();
+    _passwordFocusNode.dispose();
     super.dispose();
   }
 
@@ -241,6 +282,8 @@ class _LoginPageState extends State<LoginPage> {
               // 아이디 입력 필드 (username → user_id로 변경)
               TextField(
                 controller: _userIdController,
+                textInputAction: TextInputAction.next,
+                onSubmitted: (_) => _passwordFocusNode.requestFocus(),
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(
                     RegExp(r'[a-zA-Z0-9_]'), // 영문, 숫자, 언더스코어만 허용
@@ -259,7 +302,10 @@ class _LoginPageState extends State<LoginPage> {
               // 비밀번호 입력 필드
               TextField(
                 controller: _passwordController,
+                focusNode: _passwordFocusNode,
                 obscureText: !_isPasswordVisible,
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => _isLoading ? null : _login(),
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(
                     RegExp(r'[a-zA-Z0-9!"#$%&()*+,./:;<=>?@^_`{|}~\-\[\]\\]'),

@@ -6,6 +6,7 @@ import 'package:logging/logging.dart';
 import 'package:cow_management/models/cow.dart';
 import 'package:cow_management/screens/cow_list/cow_edit_page.dart';
 import 'package:cow_management/providers/user_provider.dart';
+import 'package:cow_management/utils/error_utils.dart';
 
 class CowDetailPage extends StatefulWidget {
   final Cow cow;
@@ -60,14 +61,14 @@ class _CowDetailPageState extends State<CowDetailPage> {
                 final success = await deleteCow(context, currentCow.id);
                 if (success && context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("젖소가 삭제되었습니다")),
+                    const SnackBar(
+                      content: Text("젖소가 삭제되었습니다"),
+                      backgroundColor: Colors.green,
+                    ),
                   );
                   Navigator.pop(context, true);
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("삭제에 실패했습니다")),
-                  );
                 }
+                // 실패 시에는 deleteCow 함수에서 이미 ErrorUtils로 처리됨
               }
             },
             icon: const Icon(Icons.delete, color: Colors.red),
@@ -534,13 +535,15 @@ class _CowDetailPageState extends State<CowDetailPage> {
             if (confirmed == true) {
               final success = await deleteCow(context, currentCow.id);
               if (success && context.mounted) {
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(const SnackBar(content: Text("젖소가 삭제되었습니다")));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("젖소가 삭제되었습니다"),
+                    backgroundColor: Colors.green,
+                  ),
+                );
                 Navigator.pop(context, true);
-              } else {
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(const SnackBar(content: Text("삭제에 실패했습니다")));
               }
+              // 실패 시에는 deleteCow 함수에서 이미 ErrorUtils로 처리됨
             }
           },
           style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -558,6 +561,11 @@ class _CowDetailPageState extends State<CowDetailPage> {
 
     if (apiUrl == null || token == null) {
       CowDetailPage._logger.severe("API 주소 또는 토큰 없음");
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('설정 오류: API 주소 또는 인증 토큰이 없습니다')),
+        );
+      }
       return false;
     }
 
@@ -574,6 +582,15 @@ class _CowDetailPageState extends State<CowDetailPage> {
       return response.statusCode == 200 || response.statusCode == 204;
     } catch (e) {
       CowDetailPage._logger.severe("삭제 중 오류 발생: $e");
+      
+      if (context.mounted) {
+        ErrorUtils.handleError(
+          context, 
+          e, 
+          customMessage: '젖소 삭제 중 오류가 발생했습니다',
+          defaultMessage: '삭제에 실패했습니다',
+        );
+      }
       return false;
     }
   }
