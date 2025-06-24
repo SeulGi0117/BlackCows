@@ -27,11 +27,9 @@ class _CowEditPageState extends State<CowEditPage> {
 
   // 한국어 매칭
   final healthStatusLabels = {
-    HealthStatus.excellent: '최상',
-    HealthStatus.good: '양호',
-    HealthStatus.average: '보통',
-    HealthStatus.poor: '나쁨',
-    HealthStatus.sick: '병환',
+    HealthStatus.normal: '양호',
+    HealthStatus.warning: '경고',
+    HealthStatus.danger: '위험',
   };
 
   final breedingStatusLabels = {
@@ -146,6 +144,7 @@ class _CowEditPageState extends State<CowEditPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('소 정보 수정')),
+      resizeToAvoidBottomInset: true,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(

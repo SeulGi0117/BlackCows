@@ -16,7 +16,8 @@ class ProfilePage extends StatelessWidget {
         title: const Text('내 정보'),
         backgroundColor: Colors.pink,
       ),
-      body: Padding(
+      resizeToAvoidBottomInset: true,
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
@@ -133,23 +134,72 @@ class ProfilePage extends StatelessWidget {
             ),
             const SizedBox(height: 30),
 
-            // 로그아웃 버튼
-            ElevatedButton.icon(
-              onPressed: () {
-                _showLogoutConfirmDialog(context, userProvider);
-              },
-              icon: const Icon(Icons.logout),
-              label: const Text('로그아웃'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.redAccent,
-                foregroundColor: Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+            // 기능 버튼들
+            Column(
+              children: [
+                // 목장 이름 수정 버튼
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      _showEditFarmNameDialog(context, userProvider);
+                    },
+                    icon: const Icon(Icons.edit),
+                    label: const Text('목장 이름 수정'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            )
+                const SizedBox(height: 12),
+                
+                // 로그아웃 버튼
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      _showLogoutConfirmDialog(context, userProvider);
+                    },
+                    icon: const Icon(Icons.logout),
+                    label: const Text('로그아웃'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                
+                // 회원 탈퇴 버튼
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      _showDeleteAccountDialog(context, userProvider);
+                    },
+                    icon: const Icon(Icons.delete_forever),
+                    label: const Text('회원 탈퇴'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -187,6 +237,309 @@ class ProfilePage extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void _showEditFarmNameDialog(BuildContext context, UserProvider userProvider) {
+    final TextEditingController farmNameController = TextEditingController();
+    farmNameController.text = userProvider.currentUser?.farmNickname ?? '';
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('목장 이름 수정'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('새로운 목장 이름을 입력해주세요.'),
+              const SizedBox(height: 16),
+              TextField(
+                controller: farmNameController,
+                decoration: const InputDecoration(
+                  labelText: '목장 이름',
+                  hintText: '예: 행복한 목장',
+                  border: OutlineInputBorder(),
+                ),
+                maxLength: 20,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('취소'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final newFarmName = farmNameController.text.trim();
+                if (newFarmName.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('목장 이름을 입력해주세요.')),
+                  );
+                  return;
+                }
+                Navigator.pop(context);
+                _updateFarmName(context, userProvider, newFarmName);
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+              child: const Text('수정', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _updateFarmName(BuildContext context, UserProvider userProvider, String newFarmName) async {
+    // 간단한 로딩 표시 (스낵바 사용)
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text('목장 이름을 "$newFarmName"으로 변경 중...'),
+          ],
+        ),
+        duration: const Duration(seconds: 5), // 충분한 시간 설정
+        backgroundColor: Colors.blue,
+      ),
+    );
+
+    try {
+      // 타임아웃 설정 (5초로 단축)
+      final success = await userProvider.updateFarmName(newFarmName).timeout(
+        const Duration(seconds: 5),
+        onTimeout: () {
+          print('목장 이름 수정 타임아웃 발생');
+          return false;
+        },
+      );
+      
+      if (context.mounted) {
+        // 기존 스낵바 숨기기
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.check_circle, color: Colors.white),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text('목장 이름이 "$newFarmName"으로 변경되었습니다!'),
+                  ),
+                ],
+              ),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Row(
+                children: [
+                  Icon(Icons.error, color: Colors.white),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text('목장 이름 수정에 실패했습니다.'),
+                  ),
+                ],
+              ),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      print('목장 이름 수정 예외 발생: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error, color: Colors.white),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text('네트워크 오류: ${e.toString()}'),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
+  void _showDeleteAccountDialog(BuildContext context, UserProvider userProvider) {
+    final TextEditingController passwordController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text(
+            '회원 탈퇴',
+            style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                '정말로 회원 탈퇴하시겠습니까?',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                '• 모든 젖소 데이터가 삭제됩니다\n• 계정 복구가 불가능합니다\n• 즐겨찾기 및 기록이 모두 삭제됩니다',
+                style: TextStyle(color: Colors.red, fontSize: 12),
+              ),
+              const SizedBox(height: 16),
+              const Text('비밀번호를 입력해주세요:'),
+              const SizedBox(height: 8),
+              TextField(
+                controller: passwordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: '현재 비밀번호',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('취소'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final password = passwordController.text.trim();
+                if (password.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('비밀번호를 입력해주세요.')),
+                  );
+                  return;
+                }
+                Navigator.pop(context);
+                _deleteAccount(context, userProvider, password);
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text('탈퇴하기', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _deleteAccount(BuildContext context, UserProvider userProvider, String password) async {
+    // 간단한 로딩 표시 (스낵바 사용)
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Row(
+          children: [
+            SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            ),
+            SizedBox(width: 12),
+            Text('회원 탈퇴 처리 중...'),
+          ],
+        ),
+        duration: Duration(seconds: 10), // 충분한 시간 설정
+        backgroundColor: Colors.red,
+      ),
+    );
+
+    try {
+      final success = await userProvider.deleteAccount(password);
+      
+      if (context.mounted) {
+        // 기존 스낵바 숨기기
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Row(
+                children: [
+                  Icon(Icons.check_circle, color: Colors.white),
+                  SizedBox(width: 8),
+                  Text('회원 탈퇴가 완료되었습니다.'),
+                ],
+              ),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+          
+          // 잠시 후 로그인 페이지로 이동
+          Future.delayed(const Duration(milliseconds: 1500), () {
+            if (context.mounted) {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginPage()),
+                (route) => false,
+              );
+            }
+          });
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Row(
+                children: [
+                  Icon(Icons.error, color: Colors.white),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text('회원 탈퇴에 실패했습니다. 비밀번호를 확인해주세요.'),
+                  ),
+                ],
+              ),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error, color: Colors.white),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text('오류가 발생했습니다: $e'),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
   }
 
   void _showLogoutConfirmDialog(BuildContext context, UserProvider userProvider) {

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:cow_management/screens/cow_list/cow_registration_flow_page.dart';
+import 'package:cow_management/screens/cow_list/cow_add_page.dart';
 import 'package:cow_management/providers/cow_provider.dart';
 import 'package:cow_management/providers/user_provider.dart';
 import 'package:provider/provider.dart';
@@ -96,6 +97,124 @@ class _CowListPageState extends State<CowListPage> {
     await _fetchCowsFromBackend();
   }
 
+  void _showAddCowOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+          ),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                '젖소 등록 방법 선택',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 24),
+              
+              // 신버전 (축산물이력제 연동)
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(Icons.verified, color: Colors.blue.shade700),
+                ),
+                title: const Text(
+                  '젖소 추가 (신버전)',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: const Text(
+                  '축산물이력제 연동으로 간편하게 등록\n이표번호만 입력하면 자동으로 정보 조회',
+                  style: TextStyle(fontSize: 12),
+                ),
+                trailing: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade100,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Text(
+                    '추천',
+                    style: TextStyle(
+                      color: Colors.green,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const CowRegistrationFlowPage(),
+                    ),
+                  ).then((_) => _refreshCowList());
+                },
+              ),
+              
+              const Divider(),
+              
+              // 구버전 (수동 입력)
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(Icons.edit, color: Colors.grey.shade700),
+                ),
+                title: const Text(
+                  '젖소 추가 (구버전)',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: const Text(
+                  '모든 정보를 직접 입력하여 등록\n축산물이력제 정보가 없는 경우 사용',
+                  style: TextStyle(fontSize: 12),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const CowAddPage(),
+                    ),
+                  ).then((_) => _refreshCowList());
+                },
+              ),
+              
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -127,8 +246,14 @@ class _CowListPageState extends State<CowListPage> {
             onPressed: _isLoading ? null : _refreshCowList,
             tooltip: '새로고침',
           ),
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () => _showAddCowOptions(context),
+            tooltip: '젖소 등록',
+          ),
         ],
       ),
+      resizeToAvoidBottomInset: true,
       body: RefreshIndicator(
         onRefresh: _refreshCowList,
         child: Padding(
@@ -183,14 +308,7 @@ class _CowListPageState extends State<CowListPage> {
                               ),
                               const SizedBox(height: 24),
                               ElevatedButton.icon(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => const CowRegistrationFlowPage(),
-                                    ),
-                                  ).then((_) => _refreshCowList());
-                                },
+                                onPressed: () => _showAddCowOptions(context),
                                 icon: const Icon(Icons.add),
                                 label: const Text('젖소 등록하기'),
                                 style: ElevatedButton.styleFrom(
@@ -240,14 +358,7 @@ class _CowListPageState extends State<CowListPage> {
         ),
         const SizedBox(width: 12),
         ElevatedButton.icon(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const CowRegistrationFlowPage(),
-              ),
-            ).then((_) => _refreshCowList());
-          },
+          onPressed: () => _showAddCowOptions(context),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.pink,
             foregroundColor: Colors.white,
@@ -266,11 +377,9 @@ class _CowListPageState extends State<CowListPage> {
   Widget _buildFilterChips() {
     final filters = {
       '전체': null,
-      '최상': '최상',
-      '양호': '양호',
-      '보통': '보통',
-      '나쁨': '나쁨',
-      '병환': '병환',
+      '정상': '정상',
+      '경고': '경고',
+      '위험': '위험',
     };
 
     return Wrap(

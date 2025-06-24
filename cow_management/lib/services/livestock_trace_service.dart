@@ -38,7 +38,7 @@ class LivestockTraceService {
       if (e.response?.statusCode == 404) {
         return 'manual_registration_required';
       }
-      rethrow;
+      return 'error';
     }
   }
 

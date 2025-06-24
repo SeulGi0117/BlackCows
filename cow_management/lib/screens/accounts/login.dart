@@ -42,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _isLoading = true);
     
     final success = await Provider.of<UserProvider>(context, listen: false)
-        .login('test1234', 'qwer1234', '$baseUrl/auth/login');
+        .login('tttt', 'tttt1234', '$baseUrl/auth/login');
 
     setState(() => _isLoading = false);
 
@@ -104,8 +104,9 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: true,
       body: Center(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 32.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
