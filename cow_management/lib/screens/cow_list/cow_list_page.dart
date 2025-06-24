@@ -571,4 +571,52 @@ class _CowListPageState extends State<CowListPage> {
         return Colors.grey;
     }
   }
+
+  // 젖소 삭제 안내 다이얼로그 함수 추가
+  Future<void> showDeleteCowDialog(BuildContext context, String cowName, VoidCallback onConfirm) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('정말로 삭제하시겠습니까?', style: TextStyle(fontWeight: FontWeight.bold)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('젖소 "$cowName"을(를) 삭제하면,'),
+              const SizedBox(height: 8),
+              const Text(
+                '• 이 젖소와 관련된 모든 데이터(기록 등)가 데이터베이스에서 완전히 삭제됩니다.',
+                style: TextStyle(color: Colors.redAccent),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                '• 삭제된 데이터는 복구할 수 없습니다.',
+                style: TextStyle(color: Colors.redAccent),
+              ),
+              const SizedBox(height: 16),
+              const Text('정말로 삭제하시겠습니까?'),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('취소'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+              ),
+              child: const Text('영구 삭제', style: TextStyle(color: Colors.white)),
+              onPressed: () {
+                Navigator.of(context).pop();
+                onConfirm();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 }

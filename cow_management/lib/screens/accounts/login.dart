@@ -313,7 +313,6 @@ class _LoginPageState extends State<LoginPage> {
                 decoration: const InputDecoration(
                   labelText: '아이디',
                   border: OutlineInputBorder(),
-                  helperText: '영문, 숫자, 언더스코어(_)만 입력 가능 (3-20자)',
                   hintText: 'farmer123',
                 ),
               ),

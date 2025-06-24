@@ -80,7 +80,7 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
     
     if (!_validateEarTag(earTag)) {
       setState(() {
-        _errorMessage = '이표번호는 002로 시작하는 12자리 숫자여야 합니다.';
+        _errorMessage = '이표번호는 002로 시작하는 12자리 숫자여야 해요! 🐮';
       });
       return;
     }
@@ -91,7 +91,7 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
       _errorMessage = null;
       _currentEarTag = earTag;
       _loadingProgress = 0.0;
-      _loadingMessage = '이표번호 확인 중...';
+      _loadingMessage = '해당 이표번호를 가진 젖소가 등록되어 있는지 확인중입니다... 🕵️‍♂️';
     });
 
     try {
@@ -105,7 +105,7 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
       // 프로그레스 업데이트
       setState(() {
         _loadingProgress = 0.3;
-        _loadingMessage = '등록 상태 확인 중...';
+        _loadingMessage = '등록된 젖소가 있는지 꼼꼼히 살펴보고 있어요... 🐄';
       });
 
       // 등록 상태 확인
@@ -113,7 +113,7 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
       
       if (registrationStatus == 'already_registered') {
         setState(() {
-          _errorMessage = '이미 등록된 젖소입니다.';
+          _errorMessage = '이미 등록된 젖소입니다! 🐮\n다른 이표번호를 입력해 주세요.';
           _currentStep = RegistrationStep.inputEarTag;
           _isLoading = false;
         });
@@ -123,7 +123,7 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
       // 프로그레스 업데이트
       setState(() {
         _loadingProgress = 0.6;
-        _loadingMessage = '기본 정보 조회 중...';
+        _loadingMessage = '등록된 적이 없어요!\n현재 젖소의 개체 정보를 가져오는 중이에요! 잠시만 기다려주세요~ ✨';
       });
 
       // 빠른 기본 정보 조회
@@ -133,7 +133,7 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
         // 프로그레스 완료
         setState(() {
           _loadingProgress = 1.0;
-          _loadingMessage = '정보 조회 완료!';
+          _loadingMessage = '정보를 모두 찾았어요! 🥳';
         });
 
         // 잠시 대기 후 결과 표시
@@ -153,6 +153,7 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
         setState(() {
           _currentStep = RegistrationStep.showNotFound;
           _isLoading = false;
+          _loadingMessage = '앗! 해당 이표번호로 등록된 정보를 찾을 수 없어요. 😢';
         });
       }
     } catch (e) {
@@ -310,8 +311,6 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
     });
   }
 
-
-
   // 수동 등록
   Future<void> _registerManually() async {
     final earTag = _earTagController.text.trim();
@@ -402,7 +401,7 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
   Future<void> _selectBirthdate() async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now().subtract(const Duration(days: 365)),
+      initialDate: DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime.now(),
       locale: const Locale('ko', 'KR'),
