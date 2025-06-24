@@ -46,7 +46,7 @@ class _CowAddPageState extends State<CowAddPage> {
   Future<void> _selectBirthdate() async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now().subtract(const Duration(days: 365)),
+      initialDate: DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime.now(),
     );
