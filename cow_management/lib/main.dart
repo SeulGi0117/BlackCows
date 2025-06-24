@@ -1,6 +1,9 @@
+
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:logging/logging.dart';
 
 import 'package:cow_management/models/cow.dart';
 import 'package:cow_management/models/Detail/feeding_record.dart';
@@ -53,8 +56,14 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: "assets/config/.env");
 
+  // 로깅 설정
+  Logger.root.level = Level.ALL; // 모든 로그 레벨 허용
+  Logger.root.onRecord.listen((record) {
+    print('${record.time}: ${record.level.name}: ${record.loggerName}: ${record.message}');
+  });
+
   // 테스트 모드 설정
-  const bool isTestMode = true;
+  const bool isTestMode = false;
 
   runApp(
     MultiProvider(
@@ -81,6 +90,14 @@ class SoDamApp extends StatelessWidget {
     return MaterialApp(
         debugShowCheckedModeBanner: false,
         locale: const Locale('ko', 'KR'),
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('ko', 'KR'),
+        ],
         initialRoute: '/login', // 시작 루트
         routes: {
           '/': (context) => const MainScaffold(), // 메인 홈
@@ -257,6 +274,7 @@ class _MainScaffoldState extends State<MainScaffold> {
   Widget build(BuildContext context) {
     return AppWrapper(
       child: Scaffold(
+        resizeToAvoidBottomInset: true,
         body: _pages[_selectedIndex],
         bottomNavigationBar: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,

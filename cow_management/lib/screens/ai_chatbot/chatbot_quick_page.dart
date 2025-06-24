@@ -11,6 +11,7 @@ class ChatbotScreen extends StatelessWidget {
         title: const Text('소담소담 상담 챗봇'),
         backgroundColor: Colors.white,
       ),
+      resizeToAvoidBottomInset: true,
       body: const ChatbotQuickCore(),
     );
   }

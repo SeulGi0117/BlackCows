@@ -41,6 +41,7 @@ class _ChatbotHistoryPageState extends State<ChatbotHistoryPage> {
           onPressed: _toggleSidebar,
         ),
       ),
+      resizeToAvoidBottomInset: true,
       body: Row(
         children: [
           AnimatedContainer(

@@ -108,6 +108,7 @@ class _HealthCheckAddPageState extends State<HealthCheckAddPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('건강검진 기록 추가')),
+      resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Form(

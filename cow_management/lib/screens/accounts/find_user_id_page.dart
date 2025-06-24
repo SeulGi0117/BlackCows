@@ -176,7 +176,8 @@ class _FindUserIdPageState extends State<FindUserIdPage> {
         foregroundColor: Colors.black,
         elevation: 0,
       ),
-      body: Padding(
+      resizeToAvoidBottomInset: true,
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

@@ -54,6 +54,7 @@ class _BreedingRecordAddPageState extends State<BreedingRecordAddPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('번식 기록 추가')),
+      resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Form(

@@ -144,6 +144,7 @@ class _CowEditPageState extends State<CowEditPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('소 정보 수정')),
+      resizeToAvoidBottomInset: true,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(

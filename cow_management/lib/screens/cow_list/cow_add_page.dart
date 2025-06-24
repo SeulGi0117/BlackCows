@@ -1,11 +1,17 @@
 // 필요한 위젯들 import
 import 'package:flutter/material.dart';
-import 'package:cow_management/screens/cow_list/cow_add_done_page.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:cow_management/models/cow.dart';
 import 'package:provider/provider.dart';
 import 'package:cow_management/providers/cow_provider.dart';
-import 'package:dio/dio.dart';
 import 'package:cow_management/services/dio_client.dart';
+import 'package:dio/dio.dart';
+
+enum AddStep {
+  inputEarTag,      // 이표번호 입력 단계
+  showApiResult,    // API 조회 결과 표시 단계
+  manualInput,      // 수동 입력 단계
+}
 
 class CowAddPage extends StatefulWidget {
   const CowAddPage({super.key});
@@ -89,12 +95,19 @@ class _CowAddPageState extends State<CowAddPage> {
       final cowProvider = Provider.of<CowProvider>(context, listen: false);
       cowProvider.addCow(newCow);
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-            builder: (context) =>
-                CowAddDonePage(cowName: nameController.text.trim())),
+      // 토스트 메시지 표시
+      Fluttertoast.showToast(
+        msg: "${nameController.text.trim()} 젖소 추가가 완료되었습니다!",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 3,
+        backgroundColor: Colors.green,
+        textColor: Colors.white,
+        fontSize: 16.0,
       );
+      
+      // 소 목록 페이지로 돌아가기
+      Navigator.popUntil(context, (route) => route.isFirst);
     } on DioException catch (e) {
       final detail = e.response?.data['detail'];
       String message;
@@ -121,6 +134,7 @@ class _CowAddPageState extends State<CowAddPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: const Text('젖소 등록'),
         backgroundColor: Colors.white,
