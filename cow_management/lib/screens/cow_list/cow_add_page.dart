@@ -1,5 +1,6 @@
 // 필요한 위젯들 import
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:cow_management/models/cow.dart';
 import 'package:provider/provider.dart';
@@ -60,9 +61,15 @@ class _CowAddPageState extends State<CowAddPage> {
     if (_isLoading) return;
 
     if (earTagController.text.trim().isEmpty ||
-        nameController.text.trim().isEmpty) {
+        nameController.text.trim().isEmpty ||
+        _selectedBirthdate == null) {
+      List<String> missingFields = [];
+      if (earTagController.text.trim().isEmpty) missingFields.add('이표번호');
+      if (nameController.text.trim().isEmpty) missingFields.add('이름');
+      if (_selectedBirthdate == null) missingFields.add('출생일');
+      
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('이표번호와 이름은 필수 입력 항목입니다!')),
+        SnackBar(content: Text('${missingFields.join(', ')}은(는) 필수 입력 항목입니다!')),
       );
       return;
     }
@@ -161,8 +168,13 @@ class _CowAddPageState extends State<CowAddPage> {
             const SizedBox(height: 8),
             TextField(
               controller: earTagController,
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(12),
+              ],
               decoration: const InputDecoration(
-                hintText: 'ABC12345',
+                hintText: '002를 포함한 12자리를 입력해주세요',
                 border: OutlineInputBorder(),
                 filled: true,
                 fillColor: Colors.white,
@@ -184,17 +196,19 @@ class _CowAddPageState extends State<CowAddPage> {
             ),
             const SizedBox(height: 16),
 
-            // 출생일
-            const Text('출생일', style: TextStyle(fontWeight: FontWeight.w600)),
+            // 출생일 (필수)
+            const Text('출생일 *', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.black)),
             const SizedBox(height: 8),
             InkWell(
               onTap: _selectBirthdate,
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  border: Border.all(color: Colors.grey),
+                  border: Border.all(
+                    color: _selectedBirthdate == null ? Colors.red.shade300 : Colors.grey,
+                    width: _selectedBirthdate == null ? 1.5 : 1,
+                  ),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Row(
@@ -202,15 +216,17 @@ class _CowAddPageState extends State<CowAddPage> {
                   children: [
                     Text(
                       _selectedBirthdate != null
-                          ? '${_selectedBirthdate!.year}-${_selectedBirthdate!.month.toString().padLeft(2, '0')}-${_selectedBirthdate!.day.toString().padLeft(2, '0')}'
-                          : '출생일을 선택하세요',
+                          ? '${_selectedBirthdate!.year}년 ${_selectedBirthdate!.month}월 ${_selectedBirthdate!.day}일'
+                          : '출생일을 선택하세요 *',
                       style: TextStyle(
-                        color: _selectedBirthdate != null
-                            ? Colors.black
-                            : Colors.grey,
+                        color: _selectedBirthdate != null ? Colors.black : Colors.grey.shade600,
+                        fontSize: 16,
                       ),
                     ),
-                    const Icon(Icons.calendar_today, color: Colors.grey),
+                    Icon(
+                      Icons.calendar_today, 
+                      color: _selectedBirthdate == null ? Colors.red.shade300 : Colors.grey,
+                    ),
                   ],
                 ),
               ),
@@ -389,3 +405,4 @@ class _CowAddPageState extends State<CowAddPage> {
     );
   }
 }
+

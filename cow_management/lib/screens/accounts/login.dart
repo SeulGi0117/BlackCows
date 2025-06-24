@@ -5,6 +5,7 @@ import 'package:cow_management/providers/user_provider.dart';
 import 'package:cow_management/main.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:logging/logging.dart';
+import 'dart:math';
 import 'find_user_id_page.dart';
 import 'find_password_page.dart';
 
@@ -24,6 +25,22 @@ class _LoginPageState extends State<LoginPage> {
   bool _isPasswordVisible = false;
   late String baseUrl;
   final _logger = Logger('LoginPage');
+  
+  // 깜찍한 로딩 메시지들
+  final List<String> _loadingMessages = [
+    '로그인 중이에요! 🐄',
+    '젖소들이 기다리고 있어요! 🥛',
+    '농장으로 가는 중... 🚜',
+    '소담소담 준비 중! ✨',
+    '목장 문을 여는 중... 🚪',
+    '우유 짜러 가볼까요? 🐮',
+    '농장 친구들이 반겨요! 🌾',
+  ];
+  
+  String get _randomLoadingMessage {
+    final random = Random();
+    return _loadingMessages[random.nextInt(_loadingMessages.length)];
+  }
 
   @override
   void initState() {
@@ -267,12 +284,15 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       resizeToAvoidBottomInset: true,
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 32.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
+      body: Stack(
+        children: [
+          // 메인 로그인 폼
+          Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 32.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
               const Text(
                 '소담소담 로그인',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -345,7 +365,29 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              _randomLoadingMessage,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        )
                       : const Text(
                           '로그인',
                           style: TextStyle(
@@ -405,6 +447,50 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
       ),
-    );
+      
+      // 개발자 모드 자동 로그인 로딩 오버레이
+      if (_isLoading && widget.isTestMode)
+        Container(
+          color: Colors.black.withOpacity(0.7),
+          child: const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 3,
+                ),
+                SizedBox(height: 20),
+                Text(
+                  '🐄 개발자 모드',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  '자동 로그인 중이에요...',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 16,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  '잠시만 기다려주세요! ✨',
+                  style: TextStyle(
+                    color: Colors.white60,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+    ],
+  ),
+);
   }
 }
