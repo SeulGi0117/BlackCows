@@ -15,6 +15,8 @@ import 'package:cow_management/providers/DetailPage/feeding_record_provider.dart
 
 import 'package:cow_management/screens/ai_analysis/analysis_page.dart';
 import 'package:cow_management/screens/ai_chatbot/app_wrapper.dart';
+import 'package:cow_management/screens/ai_chatbot/chatbot_history_page.dart';
+
 
 import 'package:cow_management/screens/accounts/login.dart';
 import 'package:cow_management/screens/accounts/signup.dart';
@@ -52,7 +54,7 @@ Future<void> main() async {
   await dotenv.load(fileName: "assets/config/.env");
 
   // 테스트 모드 설정
-  const bool isTestMode = false;
+  const bool isTestMode = true;
 
   runApp(
     MultiProvider(
@@ -241,7 +243,7 @@ class _MainScaffoldState extends State<MainScaffold> {
     const HomeScreen(),
     const CowListPage(),
     const AnalysisPage(),
-    // const ChatbotHistoryPage(),
+    const ChatbotHistoryPage(),
     const ProfilePage(),
   ];
 
