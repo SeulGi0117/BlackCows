@@ -12,7 +12,9 @@ class ChatbotScreen extends StatelessWidget {
         backgroundColor: Colors.white,
       ),
       resizeToAvoidBottomInset: true,
-      body: const ChatbotQuickCore(),
+      body: const SafeArea(
+        child: ChatbotQuickCore(),
+      ),
     );
   }
 }

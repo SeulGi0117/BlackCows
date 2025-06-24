@@ -11,10 +11,12 @@ import 'package:dio/dio.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 enum RegistrationStep {
-  inputEarTag,      // 이표번호 입력 단계
-  showApiResult,    // API 조회 결과 표시 단계
-  showNotFound,     // 정보 없음 안내 단계
-  manualInput,      // 수동 입력 단계
+  inputEarTag,          // 이표번호 입력 단계
+  quickInfoLoading,     // 빠른 정보 조회 중
+  quickInfoResult,      // 빠른 정보 결과 표시 (사용자 확인)
+  detailedInfoLoading,  // 상세 정보 조회 중 (사용자가 이름 입력하는 동안)
+  showNotFound,         // 정보 없음 안내 단계
+  manualInput,          // 수동 입력 단계
 }
 
 class CowRegistrationFlowPage extends StatefulWidget {
@@ -42,8 +44,11 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
   // 상태 변수들
   bool _isLoading = false;
   String? _errorMessage;
-  Map<String, dynamic>? _livestockTraceData;
+  Map<String, dynamic>? _quickCowInfo;      // 빠른 조회 결과
+  Map<String, dynamic>? _detailedCowInfo;   // 상세 조회 결과
   String? _currentEarTag;
+  double _loadingProgress = 0.0;            // 로딩 진행률
+  String _loadingMessage = '';              // 로딩 메시지
   
   // 수동 입력용 변수들
   DateTime? _selectedBirthdate;
@@ -69,8 +74,8 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
     return true;
   }
 
-  // 축산물이력제 조회
-  Future<void> _searchLivestockTrace() async {
+  // 1단계: 빠른 기본 정보 조회
+  Future<void> _searchQuickInfo() async {
     final earTag = _earTagController.text.trim();
     
     if (!_validateEarTag(earTag)) {
@@ -81,9 +86,12 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
     }
 
     setState(() {
+      _currentStep = RegistrationStep.quickInfoLoading;
       _isLoading = true;
       _errorMessage = null;
       _currentEarTag = earTag;
+      _loadingProgress = 0.0;
+      _loadingMessage = '이표번호 확인 중...';
     });
 
     try {
@@ -94,39 +102,55 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
         throw Exception('로그인이 필요합니다.');
       }
 
+      // 프로그레스 업데이트
+      setState(() {
+        _loadingProgress = 0.3;
+        _loadingMessage = '등록 상태 확인 중...';
+      });
+
       // 등록 상태 확인
       final registrationStatus = await _livestockService.checkRegistrationStatus(earTag, token);
       
       if (registrationStatus == 'already_registered') {
         setState(() {
           _errorMessage = '이미 등록된 젖소입니다.';
+          _currentStep = RegistrationStep.inputEarTag;
           _isLoading = false;
         });
         return;
       }
+
+      // 프로그레스 업데이트
+      setState(() {
+        _loadingProgress = 0.6;
+        _loadingMessage = '기본 정보 조회 중...';
+      });
+
+      // 빠른 기본 정보 조회
+      final quickInfo = await _livestockService.getQuickCowInfo(earTag, token);
       
-      if (registrationStatus == 'livestock_trace_available') {
-        // 축산물이력제 정보 조회
-        final traceData = await _livestockService.getLivestockTraceInfo(earTag, token);
-        
-        if (traceData != null && traceData['success'] == true) {
-          setState(() {
-            _livestockTraceData = traceData;
-            _currentStep = RegistrationStep.showApiResult;
-            _isLoading = false;
-          });
-        } else {
-          // API 조회 실패 시 안내 페이지로
-          setState(() {
-            _errorMessage = '축산물이력제에서 정보를 찾을 수 없습니다.';
-            _currentStep = RegistrationStep.showNotFound;
-            _isLoading = false;
-          });
-        }
-      } else {
-        // 수동 등록 필요 시 안내 페이지로
+      if (quickInfo != null && quickInfo['success'] == true) {
+        // 프로그레스 완료
         setState(() {
-          _errorMessage = '축산물이력제에서 정보를 찾을 수 없습니다.';
+          _loadingProgress = 1.0;
+          _loadingMessage = '정보 조회 완료!';
+        });
+
+        // 잠시 대기 후 결과 표시
+        await Future.delayed(const Duration(milliseconds: 500));
+        
+        setState(() {
+          _quickCowInfo = quickInfo;
+          _currentStep = RegistrationStep.quickInfoResult;
+          _isLoading = false;
+        });
+
+        // 백그라운드에서 상세 정보 조회 요청
+        _requestDetailedInfoInBackground(earTag, token);
+        
+      } else {
+        // 정보 없음
+        setState(() {
           _currentStep = RegistrationStep.showNotFound;
           _isLoading = false;
         });
@@ -134,30 +158,28 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
     } catch (e) {
       setState(() {
         _errorMessage = '조회 중 오류가 발생했습니다: ${e.toString()}';
+        _currentStep = RegistrationStep.inputEarTag;
         _isLoading = false;
       });
     }
   }
 
-  // 수동 입력 준비
-  void _prepareManualInput() {
-    if (_currentEarTag != null) {
-      _earTagController.text = _currentEarTag!;
-    }
+  // 백그라운드에서 상세 정보 조회 요청
+  void _requestDetailedInfoInBackground(String earTag, String token) {
+    _logger.info('백그라운드에서 상세 정보 조회 요청');
+    _livestockService.requestDetailedInfo(earTag, token);
   }
 
-  // 축산물이력제 정보로 등록
-  Future<void> _registerFromLivestockTrace() async {
-    final cowName = _nameController.text.trim();
-    
-    if (cowName.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('젖소 이름(별명)을 입력해주세요.')),
-      );
-      return;
-    }
+  // 상세 정보 조회 상태 확인 및 대기
+  Future<void> _waitForDetailedInfo() async {
+    if (_currentEarTag == null) return;
 
-    setState(() => _isLoading = true);
+    setState(() {
+      _currentStep = RegistrationStep.detailedInfoLoading;
+      _isLoading = true;
+      _loadingProgress = 0.0;
+      _loadingMessage = '상세 정보 조회 중...';
+    });
 
     try {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
@@ -167,7 +189,63 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
         throw Exception('로그인이 필요합니다.');
       }
 
-      final response = await _livestockService.registerFromLivestockTrace(
+      // 최대 30초 동안 5초마다 상태 확인
+      for (int i = 0; i < 6; i++) {
+        setState(() {
+          _loadingProgress = (i + 1) / 6;
+          _loadingMessage = '상세 정보 처리 중... (${i * 5 + 5}초)';
+        });
+
+        final statusInfo = await _livestockService.checkDetailedInfoStatus(_currentEarTag!, token);
+        
+        if (statusInfo != null && statusInfo['status'] == 'completed') {
+          _detailedCowInfo = statusInfo['data'];
+          break;
+        }
+
+        if (i < 5) {
+          await Future.delayed(const Duration(seconds: 5));
+        }
+      }
+
+      // 등록 진행
+      await _registerCow();
+      
+    } catch (e) {
+      setState(() {
+        _errorMessage = '상세 정보 조회 중 오류가 발생했습니다: ${e.toString()}';
+        _currentStep = RegistrationStep.quickInfoResult;
+        _isLoading = false;
+      });
+    }
+  }
+
+  // 젖소 등록 실행
+  Future<void> _registerCow() async {
+    final cowName = _nameController.text.trim();
+    
+    if (cowName.isEmpty) {
+      setState(() {
+        _errorMessage = '젖소 이름(별명)을 입력해주세요.';
+        _currentStep = RegistrationStep.quickInfoResult;
+        _isLoading = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _loadingMessage = '젖소 등록 중...';
+    });
+
+    try {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final token = userProvider.accessToken;
+      
+      if (token == null) {
+        throw Exception('로그인이 필요합니다.');
+      }
+
+      final response = await _livestockService.registerFromLivestockTraceV2(
         _currentEarTag!,
         cowName,
         token,
@@ -198,13 +276,25 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('등록 실패: ${e.toString()}')),
-      );
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
+      setState(() {
+        _errorMessage = '등록 중 오류가 발생했습니다: ${e.toString()}';
+        _currentStep = RegistrationStep.quickInfoResult;
+        _isLoading = false;
+      });
     }
   }
+
+  // 수동 입력 준비
+  void _prepareManualInput() {
+    if (_currentEarTag != null) {
+      _earTagController.text = _currentEarTag!;
+    }
+    setState(() {
+      _currentStep = RegistrationStep.manualInput;
+    });
+  }
+
+
 
   // 수동 등록
   Future<void> _registerManually() async {
@@ -333,8 +423,12 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
     switch (_currentStep) {
       case RegistrationStep.inputEarTag:
         return _buildEarTagInputStep();
-      case RegistrationStep.showApiResult:
-        return _buildApiResultStep();
+      case RegistrationStep.quickInfoLoading:
+        return _buildQuickInfoLoadingStep();
+      case RegistrationStep.quickInfoResult:
+        return _buildQuickInfoResultStep();
+      case RegistrationStep.detailedInfoLoading:
+        return _buildDetailedInfoLoadingStep();
       case RegistrationStep.showNotFound:
         return _buildNotFoundStep();
       case RegistrationStep.manualInput:
@@ -392,7 +486,7 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: _isLoading ? null : _searchLivestockTrace,
+            onPressed: _isLoading ? null : _searchQuickInfo,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.pink,
               foregroundColor: Colors.white,
@@ -420,9 +514,41 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
     );
   }
 
-  // 2단계: API 조회 결과 표시
-  Widget _buildApiResultStep() {
-    final basicInfo = _livestockTraceData?['basic_info'];
+  // 2단계: 빠른 정보 조회 중
+  Widget _buildQuickInfoLoadingStep() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          '젖소 정보 조회 중...',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          '축산물이력제에서 정보를 찾고 있습니다. 잠시만 기다려주세요.',
+          style: TextStyle(fontSize: 14, color: Colors.grey),
+        ),
+        const SizedBox(height: 24),
+        
+        LinearProgressIndicator(
+          value: _loadingProgress,
+          backgroundColor: Colors.grey.shade200,
+          color: Colors.pink,
+        ),
+        
+        const SizedBox(height: 24),
+        
+        Text(
+          _loadingMessage,
+          style: const TextStyle(fontSize: 14, color: Colors.grey),
+        ),
+      ],
+    );
+  }
+
+  // 3단계: 빠른 정보 결과 표시 (사용자 확인)
+  Widget _buildQuickInfoResultStep() {
+    final basicInfo = _quickCowInfo?['basic_info'];
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -491,7 +617,7 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
                 onPressed: _isLoading ? null : () {
                   setState(() {
                     _currentStep = RegistrationStep.inputEarTag;
-                    _livestockTraceData = null;
+                    _quickCowInfo = null;
                     _nameController.clear();
                   });
                 },
@@ -507,7 +633,7 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
             const SizedBox(width: 12),
             Expanded(
               child: ElevatedButton(
-                onPressed: _isLoading ? null : _registerFromLivestockTrace,
+                onPressed: _isLoading ? null : _waitForDetailedInfo,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.pink,
                   foregroundColor: Colors.white,
@@ -532,6 +658,38 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
               ),
             ),
           ],
+        ),
+      ],
+    );
+  }
+
+  // 4단계: 상세 정보 조회 중 (사용자가 이름 입력하는 동안)
+  Widget _buildDetailedInfoLoadingStep() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          '젖소 정보 조회 중...',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          '축산물이력제에서 정보를 찾고 있습니다. 잠시만 기다려주세요.',
+          style: TextStyle(fontSize: 14, color: Colors.grey),
+        ),
+        const SizedBox(height: 24),
+        
+        LinearProgressIndicator(
+          value: _loadingProgress,
+          backgroundColor: Colors.grey.shade200,
+          color: Colors.pink,
+        ),
+        
+        const SizedBox(height: 24),
+        
+        Text(
+          _loadingMessage,
+          style: const TextStyle(fontSize: 14, color: Colors.grey),
         ),
       ],
     );

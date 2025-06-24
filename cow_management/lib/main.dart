@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
@@ -52,6 +51,8 @@ import 'package:cow_management/screens/cow_list/Cow_Detail/Feeding/feeding_add_p
 import 'package:cow_management/screens/cow_list/Cow_Detail/Feeding/feeding_list_page.dart';
 import 'package:cow_management/screens/cow_list/Cow_Detail/Feeding/feeding_detail_page.dart';
 
+import 'package:cow_management/screens/splash_screen.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: "assets/config/.env");
@@ -98,9 +99,10 @@ class SoDamApp extends StatelessWidget {
         supportedLocales: const [
           Locale('ko', 'KR'),
         ],
-        initialRoute: '/login', // 시작 루트
+        initialRoute: '/', // 시작 루트를 스플래시로 변경
         routes: {
-          '/': (context) => const MainScaffold(), // 메인 홈
+          '/': (context) => const SplashScreen(), // 스플래시 화면
+          '/main': (context) => const MainScaffold(), // 메인 홈
           '/login': (context) => LoginPage(isTestMode: isTestMode), // 로그인
           '/signup': (context) => const SignupPage(), // 회원가입
           '/cows': (context) => const CowListPage(), // 소 목록

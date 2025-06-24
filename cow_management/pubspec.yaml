@@ -42,6 +42,7 @@ dependencies:
   logging: ^1.2.0
   uuid: ^4.4.2
   fluttertoast: ^8.2.4
+  url_launcher: ^6.3.0
 
 dev_dependencies:
   flutter_test:

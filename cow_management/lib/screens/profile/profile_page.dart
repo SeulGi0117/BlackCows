@@ -448,36 +448,49 @@ class ProfilePage extends StatelessWidget {
   }
 
   void _deleteAccount(BuildContext context, UserProvider userProvider, String password) async {
-    // 간단한 로딩 표시 (스낵바 사용)
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Row(
-          children: [
-            SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              ),
+    bool isDialogOpen = true;
+    
+    // 로딩 다이얼로그 표시 (확실한 제어를 위해)
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return WillPopScope(
+          onWillPop: () async => false, // 뒤로가기 버튼 비활성화
+          child: AlertDialog(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircularProgressIndicator(),
+                const SizedBox(height: 16),
+                const Text('회원 탈퇴 처리 중...'),
+                const SizedBox(height: 8),
+                Text(
+                  '모든 데이터를 삭제하고 있습니다.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
             ),
-            SizedBox(width: 12),
-            Text('회원 탈퇴 처리 중...'),
-          ],
-        ),
-        duration: Duration(seconds: 10), // 충분한 시간 설정
-        backgroundColor: Colors.red,
-      ),
+          ),
+        );
+      },
     );
 
     try {
       final success = await userProvider.deleteAccount(password);
       
+      // 로딩 다이얼로그가 열려있으면 닫기
+      if (isDialogOpen && context.mounted) {
+        Navigator.of(context).pop();
+        isDialogOpen = false;
+      }
+      
       if (context.mounted) {
-        // 기존 스낵바 숨기기
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        
         if (success) {
+          // 성공 메시지 표시
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Row(
@@ -492,17 +505,18 @@ class ProfilePage extends StatelessWidget {
             ),
           );
           
-          // 잠시 후 로그인 페이지로 이동
-          Future.delayed(const Duration(milliseconds: 1500), () {
-            if (context.mounted) {
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => const LoginPage()),
-                (route) => false,
-              );
-            }
-          });
+          // 잠시 대기 후 로그인 페이지로 이동
+          await Future.delayed(const Duration(milliseconds: 500));
+          
+          if (context.mounted) {
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/login',
+              (route) => false,
+            );
+          }
         } else {
+          // 실패 메시지 표시
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Row(
@@ -521,8 +535,14 @@ class ProfilePage extends StatelessWidget {
         }
       }
     } catch (e) {
+      // 로딩 다이얼로그가 열려있으면 닫기
+      if (isDialogOpen && context.mounted) {
+        Navigator.of(context).pop();
+        isDialogOpen = false;
+      }
+      
       if (context.mounted) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        // 에러 메시지 표시
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(

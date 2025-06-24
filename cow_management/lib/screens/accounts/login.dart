@@ -47,15 +47,113 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _isLoading = false);
 
     if (success && mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const MainScaffold()),
-      );
+      Navigator.pushReplacementNamed(context, '/main');
+    }
+  }
+
+  // 개발자 문의 다이얼로그 표시
+  void _showDeveloperContactDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.error_outline, color: Colors.red, size: 28),
+              SizedBox(width: 8),
+              Text('서버 연결 오류'),
+            ],
+          ),
+          content: const Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '서버에 이상이 생긴 것 같습니다.',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 12),
+              Text(
+                '다음과 같은 문제일 수 있습니다:',
+                style: TextStyle(fontSize: 14),
+              ),
+              SizedBox(height: 8),
+              Text('• 서버가 일시적으로 중단됨'),
+              Text('• 네트워크 연결 문제'),
+              Text('• 서버 점검 중'),
+              SizedBox(height: 16),
+              Text(
+                '문제가 지속되면 개발자에게 문의해주세요.',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+              ),
+              SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(Icons.email, size: 16, color: Colors.blue),
+                  SizedBox(width: 4),
+                  Text(
+                    '개발자 문의: team@blackcowsdairy.com',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.blue,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('확인'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await _copyEmailToClipboard();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('이메일 복사'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // 이메일 주소 클립보드 복사
+  Future<void> _copyEmailToClipboard() async {
+    try {
+      await Clipboard.setData(const ClipboardData(text: 'team@blackcowsdairy.com'));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('개발자 이메일 주소가 클립보드에 복사되었습니다.\n이메일 앱에서 붙여넣기 하세요.'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      _logger.warning('클립보드 복사 실패: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('복사에 실패했습니다. 수동으로 입력해주세요: team@blackcowsdairy.com'),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 4),
+          ),
+        );
+      }
     }
   }
 
   Future<void> _login() async {
-    final userId = _userIdController.text.trim();     // 아이디로 변경
+    final userId = _userIdController.text.trim();
     final password = _passwordController.text.trim();
 
     if (userId.isEmpty || password.isEmpty) {
@@ -74,22 +172,45 @@ class _LoginPageState extends State<LoginPage> {
 
     setState(() => _isLoading = true);
 
-    final success = await Provider.of<UserProvider>(context, listen: false)
-        .login(userId, password, '$baseUrl/auth/login'); // user_id로 로그인
+    try {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final result = await userProvider.loginWithResult(userId, password, '$baseUrl/auth/login');
 
-    setState(() => _isLoading = false);
+      setState(() => _isLoading = false);
 
-    if (success && mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const MainScaffold()),
-      );
-    } else if (mounted) {
-      // 로그인 실패 시 비밀번호 필드 초기화
-      _passwordController.clear();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('아이디 또는 비밀번호가 올바르지 않습니다.')),
-      );
+      if (result.success && mounted) {
+        // 로그인 성공 시 즉시 화면 전환
+        Navigator.pushReplacementNamed(context, '/main');
+      } else if (mounted) {
+        // 로그인 실패 시 비밀번호 필드 초기화
+        _passwordController.clear();
+        
+        // 에러 타입에 따른 처리
+        if (result.errorType == LoginErrorType.serverError || 
+            result.errorType == LoginErrorType.timeout ||
+            result.errorType == LoginErrorType.unknown) {
+          // 서버 문제 시 개발자 문의 다이얼로그 표시
+          _showDeveloperContactDialog();
+        } else {
+          // 일반적인 에러 메시지 표시
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result.message),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      
+      if (mounted) {
+        _passwordController.clear();
+        _logger.severe('로그인 예외 발생: $e');
+        
+        // 예외 발생 시에도 개발자 문의 다이얼로그 표시
+        _showDeveloperContactDialog();
+      }
     }
   }
 

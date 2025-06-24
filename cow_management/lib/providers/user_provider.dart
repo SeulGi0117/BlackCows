@@ -5,6 +5,30 @@ import 'package:dio/dio.dart';
 import 'package:cow_management/services/dio_client.dart';
 import 'package:logging/logging.dart';
 
+// 로그인 에러 타입 정의
+enum LoginErrorType {
+  success,
+  invalidCredentials,  // 아이디/비밀번호 오류
+  serverError,         // 서버 오류
+  networkError,        // 네트워크 연결 오류
+  timeout,             // 타임아웃
+  rateLimited,         // 요청 제한
+  unknown              // 알 수 없는 오류
+}
+
+// 로그인 결과 클래스
+class LoginResult {
+  final bool success;
+  final LoginErrorType errorType;
+  final String message;
+
+  LoginResult({
+    required this.success,
+    this.errorType = LoginErrorType.success,
+    this.message = '',
+  });
+}
+
 class UserProvider with ChangeNotifier {
   final _logger = Logger('UserProvider');
   User? _currentUser;
@@ -43,14 +67,15 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> login(String userId, String password, String loginUrl) async {
+  Future<LoginResult> loginWithResult(String userId, String password, String loginUrl) async {
     try {
+      _logger.info('로그인 시도: $userId');
       final dio = DioClient().dio;
 
       final response = await dio.post(
         loginUrl,
         data: {
-          'user_id': userId,    // 로그인용 아이디로 변경
+          'user_id': userId,
           'password': password,
         },
       );
@@ -61,21 +86,93 @@ class UserProvider with ChangeNotifier {
         _currentUser = User.fromJson(data['user']);
         _accessToken = data['access_token'];
         _refreshToken = data['refresh_token'];
-        await saveTokenToStorage(_accessToken!);
+        
+        // 토큰 저장을 백그라운드에서 처리
+        saveTokenToStorage(_accessToken!).catchError((error) {
+          _logger.warning('토큰 저장 실패: $error');
+        });
 
         _shouldShowWelcome = true;
         notifyListeners();
 
-        _logger.info('로그인 성공: ${_accessToken?.substring(0, 20)}...');
-        return true;
+        _logger.info('로그인 성공: ${_currentUser?.username}');
+        return LoginResult(success: true, message: '로그인 성공');
       } else {
-        _logger.warning('로그인 실패: ${response.statusCode} - ${response.data}');
-        return false;
+        _logger.warning('로그인 실패: ${response.statusCode}');
+        return LoginResult(
+          success: false,
+          errorType: LoginErrorType.invalidCredentials,
+          message: '아이디 또는 비밀번호가 올바르지 않습니다.',
+        );
       }
     } on DioException catch (e) {
-      _logger.severe('로그인 에러: ${e.response?.data ?? e.message}');
-      return false;
+      _logger.warning('로그인 Dio 에러: ${e.type} - ${e.message}');
+      
+      // 서버 연결 문제 구분
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.sendTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        return LoginResult(
+          success: false,
+          errorType: LoginErrorType.timeout,
+          message: '서버 연결 시간이 초과되었습니다.',
+        );
+      }
+      
+      if (e.type == DioExceptionType.connectionError ||
+          e.message?.contains('SocketException') == true ||
+          e.message?.contains('Connection refused') == true ||
+          e.message?.contains('Network is unreachable') == true) {
+        return LoginResult(
+          success: false,
+          errorType: LoginErrorType.serverError,
+          message: '서버에 연결할 수 없습니다.',
+        );
+      }
+      
+      if (e.response?.statusCode == 401) {
+        return LoginResult(
+          success: false,
+          errorType: LoginErrorType.invalidCredentials,
+          message: '아이디 또는 비밀번호가 올바르지 않습니다.',
+        );
+      }
+      
+      if (e.response?.statusCode == 429) {
+        return LoginResult(
+          success: false,
+          errorType: LoginErrorType.rateLimited,
+          message: '너무 많은 로그인 시도. 잠시 후 다시 시도해주세요.',
+        );
+      }
+      
+      if (e.response?.statusCode != null && e.response!.statusCode! >= 500) {
+        return LoginResult(
+          success: false,
+          errorType: LoginErrorType.serverError,
+          message: '서버에 오류가 발생했습니다.',
+        );
+      }
+      
+      return LoginResult(
+        success: false,
+        errorType: LoginErrorType.networkError,
+        message: '네트워크 연결을 확인해주세요.',
+      );
+    } catch (e) {
+      _logger.severe('예상치 못한 로그인 에러: $e');
+      return LoginResult(
+        success: false,
+        errorType: LoginErrorType.unknown,
+        message: '예상치 못한 오류가 발생했습니다.',
+      );
     }
+  }
+
+  // 기존 login 메서드 (호환성 유지)
+  Future<bool> login(String userId, String password, String loginUrl) async {
+    final result = await loginWithResult(userId, password, loginUrl);
+    return result.success;
   }
 
   Future<bool> signup({
@@ -127,18 +224,73 @@ class UserProvider with ChangeNotifier {
   }
 
   Future<void> clearTokenFromStorage() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('access_token');
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('access_token');
+    } catch (e) {
+      _logger.warning('토큰 삭제 실패: $e');
+    }
   }
 
   Future<void> saveTokenToStorage(String token) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('access_token', token);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('access_token', token);
+    } catch (e) {
+      _logger.warning('토큰 저장 실패: $e');
+    }
   }
 
   Future<String?> loadTokenFromStorage() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('access_token');
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString('access_token');
+    } catch (e) {
+      _logger.warning('토큰 로드 실패: $e');
+      return null;
+    }
+  }
+
+  // 자동 로그인 체크 (앱 시작 시)
+  Future<bool> checkAutoLogin() async {
+    try {
+      final token = await loadTokenFromStorage();
+      if (token == null || token.isEmpty) {
+        return false;
+      }
+
+      // 토큰이 있으면 임시로 설정하고 사용자 정보 확인
+      _accessToken = token;
+      
+      final dio = DioClient().dio;
+      final response = await dio.get(
+        '/auth/me',
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        final userData = response.data;
+        _currentUser = User.fromJson(userData['user']);
+        _shouldShowWelcome = false; // 자동 로그인 시에는 환영 메시지 표시 안함
+        notifyListeners();
+        
+        _logger.info('자동 로그인 성공: ${_currentUser?.username}');
+        return true;
+      } else {
+        // 토큰이 유효하지 않으면 삭제
+        await clearTokenFromStorage();
+        _accessToken = null;
+        return false;
+      }
+    } catch (e) {
+      _logger.warning('자동 로그인 실패: $e');
+      // 에러 발생 시 토큰 삭제
+      await clearTokenFromStorage();
+      _accessToken = null;
+      return false;
+    }
   }
 
   // 목장 이름 수정
