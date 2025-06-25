@@ -72,6 +72,8 @@ class _CowDetailPageState extends State<CowDetailPage> {
           children: [
             _buildBasicInfoCard(),
             const SizedBox(height: 20),
+            if (currentCow.hasLivestockTraceData) _buildLivestockTraceInfoCard(),
+            const SizedBox(height: 20),
             _buildHealthInfoCard(context, currentCow.id, currentCow.name),
             const SizedBox(height: 20),
             _buildMilkingInfoCard(),
@@ -640,6 +642,57 @@ class _CowDetailPageState extends State<CowDetailPage> {
           ],
         );
       },
+    );
+  }
+
+  // 축산물이력제 상세 정보 카드 추가
+  Widget _buildLivestockTraceInfoCard() {
+    final data = currentCow.livestockTraceData ?? {};
+    // 데이터 파싱 (API 구조에 맞게 key 수정 필요)
+    final earTag = data['earTag'] ?? currentCow.earTagNumber;
+    final birthDate = data['birthDate'] ?? currentCow.birthdate?.toString().split(' ')[0] ?? '-';
+    final ageMonth = data['ageMonth'] ?? '-';
+    final ownerMasked = data['ownerMasked'] ?? '-';
+    final farmId = data['farmId'] ?? '-';
+    final farmAddress = data['farmAddress'] ?? '-';
+    final birthReportDate = data['birthReportDate'] ?? '-';
+    final birthRegistrar = data['birthRegistrar'] ?? '-';
+    final birthReportAddress = data['birthReportAddress'] ?? '-';
+    final vaccineInfo = data['vaccineInfo'] ?? {};
+    final fmd = vaccineInfo['fmd'] ?? '-';
+    final brucellaMove = vaccineInfo['brucellaMove'] ?? '-';
+    final brucellaSlaughter = vaccineInfo['brucellaSlaughter'] ?? '-';
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 0,
+      color: Colors.green.shade50,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('🔍 축산물이력제 정보', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 12),
+            Row(children: [const Text('이표번호: ', style: TextStyle(fontWeight: FontWeight.w500)), Text(earTag)]),
+            Row(children: [const Text('개월령: ', style: TextStyle(fontWeight: FontWeight.w500)), Text(ageMonth)]),
+            Row(children: [const Text('출생일: ', style: TextStyle(fontWeight: FontWeight.w500)), Text(birthDate)]),
+            Row(children: [const Text('농가정보: ', style: TextStyle(fontWeight: FontWeight.w500)), Text('$ownerMasked ($farmId)')]),
+            Row(children: [const Text('목장주소: ', style: TextStyle(fontWeight: FontWeight.w500)), Text(farmAddress)]),
+            const SizedBox(height: 10),
+            const Text('출생신고 정보', style: TextStyle(fontWeight: FontWeight.bold)),
+            Row(children: [const Text('등록자: ', style: TextStyle(fontWeight: FontWeight.w500)), Text(birthRegistrar)]),
+            Row(children: [const Text('등록일: ', style: TextStyle(fontWeight: FontWeight.w500)), Text(birthReportDate)]),
+            Row(children: [const Text('등록지: ', style: TextStyle(fontWeight: FontWeight.w500)), Text(birthReportAddress)]),
+            const SizedBox(height: 10),
+            const Text('백신/질병검사 정보', style: TextStyle(fontWeight: FontWeight.bold)),
+            Row(children: [const Text('구제역: ', style: TextStyle(fontWeight: FontWeight.w500)), Text(fmd)]),
+            Row(children: [const Text('브루셀라 이동: ', style: TextStyle(fontWeight: FontWeight.w500)), Text(brucellaMove)]),
+            Row(children: [const Text('브루셀라 도축: ', style: TextStyle(fontWeight: FontWeight.w500)), Text(brucellaSlaughter)]),
+          ],
+        ),
+      ),
     );
   }
 }

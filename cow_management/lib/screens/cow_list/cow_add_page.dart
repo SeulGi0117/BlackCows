@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:cow_management/providers/cow_provider.dart';
 import 'package:cow_management/services/dio_client.dart';
 import 'package:dio/dio.dart';
+import 'package:cow_management/utils/error_utils.dart';
 
 enum AddStep {
   inputEarTag,      // 이표번호 입력 단계
@@ -129,9 +130,8 @@ class _CowAddPageState extends State<CowAddPage> {
       }
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+      // 네트워크/서버 연결 에러 안내 다이얼로그
+      ErrorUtils.handleError(context, e, customMessage: message, defaultMessage: message);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

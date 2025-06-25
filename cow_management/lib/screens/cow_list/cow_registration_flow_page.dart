@@ -9,6 +9,7 @@ import 'package:cow_management/services/dio_client.dart';
 import 'package:logging/logging.dart';
 import 'package:dio/dio.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:cow_management/utils/error_utils.dart';
 
 enum RegistrationStep {
   inputEarTag,          // 이표번호 입력 단계
@@ -162,6 +163,8 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
         _currentStep = RegistrationStep.inputEarTag;
         _isLoading = false;
       });
+      // 네트워크/서버 연결 에러 안내 다이얼로그
+      ErrorUtils.handleError(context, e, customMessage: e.toString(), defaultMessage: '서버 연결 오류가 발생했습니다. 개발팀에 문의해주세요.');
     }
   }
 
@@ -234,6 +237,8 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
         _currentStep = RegistrationStep.quickInfoResult;
         _isLoading = false;
       });
+      // 네트워크/서버 연결 에러 안내 다이얼로그
+      ErrorUtils.handleError(context, e, customMessage: e.toString(), defaultMessage: '서버 연결 오류가 발생했습니다. 개발팀에 문의해주세요.');
     }
   }
 
@@ -298,6 +303,8 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
         _currentStep = RegistrationStep.quickInfoResult;
         _isLoading = false;
       });
+      // 네트워크/서버 연결 에러 안내 다이얼로그
+      ErrorUtils.handleError(context, e, customMessage: e.toString(), defaultMessage: '서버 연결 오류가 발생했습니다. 개발팀에 문의해주세요.');
     }
   }
 
