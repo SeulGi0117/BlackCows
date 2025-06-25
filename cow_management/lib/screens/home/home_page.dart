@@ -16,6 +16,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   bool _favoritesLoaded = false;
+  bool _cowsLoadedOnce = false;
 
   @override
   void didChangeDependencies() {
@@ -24,8 +25,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final cowProvider = Provider.of<CowProvider>(context, listen: false);
 
-    // 소 전체 목록이 비어있으면 서버에서 불러오기
-    if (userProvider.isLoggedIn && userProvider.accessToken != null && cowProvider.cows.isEmpty) {
+    // 소 전체 목록이 비어있고, 아직 한 번도 불러오지 않았다면 서버에서 한 번만 불러오기
+    if (userProvider.isLoggedIn && userProvider.accessToken != null && cowProvider.cows.isEmpty && !_cowsLoadedOnce) {
+      _cowsLoadedOnce = true;
       cowProvider.fetchCowsFromBackend(userProvider.accessToken!).then((_) {
         // 소 목록을 불러온 뒤 즐겨찾기 동기화
         if (!_favoritesLoaded && userProvider.isLoggedIn && userProvider.accessToken != null) {

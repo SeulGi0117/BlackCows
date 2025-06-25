@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:cow_management/providers/user_provider.dart';
-import 'package:cow_management/main.dart';
+import 'package:cow_management/providers/cow_provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:logging/logging.dart';
 import 'dart:math';
@@ -73,6 +73,11 @@ class _LoginPageState extends State<LoginPage> {
 
       if (result.success && mounted) {
         _logger.info('자동 로그인 성공');
+        final cowProvider = Provider.of<CowProvider>(context, listen: false);
+        cowProvider.clearAll();
+        if (userProvider.accessToken != null) {
+          await cowProvider.fetchCowsFromBackend(userProvider.accessToken!);
+        }
         Navigator.pushReplacementNamed(context, '/main');
       } else {
         _logger.warning('자동 로그인 실패: ${result.message} (ErrorType: ${result.errorType})');
@@ -236,6 +241,12 @@ class _LoginPageState extends State<LoginPage> {
       setState(() => _isLoading = false);
 
       if (result.success && mounted) {
+        // 로그인 성공 시 CowProvider 데이터 초기화 및 새로 불러오기
+        final cowProvider = Provider.of<CowProvider>(context, listen: false);
+        cowProvider.clearAll();
+        if (userProvider.accessToken != null) {
+          await cowProvider.fetchCowsFromBackend(userProvider.accessToken!);
+        }
         // 로그인 성공 시 즉시 화면 전환
         Navigator.pushReplacementNamed(context, '/main');
       } else if (mounted) {

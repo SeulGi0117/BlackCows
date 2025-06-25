@@ -259,3 +259,4 @@ backend/*
 
 # dependencies 추가 시엔 !pubspec.yaml 을 사용하여 스테이징 후 커밋 바랍니다.
 pubspec.yaml
+*/pubspec.yaml

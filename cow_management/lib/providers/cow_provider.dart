@@ -8,6 +8,7 @@ class CowProvider with ChangeNotifier {
   final List<Cow> _cows = [];
   final _logger = Logger('CowProvider');
   bool _favoritesLoaded = false;
+  bool _cowsLoadedOnce = false;
 
   List<Cow> get cows => List.unmodifiable(_cows);
 
@@ -33,12 +34,21 @@ class CowProvider with ChangeNotifier {
     _cows.clear();
     _cows.addAll(newList);
     _favoritesLoaded = false;
+    _cowsLoadedOnce = true;
     notifyListeners();
   }
 
   void clearCows() {
     _cows.clear();
     _favoritesLoaded = false;
+    _cowsLoadedOnce = false;
+    notifyListeners();
+  }
+
+  void clearAll() {
+    _cows.clear();
+    _favoritesLoaded = false;
+    _cowsLoadedOnce = false;
     notifyListeners();
   }
 
@@ -244,6 +254,7 @@ class CowProvider with ChangeNotifier {
 
   // 서버에서 소 전체 목록을 불러와 setCows까지 처리하는 메서드 추가
   Future<void> fetchCowsFromBackend(String token) async {
+    if (_cowsLoadedOnce) return;
     final dio = Dio();
     final apiUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
     try {

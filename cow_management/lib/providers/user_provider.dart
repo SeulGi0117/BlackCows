@@ -60,6 +60,8 @@ class UserProvider with ChangeNotifier {
     _refreshToken = null;
     _shouldShowWelcome = false;
     notifyListeners();
+    // 로그아웃/계정전환 시 CowProvider 등 사용자별 데이터도 초기화 필요:
+    // 예시: Provider.of<CowProvider>(context, listen: false).clearAll();
   }
 
   void markWelcomeShown() {
@@ -250,6 +252,8 @@ class UserProvider with ChangeNotifier {
     await clearTokenFromStorage();
     notifyListeners();
     _logger.info('로그아웃: 모든 데이터 삭제됨');
+    // 로그아웃 시 CowProvider 등 사용자별 데이터도 초기화 필요:
+    // 예시: Provider.of<CowProvider>(context, listen: false).clearAll();
   }
 
   Future<void> clearTokenFromStorage() async {

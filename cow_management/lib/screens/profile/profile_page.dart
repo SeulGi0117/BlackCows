@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cow_management/providers/user_provider.dart';
 import 'package:cow_management/screens/accounts/login.dart';
+import 'package:cow_management/providers/cow_provider.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -482,7 +483,7 @@ class ProfilePage extends StatelessWidget {
     try {
       final success = await userProvider.deleteAccount(password);
       
-      // 로딩 다이얼로그가 열려있으면 닫기
+      // 로딩 다이얼로그가 열려있으면 닫기 (성공/실패 모두에서 반드시 닫음)
       if (isDialogOpen && context.mounted) {
         Navigator.of(context).pop();
         isDialogOpen = false;
@@ -490,6 +491,8 @@ class ProfilePage extends StatelessWidget {
       
       if (context.mounted) {
         if (success) {
+          // 회원탈퇴 성공 시 CowProvider 데이터도 초기화
+          Provider.of<CowProvider>(context, listen: false).clearAll();
           // 성공 메시지 표시
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -504,10 +507,11 @@ class ProfilePage extends StatelessWidget {
               duration: Duration(seconds: 2),
             ),
           );
-          
-          // 잠시 대기 후 로그인 페이지로 이동
-          await Future.delayed(const Duration(milliseconds: 500));
-          
+          // 3초 뒤에 무조건 로딩 다이얼로그 닫고 로그인 화면으로 이동
+          await Future.delayed(const Duration(seconds: 3));
+          if (context.mounted && Navigator.of(context).canPop()) {
+            Navigator.of(context).pop();
+          }
           if (context.mounted) {
             Navigator.pushNamedAndRemoveUntil(
               context,
@@ -579,6 +583,7 @@ class ProfilePage extends StatelessWidget {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // 다이얼로그 닫기
+                Provider.of<CowProvider>(context, listen: false).clearAll();
                 userProvider.logout();
                 Navigator.pushReplacement(
                   context,

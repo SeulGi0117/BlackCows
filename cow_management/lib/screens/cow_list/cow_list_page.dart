@@ -23,14 +23,16 @@ class _CowListPageState extends State<CowListPage> {
   final TextEditingController _searchController = TextEditingController();
   String? _selectedStatus;
   bool _isLoading = false;
+  bool _cowsLoadedOnce = false;
 
   @override
   void initState() {
     super.initState();
     final cowProvider = Provider.of<CowProvider>(context, listen: false);
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    // 이미 소 목록이 있으면 fetch 생략
-    if (cowProvider.cows.isEmpty && userProvider.isLoggedIn && userProvider.accessToken != null) {
+    // 소 목록이 비어있고, 아직 한 번도 불러오지 않았다면 서버에서 한 번만 불러오기
+    if (!_cowsLoadedOnce && cowProvider.cows.isEmpty && userProvider.isLoggedIn && userProvider.accessToken != null) {
+      _cowsLoadedOnce = true;
       cowProvider.fetchCowsFromBackend(userProvider.accessToken!);
     }
   }
