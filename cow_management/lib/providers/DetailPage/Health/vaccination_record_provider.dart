@@ -14,8 +14,7 @@ class VaccinationRecordProvider with ChangeNotifier {
 
     try {
       final response = await dio.get(
-        '$baseUrl/records/cow/$cowId',
-        queryParameters: {'record_type': 'vaccination'},
+        '$baseUrl/records/cow/$cowId/vaccination-records',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 

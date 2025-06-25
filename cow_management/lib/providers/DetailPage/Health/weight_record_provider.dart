@@ -14,8 +14,7 @@ class WeightRecordProvider with ChangeNotifier {
 
     try {
       final response = await dio.get(
-        '$baseUrl/records/cow/$cowId',
-        queryParameters: {'record_data': 'weight'},
+        '$baseUrl/records/cow/$cowId/weight-records',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 

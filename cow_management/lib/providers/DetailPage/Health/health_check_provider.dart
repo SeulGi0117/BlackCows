@@ -17,8 +17,7 @@ class HealthCheckProvider with ChangeNotifier {
 
     try {
       final response = await dio.get(
-        '$baseUrl/records/cow/$cowId',
-        queryParameters: {'record_type': 'health_check'},
+        '$baseUrl/records/cow/$cowId/health-records',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 

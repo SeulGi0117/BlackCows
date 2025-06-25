@@ -14,8 +14,7 @@ class BreedingRecordProvider with ChangeNotifier {
   Future<void> fetchRecords(String cowId, String token) async {
     try {
       final response = await _dio.get(
-        '$baseUrl/records/breeding',
-        queryParameters: {'cow_id': cowId},
+        '$baseUrl/records/cow/$cowId/breeding-records',
         options: Options(headers: {
           'Authorization': 'Bearer $token',
         }),

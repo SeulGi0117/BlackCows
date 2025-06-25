@@ -25,7 +25,7 @@ class HealthCheckListPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text('$cowName - 건강검진 목록')),
       body: FutureBuilder<void>(
-        future: _fetchFilteredRecords(context),
+        future: Provider.of<HealthCheckProvider>(context, listen: false).fetchRecords(cowId, Provider.of<UserProvider>(context, listen: false).accessToken!),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -43,7 +43,7 @@ class HealthCheckListPage extends StatelessWidget {
               final record = records[index];
               return ListTile(
                 title: Text(record.recordDate),
-                subtitle: Text('체온: ${record.bodyTemperature}°C'),
+                subtitle: Text('체온: \\${record.bodyTemperature != null ? record.bodyTemperature.toString() + '℃' : '-'}'),
                 onTap: () {
                   Navigator.push(
                     context,

@@ -16,8 +16,7 @@ class FeedingRecordProvider with ChangeNotifier {
 
     try {
       final response = await dio.get(
-        '$baseUrl/records/feed',
-        queryParameters: {'cow_id': cowId},
+        '$baseUrl/records/cow/$cowId/feed-records',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
