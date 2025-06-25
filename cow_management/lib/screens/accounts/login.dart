@@ -5,6 +5,7 @@ import 'package:cow_management/providers/user_provider.dart';
 import 'package:cow_management/main.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:logging/logging.dart';
+import 'dart:math';
 import 'find_user_id_page.dart';
 import 'find_password_page.dart';
 
@@ -19,10 +20,27 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _userIdController = TextEditingController(); // 아이디 컨트롤러로 변경
   final TextEditingController _passwordController = TextEditingController();
+  final FocusNode _passwordFocusNode = FocusNode();
   bool _isLoading = false;
   bool _isPasswordVisible = false;
   late String baseUrl;
   final _logger = Logger('LoginPage');
+  
+  // 깜찍한 로딩 메시지들
+  final List<String> _loadingMessages = [
+    '로그인 중이에요! 🐄',
+    '젖소들이 기다리고 있어요! 🥛',
+    '농장으로 가는 중... 🚜',
+    '소담소담 준비 중! ✨',
+    '목장 문을 여는 중... 🚪',
+    '우유 짜러 가볼까요? 🐮',
+    '농장 친구들이 반겨요! 🌾',
+  ];
+  
+  String get _randomLoadingMessage {
+    final random = Random();
+    return _loadingMessages[random.nextInt(_loadingMessages.length)];
+  }
 
   @override
   void initState() {
@@ -41,21 +59,158 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _autoLogin() async {
     setState(() => _isLoading = true);
     
-    final success = await Provider.of<UserProvider>(context, listen: false)
-        .login('test1234', 'qwer1234', '$baseUrl/auth/login');
+    try {
+      _logger.info('자동 로그인 시작 - 서버 URL: $baseUrl');
+      
+      if (baseUrl.isEmpty) {
+        throw Exception('API_BASE_URL이 설정되지 않았습니다');
+      }
+      
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final result = await userProvider.loginWithResult('tttt', 'tttt1234', '$baseUrl/auth/login');
 
-    setState(() => _isLoading = false);
+      setState(() => _isLoading = false);
 
-    if (success && mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const MainScaffold()),
-      );
+      if (result.success && mounted) {
+        _logger.info('자동 로그인 성공');
+        Navigator.pushReplacementNamed(context, '/main');
+      } else {
+        _logger.warning('자동 로그인 실패: ${result.message} (ErrorType: ${result.errorType})');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('개발자 모드 로그인 실패: ${result.message}'),
+              backgroundColor: Colors.orange,
+              duration: const Duration(seconds: 5),
+              action: SnackBarAction(
+                label: '수동 로그인',
+                onPressed: () {
+                  // 스낵바를 닫고 수동 로그인 모드로 전환
+                },
+              ),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      _logger.severe('자동 로그인 예외 발생: $e');
+      setState(() => _isLoading = false);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('개발자 모드 오류: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    }
+  }
+
+  // 개발자 문의 다이얼로그 표시
+  void _showDeveloperContactDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.error_outline, color: Colors.red, size: 28),
+              SizedBox(width: 8),
+              Text('서버 연결 오류'),
+            ],
+          ),
+          content: const Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '서버에 이상이 생긴 것 같습니다.',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 12),
+              Text(
+                '다음과 같은 문제일 수 있습니다:',
+                style: TextStyle(fontSize: 14),
+              ),
+              SizedBox(height: 8),
+              Text('• 서버가 일시적으로 중단됨'),
+              Text('• 네트워크 연결 문제'),
+              Text('• 서버 점검 중'),
+              SizedBox(height: 16),
+              Text(
+                '문제가 지속되면 개발자에게 문의해주세요.',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+              ),
+              SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(Icons.email, size: 16, color: Colors.blue),
+                  SizedBox(width: 4),
+                  Text(
+                    '개발자 문의: team@blackcowsdairy.com',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.blue,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('확인'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await _copyEmailToClipboard();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('이메일 복사'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // 이메일 주소 클립보드 복사
+  Future<void> _copyEmailToClipboard() async {
+    try {
+      await Clipboard.setData(const ClipboardData(text: 'team@blackcowsdairy.com'));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('개발자 이메일 주소가 클립보드에 복사되었습니다.\n이메일 앱에서 붙여넣기 하세요.'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      _logger.warning('클립보드 복사 실패: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('복사에 실패했습니다. 수동으로 입력해주세요: team@blackcowsdairy.com'),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 4),
+          ),
+        );
+      }
     }
   }
 
   Future<void> _login() async {
-    final userId = _userIdController.text.trim();     // 아이디로 변경
+    final userId = _userIdController.text.trim();
     final password = _passwordController.text.trim();
 
     if (userId.isEmpty || password.isEmpty) {
@@ -74,22 +229,45 @@ class _LoginPageState extends State<LoginPage> {
 
     setState(() => _isLoading = true);
 
-    final success = await Provider.of<UserProvider>(context, listen: false)
-        .login(userId, password, '$baseUrl/auth/login'); // user_id로 로그인
+    try {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final result = await userProvider.loginWithResult(userId, password, '$baseUrl/auth/login');
 
-    setState(() => _isLoading = false);
+      setState(() => _isLoading = false);
 
-    if (success && mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const MainScaffold()),
-      );
-    } else if (mounted) {
-      // 로그인 실패 시 비밀번호 필드 초기화
-      _passwordController.clear();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('아이디 또는 비밀번호가 올바르지 않습니다.')),
-      );
+      if (result.success && mounted) {
+        // 로그인 성공 시 즉시 화면 전환
+        Navigator.pushReplacementNamed(context, '/main');
+      } else if (mounted) {
+        // 로그인 실패 시 비밀번호 필드 초기화
+        _passwordController.clear();
+        
+        // 에러 타입에 따른 처리
+        if (result.errorType == LoginErrorType.serverError || 
+            result.errorType == LoginErrorType.timeout ||
+            result.errorType == LoginErrorType.unknown) {
+          // 서버 문제 시 개발자 문의 다이얼로그 표시
+          _showDeveloperContactDialog();
+        } else {
+          // 일반적인 에러 메시지 표시
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result.message),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      
+      if (mounted) {
+        _passwordController.clear();
+        _logger.severe('로그인 예외 발생: $e');
+        
+        // 예외 발생 시에도 개발자 문의 다이얼로그 표시
+        _showDeveloperContactDialog();
+      }
     }
   }
 
@@ -97,6 +275,7 @@ class _LoginPageState extends State<LoginPage> {
   void dispose() {
     _userIdController.dispose();
     _passwordController.dispose();
+    _passwordFocusNode.dispose();
     super.dispose();
   }
 
@@ -104,12 +283,16 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
+      resizeToAvoidBottomInset: true,
+      body: Stack(
+        children: [
+          // 메인 로그인 폼
+          Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 32.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
               const Text(
                 '소담소담 로그인',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -119,6 +302,8 @@ class _LoginPageState extends State<LoginPage> {
               // 아이디 입력 필드 (username → user_id로 변경)
               TextField(
                 controller: _userIdController,
+                textInputAction: TextInputAction.next,
+                onSubmitted: (_) => _passwordFocusNode.requestFocus(),
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(
                     RegExp(r'[a-zA-Z0-9_]'), // 영문, 숫자, 언더스코어만 허용
@@ -128,7 +313,6 @@ class _LoginPageState extends State<LoginPage> {
                 decoration: const InputDecoration(
                   labelText: '아이디',
                   border: OutlineInputBorder(),
-                  helperText: '영문, 숫자, 언더스코어(_)만 입력 가능 (3-20자)',
                   hintText: 'farmer123',
                 ),
               ),
@@ -137,7 +321,10 @@ class _LoginPageState extends State<LoginPage> {
               // 비밀번호 입력 필드
               TextField(
                 controller: _passwordController,
+                focusNode: _passwordFocusNode,
                 obscureText: !_isPasswordVisible,
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => _isLoading ? null : _login(),
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(
                     RegExp(r'[a-zA-Z0-9!"#$%&()*+,./:;<=>?@^_`{|}~\-\[\]\\]'),
@@ -177,7 +364,29 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              _randomLoadingMessage,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        )
                       : const Text(
                           '로그인',
                           style: TextStyle(
@@ -237,6 +446,50 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
       ),
-    );
+      
+      // 개발자 모드 자동 로그인 로딩 오버레이
+      if (_isLoading && widget.isTestMode)
+        Container(
+          color: Colors.black.withOpacity(0.7),
+          child: const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 3,
+                ),
+                SizedBox(height: 20),
+                Text(
+                  '🐄 개발자 모드',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  '자동 로그인 중이에요...',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 16,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  '잠시만 기다려주세요! ✨',
+                  style: TextStyle(
+                    color: Colors.white60,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+    ],
+  ),
+);
   }
 }

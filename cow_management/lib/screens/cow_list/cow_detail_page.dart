@@ -6,6 +6,8 @@ import 'package:logging/logging.dart';
 import 'package:cow_management/models/cow.dart';
 import 'package:cow_management/screens/cow_list/cow_edit_page.dart';
 import 'package:cow_management/providers/user_provider.dart';
+import 'package:cow_management/utils/error_utils.dart';
+import 'package:cow_management/screens/cow_list/cow_list_page.dart';
 
 class CowDetailPage extends StatefulWidget {
   final Cow cow;
@@ -37,38 +39,19 @@ class _CowDetailPageState extends State<CowDetailPage> {
         actions: [
           TextButton.icon(
             onPressed: () async {
-              final confirmed = await showDialog<bool>(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text("삭제 확인"),
-                  content: const Text("정말 이 젖소를 삭제하시겠습니까?"),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      child: const Text("취소"),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, true),
-                      child:
-                          const Text("삭제", style: TextStyle(color: Colors.red)),
-                    ),
-                  ],
-                ),
-              );
-
-              if (confirmed == true) {
+              await showDeleteCowDialog(context, currentCow.name, () async {
                 final success = await deleteCow(context, currentCow.id);
                 if (success && context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("젖소가 삭제되었습니다")),
+                    const SnackBar(
+                      content: Text("젖소가 삭제되었습니다"),
+                      backgroundColor: Colors.green,
+                    ),
                   );
                   Navigator.pop(context, true);
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("삭제에 실패했습니다")),
-                  );
                 }
-              }
+                // 실패 시에는 deleteCow 함수에서 이미 ErrorUtils로 처리됨
+              });
             },
             icon: const Icon(Icons.delete, color: Colors.red),
             label: const Text(
@@ -103,60 +86,79 @@ class _CowDetailPageState extends State<CowDetailPage> {
   }
 
   Widget _buildBasicInfoCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF5F5F5),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
-            children: [
-              Icon(Icons.pets, size: 20),
-              SizedBox(width: 6),
-              Text(
-                '기본 정보',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          _infoRow('이름', currentCow.name),
-          _infoRow('개체번호', currentCow.number),
-          _infoRow('품종', currentCow.breed ?? '미등록'),
-          _infoRow('센서 번호', currentCow.sensor),
-          _infoRow('상태', currentCow.status),
-          const SizedBox(height: 16),
-          ElevatedButton.icon(
-            onPressed: () async {
-              final updatedCow = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CowEditPage(cow: currentCow),
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 0,
+      color: Colors.grey.shade50,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('🐾 기본 정보', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                const Text('이름: ', style: TextStyle(fontWeight: FontWeight.w500)),
+                Text(currentCow.name.isNotEmpty ? currentCow.name : '미등록'),
+              ],
+            ),
+            Row(
+              children: [
+                const Text('개체번호: ', style: TextStyle(fontWeight: FontWeight.w500)),
+                Text(currentCow.earTagNumber.isNotEmpty ? currentCow.earTagNumber : '미등록'),
+              ],
+            ),
+            Row(
+              children: [
+                const Text('품종: ', style: TextStyle(fontWeight: FontWeight.w500)),
+                Text((currentCow.breed != null && currentCow.breed!.isNotEmpty) ? currentCow.breed! : '미등록'),
+              ],
+            ),
+            Row(
+              children: [
+                const Text('센서 번호: ', style: TextStyle(fontWeight: FontWeight.w500)),
+                Text((currentCow.sensorNumber != null && currentCow.sensorNumber!.isNotEmpty) ? currentCow.sensorNumber! : '미등록'),
+              ],
+            ),
+            Row(
+              children: [
+                const Text('상태: ', style: TextStyle(fontWeight: FontWeight.w500)),
+                Text((currentCow.status.isNotEmpty && currentCow.status != '알 수 없음') ? currentCow.status : '미등록'),
+              ],
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: 160,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CowEditPage(cow: currentCow),
+                    ),
+                  ).then((updatedCow) {
+                    if (updatedCow != null) {
+                      setState(() => currentCow = updatedCow);
+                    }
+                  });
+                },
+                icon: const Icon(Icons.edit, size: 18),
+                label: const Text('정보 수정하기'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  textStyle: const TextStyle(fontWeight: FontWeight.bold),
                 ),
-              );
-
-              if (updatedCow != null && updatedCow is Cow) {
-                setState(() {
-                  currentCow = updatedCow;
-                });
-              }
-            },
-            icon: const Icon(Icons.edit, size: 18),
-            label: const Text('정보 수정하기'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blueAccent,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -534,13 +536,15 @@ class _CowDetailPageState extends State<CowDetailPage> {
             if (confirmed == true) {
               final success = await deleteCow(context, currentCow.id);
               if (success && context.mounted) {
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(const SnackBar(content: Text("젖소가 삭제되었습니다")));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("젖소가 삭제되었습니다"),
+                    backgroundColor: Colors.green,
+                  ),
+                );
                 Navigator.pop(context, true);
-              } else {
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(const SnackBar(content: Text("삭제에 실패했습니다")));
               }
+              // 실패 시에는 deleteCow 함수에서 이미 ErrorUtils로 처리됨
             }
           },
           style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -558,6 +562,11 @@ class _CowDetailPageState extends State<CowDetailPage> {
 
     if (apiUrl == null || token == null) {
       CowDetailPage._logger.severe("API 주소 또는 토큰 없음");
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('설정 오류: API 주소 또는 인증 토큰이 없습니다')),
+        );
+      }
       return false;
     }
 
@@ -574,7 +583,63 @@ class _CowDetailPageState extends State<CowDetailPage> {
       return response.statusCode == 200 || response.statusCode == 204;
     } catch (e) {
       CowDetailPage._logger.severe("삭제 중 오류 발생: $e");
+      
+      if (context.mounted) {
+        ErrorUtils.handleError(
+          context, 
+          e, 
+          customMessage: '젖소 삭제 중 오류가 발생했습니다',
+          defaultMessage: '삭제에 실패했습니다',
+        );
+      }
       return false;
     }
+  }
+
+  Future<void> showDeleteCowDialog(BuildContext context, String cowName, VoidCallback onConfirm) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('정말로 삭제하시겠습니까?', style: TextStyle(fontWeight: FontWeight.bold)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('젖소 "$cowName"을(를) 삭제하면,'),
+              const SizedBox(height: 8),
+              const Text(
+                '• 이 젖소와 관련된 모든 데이터(기록 등)가 데이터베이스에서 완전히 삭제됩니다.',
+                style: TextStyle(color: Colors.redAccent),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                '• 삭제된 데이터는 복구할 수 없습니다.',
+                style: TextStyle(color: Colors.redAccent),
+              ),
+              const SizedBox(height: 16),
+              const Text('정말로 삭제하시겠습니까?'),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('취소'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+              ),
+              child: const Text('영구 삭제', style: TextStyle(color: Colors.white)),
+              onPressed: () {
+                Navigator.of(context).pop();
+                onConfirm();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }

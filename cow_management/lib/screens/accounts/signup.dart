@@ -4,6 +4,9 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:logging/logging.dart';
+import 'package:provider/provider.dart';
+import 'package:cow_management/providers/user_provider.dart';
+import 'package:cow_management/main.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -20,7 +23,6 @@ class _SignupPageState extends State<SignupPage> {
   final TextEditingController _passwordConfirmController = TextEditingController();
   final TextEditingController _farmNicknameController = TextEditingController(); // 목장 별명
   
-  bool _isLoading = false;
   bool _isPasswordVisible = false;
   bool _isPasswordConfirmVisible = false;
   late String baseUrl;
@@ -88,7 +90,36 @@ class _SignupPageState extends State<SignupPage> {
       return;
     }
 
-    setState(() => _isLoading = true);
+    bool isDialogOpen = true;
+    
+    // 로딩 다이얼로그 표시
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return WillPopScope(
+          onWillPop: () async => false, // 뒤로가기 버튼 비활성화
+          child: AlertDialog(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircularProgressIndicator(),
+                const SizedBox(height: 16),
+                const Text('회원가입 시도 중...'),
+                const SizedBox(height: 8),
+                Text(
+                  '계정을 생성하고 있습니다.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
 
     try {
       final url = Uri.parse('$baseUrl/auth/register');
@@ -120,39 +151,232 @@ class _SignupPageState extends State<SignupPage> {
       
       if (response.statusCode == 200 || response.statusCode == 201) {
         final responseData = jsonDecode(responseBody);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(responseData['message'] ?? '회원가입 성공! 로그인해주세요.')),
-        );
-        Navigator.pop(context, true); // 성공 시 true 반환
+        _logger.info('회원가입 성공! 자동 로그인을 시도합니다.');
+        
+        // 로딩 메시지 업데이트 - 자동 로그인 단계
+        if (isDialogOpen && mounted) {
+          Navigator.of(context).pop(); // 기존 다이얼로그 닫기
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext dialogContext) {
+              return WillPopScope(
+                onWillPop: () async => false,
+                child: AlertDialog(
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const CircularProgressIndicator(),
+                      const SizedBox(height: 16),
+                      const Text('자동 로그인 중...'),
+                      const SizedBox(height: 8),
+                      Text(
+                        '홈 화면으로 이동하고 있습니다.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        }
+        
+        // 회원가입 성공 후 자동 로그인 시도
+        final userProvider = Provider.of<UserProvider>(context, listen: false);
+        final loginSuccess = await userProvider.login(userId, password, '$baseUrl/auth/login');
+        
+        // 로딩 다이얼로그 닫기
+        if (isDialogOpen && mounted) {
+          Navigator.of(context).pop();
+          isDialogOpen = false;
+        }
+        
+        if (loginSuccess && mounted) {
+          _logger.info('자동 로그인 성공! 홈 화면으로 이동합니다.');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('회원가입 완료! 자동 로그인되었습니다.'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          
+          // 잠시 대기 후 홈 화면으로 이동
+          await Future.delayed(const Duration(milliseconds: 500));
+          
+          if (mounted) {
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/main',
+              (route) => false, // 모든 이전 화면 제거
+            );
+          }
+        } else {
+          _logger.warning('자동 로그인 실패. 로그인 페이지로 이동합니다.');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(responseData['message'] ?? '회원가입 성공! 로그인해주세요.')),
+            );
+            Navigator.pop(context, true); // 성공 시 true 반환
+          }
+        }
       } else {
         _logger.severe('회원가입 실패: ${response.statusCode} - $responseBody');
         
-        String errorMessage = _getErrorMessage(response.statusCode, responseBody);
+        // 로딩 다이얼로그가 열려있으면 닫기
+        if (isDialogOpen && mounted) {
+          Navigator.of(context).pop();
+          isDialogOpen = false;
+        }
         
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorMessage)),
-        );
+        // 회원가입 실패 시 비밀번호 필드들 초기화
+        _passwordController.clear();
+        _passwordConfirmController.clear();
+        
+        if (mounted) {
+          // 서버 오류 시 개발자 문의 다이얼로그 표시
+          if (response.statusCode >= 500) {
+            _showDeveloperContactDialog();
+          } else {
+            String errorMessage = _getErrorMessage(response.statusCode, responseBody);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(errorMessage)),
+            );
+          }
+        }
       }
     } catch (e) {
       _logger.severe('회원가입 실패: $e');
       
-      // 네트워크 연결 문제인지 확인
-      String errorMessage;
-      if (e.toString().contains('SocketException') || 
-          e.toString().contains('TimeoutException') ||
-          e.toString().contains('Connection refused')) {
-        errorMessage = '서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.';
-      } else if (baseUrl.isEmpty) {
-        errorMessage = '서버 주소가 설정되지 않았습니다. 관리자에게 문의해주세요.';
-      } else {
-        errorMessage = '네트워크 오류가 발생했습니다: ${e.toString()}';
+      // 로딩 다이얼로그가 열려있으면 닫기
+      if (isDialogOpen && mounted) {
+        Navigator.of(context).pop();
+        isDialogOpen = false;
       }
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMessage)),
-      );
-    } finally {
-      setState(() => _isLoading = false);
+      // 네트워크 오류 시에도 비밀번호 필드들 초기화
+      _passwordController.clear();
+      _passwordConfirmController.clear();
+      
+      if (mounted) {
+        // 네트워크 연결 문제인지 확인하고 개발자 문의 다이얼로그 표시
+        if (e.toString().contains('SocketException') || 
+            e.toString().contains('TimeoutException') ||
+            e.toString().contains('Connection refused') ||
+            baseUrl.isEmpty) {
+          _showDeveloperContactDialog();
+        } else {
+          // 일반적인 네트워크 오류
+          String errorMessage = '네트워크 오류가 발생했습니다: ${e.toString()}';
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(errorMessage)),
+          );
+        }
+      }
+    }
+  }
+
+  // 개발자 문의 다이얼로그 표시
+  void _showDeveloperContactDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.error_outline, color: Colors.red, size: 28),
+              SizedBox(width: 8),
+              Text('서버 연결 오류'),
+            ],
+          ),
+          content: const Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '서버에 이상이 생긴 것 같습니다.',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 12),
+              Text(
+                '다음과 같은 문제일 수 있습니다:',
+                style: TextStyle(fontSize: 14),
+              ),
+              SizedBox(height: 8),
+              Text('• 서버가 일시적으로 중단됨'),
+              Text('• 네트워크 연결 문제'),
+              Text('• 서버 점검 중'),
+              SizedBox(height: 16),
+              Text(
+                '문제가 지속되면 개발자에게 문의해주세요.',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+              ),
+              SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(Icons.email, size: 16, color: Colors.blue),
+                  SizedBox(width: 4),
+                  Text(
+                    '개발자 문의: team@blackcowsdairy.com',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.blue,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('확인'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await _copyEmailToClipboard();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('이메일 복사'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // 이메일 주소 클립보드 복사
+  Future<void> _copyEmailToClipboard() async {
+    try {
+      await Clipboard.setData(const ClipboardData(text: 'team@blackcowsdairy.com'));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('개발자 이메일 주소가 클립보드에 복사되었습니다.\n이메일 앱에서 붙여넣기 하세요.'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      _logger.warning('클립보드 복사 실패: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('복사에 실패했습니다. 수동으로 입력해주세요: team@blackcowsdairy.com'),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 4),
+          ),
+        );
+      }
     }
   }
 
@@ -198,6 +422,7 @@ class _SignupPageState extends State<SignupPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('회원가입')),
+      resizeToAvoidBottomInset: true,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(32),
         child: Column(
@@ -333,14 +558,22 @@ class _SignupPageState extends State<SignupPage> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _isLoading ? null : _signup,
+                onPressed: _signup,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.pink,
                   padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
-                child: _isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text('회원가입'),
+                child: const Text(
+                  '회원가입',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 16),

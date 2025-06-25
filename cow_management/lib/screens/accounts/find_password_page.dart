@@ -403,6 +403,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
         foregroundColor: Colors.black,
         elevation: 0,
       ),
+      resizeToAvoidBottomInset: true,
       body: PageView(
         controller: _pageController,
         physics: const NeverScrollableScrollPhysics(), // 스와이프 비활성화
@@ -417,7 +418,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
 
   // 1단계: 사용자 정보 확인
   Widget _buildStep1() {
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(32),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -518,7 +519,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
 
   // 2단계: 토큰 입력
   Widget _buildStep2() {
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(32),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -644,7 +645,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
 
   // 3단계: 새 비밀번호 설정
   Widget _buildStep3() {
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(32),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

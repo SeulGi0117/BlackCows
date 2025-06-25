@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:logging/logging.dart';
 
 import 'package:cow_management/models/cow.dart';
 import 'package:cow_management/models/Detail/feeding_record.dart';
@@ -19,6 +21,9 @@ import 'package:cow_management/screens/ai_analysis/analysis_page.dart';
 import 'package:cow_management/screens/ai_chatbot/app_wrapper.dart';
 import 'package:cow_management/screens/ai_chatbot/chatbot_history_page.dart';
 
+import 'package:cow_management/screens/ai_chatbot/app_wrapper.dart';
+import 'package:cow_management/screens/ai_chatbot/chatbot_history_page.dart';
+
 import 'package:cow_management/screens/accounts/login.dart';
 import 'package:cow_management/screens/accounts/signup.dart';
 
@@ -28,8 +33,6 @@ import 'package:cow_management/screens/profile/profile_page.dart';
 
 import 'package:cow_management/screens/cow_list/cow_list_page.dart';
 import 'package:cow_management/screens/cow_list/cow_detail_page.dart';
-import 'package:cow_management/models/cow.dart';
-import 'package:cow_management/screens/ai_chatbot/app_wrapper.dart';
 import 'package:cow_management/screens/cow_list/cow_edit_page.dart';
 
 import 'package:cow_management/screens/cow_list/Cow_Detail/Milk/milk_add_page.dart';
@@ -52,6 +55,8 @@ import 'package:cow_management/screens/cow_list/Cow_Detail/Feeding/feeding_add_p
 import 'package:cow_management/screens/cow_list/Cow_Detail/Feeding/feeding_list_page.dart';
 import 'package:cow_management/screens/cow_list/Cow_Detail/Feeding/feeding_detail_page.dart';
 
+import 'package:cow_management/screens/splash_screen.dart';
+
 import 'package:cow_management/screens/cow_list/Cow_Detail/Weight/weight_add_page.dart';
 import 'package:cow_management/screens/cow_list/Cow_Detail/Weight/weight_list_page.dart';
 import 'package:cow_management/screens/cow_list/Cow_Detail/Weight/weight_detail_page.dart';
@@ -63,6 +68,13 @@ import 'package:cow_management/screens/cow_list/Cow_Detail/Treatment/treatment_l
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: "assets/config/.env");
+
+  // 로깅 설정
+  Logger.root.level = Level.ALL; // 모든 로그 레벨 허용
+  Logger.root.onRecord.listen((record) {
+    print(
+        '${record.time}: ${record.level.name}: ${record.loggerName}: ${record.message}');
+  });
 
   // 테스트 모드 설정
   const bool isTestMode = false;
@@ -94,9 +106,18 @@ class SoDamApp extends StatelessWidget {
     return MaterialApp(
         debugShowCheckedModeBanner: false,
         locale: const Locale('ko', 'KR'),
-        initialRoute: '/login', // 시작 루트
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('ko', 'KR'),
+        ],
+        initialRoute: '/', // 시작 루트를 스플래시로 변경
         routes: {
-          '/': (context) => const MainScaffold(), // 메인 홈
+          '/': (context) => const SplashScreen(), // 스플래시 화면
+          '/main': (context) => const MainScaffold(), // 메인 홈
           '/login': (context) => LoginPage(isTestMode: isTestMode), // 로그인
           '/signup': (context) => const SignupPage(), // 회원가입
           '/cows': (context) => const CowListPage(), // 소 목록
@@ -285,6 +306,7 @@ class _MainScaffoldState extends State<MainScaffold> {
   Widget build(BuildContext context) {
     return AppWrapper(
       child: Scaffold(
+        resizeToAvoidBottomInset: true,
         body: _pages[_selectedIndex],
         bottomNavigationBar: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,

@@ -61,6 +61,7 @@ class _WeightAddPageState extends State<WeightAddPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('${widget.cowName} 체중 기록 추가')),
+      resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Form(

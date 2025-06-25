@@ -238,7 +238,7 @@ firebase_options.dart
 # =========================================
 pubspec.lock
 package_config_subset
-package_config_subset.json
+package_config_subset.jsongitp
 version
 cow_management/android/local.properties
 cow_management/ios/Flutter/flutter_export_environment.sh
@@ -254,3 +254,5 @@ macos/Podfile
 .firebase/
 *.log
 build/
+
+backend/*

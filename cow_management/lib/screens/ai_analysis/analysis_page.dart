@@ -56,6 +56,7 @@ class _AnalysisPageState extends State<AnalysisPage> {
         title: const Text('분석 서비스'),
         backgroundColor: Colors.white,
       ),
+      resizeToAvoidBottomInset: true,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(

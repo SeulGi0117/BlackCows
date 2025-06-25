@@ -123,6 +123,7 @@ class _MilkingRecordPageState extends State<MilkingRecordPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("착유 기록 등록")),
+      resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Form(

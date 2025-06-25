@@ -41,49 +41,52 @@ class _ChatbotHistoryPageState extends State<ChatbotHistoryPage> {
           onPressed: _toggleSidebar,
         ),
       ),
-      body: Row(
-        children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            width: sidebarWidth,
-            color: Colors.grey[100],
-            child: _isSidebarOpen
-                ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.all(12),
-                        child: Text(
-                          '채팅 기록',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
+      resizeToAvoidBottomInset: true,
+      body: SafeArea(
+        child: Row(
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              width: sidebarWidth,
+              color: Colors.grey[100],
+              child: _isSidebarOpen
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.all(12),
+                          child: Text(
+                            '채팅 기록',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
                         ),
-                      ),
-                      Expanded(
-                        child: ListView.builder(
-                          itemCount: _chatSessions.length,
-                          itemBuilder: (context, index) {
-                            return ListTile(
-                              title: Text(_chatSessions[index]),
-                              selected: index == _selectedSessionIndex,
-                              onTap: () {
-                                setState(() {
-                                  _selectedSessionIndex = index;
-                                });
-                              },
-                            );
-                          },
+                        Expanded(
+                          child: ListView.builder(
+                            itemCount: _chatSessions.length,
+                            itemBuilder: (context, index) {
+                              return ListTile(
+                                title: Text(_chatSessions[index]),
+                                selected: index == _selectedSessionIndex,
+                                onTap: () {
+                                  setState(() {
+                                    _selectedSessionIndex = index;
+                                  });
+                                },
+                              );
+                            },
+                          ),
                         ),
-                      ),
-                    ],
-                  )
-                : null,
-          ),
-          const VerticalDivider(width: 1),
-          const Expanded(
-            child: ChatbotQuickCore(),
-          ),
-        ],
+                      ],
+                    )
+                  : null,
+            ),
+            if (_isSidebarOpen) const VerticalDivider(width: 1),
+            const Expanded(
+              child: ChatbotQuickCore(),
+            ),
+          ],
+        ),
       ),
     );
   }
