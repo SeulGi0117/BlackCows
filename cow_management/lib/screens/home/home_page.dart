@@ -15,11 +15,31 @@ class _HomeScreenState extends State<HomeScreen> {
     return cows.where((cow) => cow.status == status).length;
   }
 
+  bool _favoritesLoaded = false;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
     final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final cowProvider = Provider.of<CowProvider>(context, listen: false);
+
+    // 소 전체 목록이 비어있으면 서버에서 불러오기
+    if (userProvider.isLoggedIn && userProvider.accessToken != null && cowProvider.cows.isEmpty) {
+      cowProvider.fetchCowsFromBackend(userProvider.accessToken!).then((_) {
+        // 소 목록을 불러온 뒤 즐겨찾기 동기화
+        if (!_favoritesLoaded && userProvider.isLoggedIn && userProvider.accessToken != null) {
+          cowProvider.syncFavoritesFromServer(userProvider.accessToken!);
+          _favoritesLoaded = true;
+        }
+      });
+    } else {
+      // 소 목록이 이미 있으면 즐겨찾기만 동기화
+      if (!_favoritesLoaded && userProvider.isLoggedIn && userProvider.accessToken != null) {
+        cowProvider.syncFavoritesFromServer(userProvider.accessToken!);
+        _favoritesLoaded = true;
+      }
+    }
 
     if (userProvider.shouldShowWelcome && userProvider.currentUser != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -175,13 +195,13 @@ class _HomeScreenState extends State<HomeScreen> {
     final cows = cowProvider.cows;
 
     final int normal = countByStatus(cows, '양호');
-    final int warning = countByStatus(cows, '위험');
-    final int danger = countByStatus(cows, '이상');
+    final int warning = countByStatus(cows, '경고');
+    final int danger = countByStatus(cows, '위험');
 
     final statusSummary = [
       {'label': '양호', 'count': normal, 'color': Colors.green},
-      {'label': '위험', 'count': warning, 'color': Colors.orange},
-      {'label': '이상', 'count': danger, 'color': Colors.red},
+      {'label': '경고', 'count': warning, 'color': Colors.orange},
+      {'label': '위험', 'count': danger, 'color': Colors.red},
     ];
 
     return Padding(

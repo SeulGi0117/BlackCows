@@ -105,7 +105,7 @@ class _CowEditPageState extends State<CowEditPage> {
       };
 
       final response = await DioClient().dio.put(
-            '/cows/${widget.cow.id}/',
+            '/cows/${widget.cow.id}',
             data: cowData,
           );
 
@@ -179,9 +179,21 @@ class _CowEditPageState extends State<CowEditPage> {
               value: _selectedHealthStatus,
               hint: const Text('선택'),
               items: HealthStatus.values.map((status) {
+                String displayName;
+                switch (status) {
+                  case HealthStatus.normal:
+                    displayName = '양호';
+                    break;
+                  case HealthStatus.warning:
+                    displayName = '경고';
+                    break;
+                  case HealthStatus.danger:
+                    displayName = '위험';
+                    break;
+                }
                 return DropdownMenuItem(
                   value: status,
-                  child: Text(healthStatusLabels[status]!),
+                  child: Text(displayName),
                 );
               }).toList(),
               onChanged: (val) => setState(() => _selectedHealthStatus = val),

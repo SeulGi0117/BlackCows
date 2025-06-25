@@ -7,6 +7,7 @@ import 'package:logging/logging.dart';
 class CowProvider with ChangeNotifier {
   final List<Cow> _cows = [];
   final _logger = Logger('CowProvider');
+  bool _favoritesLoaded = false;
 
   List<Cow> get cows => List.unmodifiable(_cows);
 
@@ -31,11 +32,13 @@ class CowProvider with ChangeNotifier {
   void setCows(List<Cow> newList) {
     _cows.clear();
     _cows.addAll(newList);
+    _favoritesLoaded = false;
     notifyListeners();
   }
 
   void clearCows() {
     _cows.clear();
+    _favoritesLoaded = false;
     notifyListeners();
   }
 
@@ -219,6 +222,49 @@ class CowProvider with ChangeNotifier {
     } catch (e) {
       _logger.warning('축산물이력제 정보 조회 실패: $e');
       return null;
+    }
+  }
+
+  void setFavorites(List<Cow> favoriteList) {
+    for (final fav in favoriteList) {
+      final idx = _cows.indexWhere((c) => c.id == fav.id);
+      if (idx != -1) {
+        _cows[idx].isFavorite = true;
+      }
+    }
+    _favoritesLoaded = true;
+    notifyListeners();
+  }
+
+  Future<void> syncFavoritesFromServer(String token) async {
+    if (_favoritesLoaded) return;
+    final favoritesFromServer = await getFavoritesList(token);
+    setFavorites(favoritesFromServer);
+  }
+
+  // 서버에서 소 전체 목록을 불러와 setCows까지 처리하는 메서드 추가
+  Future<void> fetchCowsFromBackend(String token) async {
+    final dio = Dio();
+    final apiUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
+    try {
+      final response = await dio.get(
+        '$apiUrl/cows/?sortDirection=DESCENDING',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonList = response.data;
+        final List<Cow> cows = jsonList.map((json) => Cow.fromJson(json)).toList();
+        setCows(cows);
+      } else {
+        _logger.severe('소 목록 불러오기 실패: \\${response.statusCode}');
+      }
+    } catch (e) {
+      _logger.severe('소 목록 불러오기 오류: $e');
     }
   }
 }

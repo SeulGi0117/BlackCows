@@ -27,7 +27,12 @@ class _CowListPageState extends State<CowListPage> {
   @override
   void initState() {
     super.initState();
-    _fetchCowsFromBackend();
+    final cowProvider = Provider.of<CowProvider>(context, listen: false);
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    // 이미 소 목록이 있으면 fetch 생략
+    if (cowProvider.cows.isEmpty && userProvider.isLoggedIn && userProvider.accessToken != null) {
+      cowProvider.fetchCowsFromBackend(userProvider.accessToken!);
+    }
   }
 
   Future<void> _fetchCowsFromBackend() async {
@@ -68,6 +73,12 @@ class _CowListPageState extends State<CowListPage> {
         if (mounted) {
           final cowProvider = Provider.of<CowProvider>(context, listen: false);
           cowProvider.setCows(cows);
+
+          // 즐겨찾기 정보 동기화
+          final token = userProvider.accessToken;
+          if (token != null) {
+            await cowProvider.syncFavoritesFromServer(token);
+          }
         }
       } else {
         _logger.severe('API 요청 실패: ${response.statusCode}');
@@ -381,7 +392,7 @@ class _CowListPageState extends State<CowListPage> {
   Widget _buildFilterChips() {
     final filters = {
       '전체': null,
-      '정상': '정상',
+      '양호': '양호',
       '경고': '경고',
       '위험': '위험',
     };
@@ -522,8 +533,7 @@ class _CowListPageState extends State<CowListPage> {
                   const SizedBox(height: 4),
                   Text('이표번호: ${cow.earTagNumber}'),
                   Text('출생일: ${cow.birthdate?.toIso8601String().split('T')[0] ?? '미등록'}'),
-                  Text('품종: ${cow.breed ?? '미등록'}'),
-                  if (cow.sensor.isNotEmpty) Text('센서: ${cow.sensor}'),
+                  Text('건강상태: ${cow.status}'),
                 ],
               ),
             ),
@@ -563,9 +573,9 @@ class _CowListPageState extends State<CowListPage> {
     switch (status) {
       case '양호':
         return Colors.green;
-      case '보통':
+      case '경고':
         return Colors.orange;
-      case '병환':
+      case '위험':
         return Colors.red;
       default:
         return Colors.grey;
