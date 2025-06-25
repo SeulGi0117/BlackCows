@@ -22,9 +22,12 @@ class HealthCheckProvider with ChangeNotifier {
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
-      _records = (response.data as List)
-          .map((json) => HealthCheckRecord.fromJson(json))
-          .toList();
+      _records = (response.data as List).map((json) {
+        final data = json['record_data'] as Map<String, dynamic>;
+        data['record_date'] = json['record_date'];
+        data['cow_id'] = cowId;
+        return HealthCheckRecord.fromJson(data);
+      }).toList();
 
       notifyListeners();
       return _records;
@@ -48,7 +51,14 @@ class HealthCheckProvider with ChangeNotifier {
 
       if (response.statusCode == 200) {
         final data = response.data as List;
-        _records = data.map((e) => HealthCheckRecord.fromJson(e)).toList();
+        _records = data.map((json) {
+          final recordData = json['record_data'] as Map<String, dynamic>;
+          recordData['id'] = json['id'];
+          recordData['record_date'] = json['record_date'];
+          recordData['cow_id'] = cowId;
+          return HealthCheckRecord.fromJson(recordData);
+        }).toList();
+
         notifyListeners();
       } else {
         throw Exception('서버 응답 오류: ${response.statusCode}');
@@ -68,7 +78,7 @@ class HealthCheckProvider with ChangeNotifier {
     try {
       final response = await dio.post(
         '$baseUrl/records/health-check',
-        data: record.toJson(),
+        data: record.toBackendJson(), // ✅ 여기로 수정!
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 

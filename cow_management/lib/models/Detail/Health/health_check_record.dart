@@ -100,4 +100,12 @@ class HealthCheckRecord {
     fullJson.remove('record_date');
     return fullJson;
   }
+
+  Map<String, dynamic> toBackendJson() {
+    return {
+      'cow_id': cowId,
+      'record_date': recordDate,
+      'record_data': toRecordDataJson(),
+    };
+  }
 }
