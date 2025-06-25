@@ -40,21 +40,13 @@ class WeightRecordProvider with ChangeNotifier {
 
     try {
       final response = await dio.post(
-        '$baseUrl/records',
-        data: {
-          'cow_id': record.cowId,
-          'record_type': 'weight',
-          'record_date': record.recordDate,
-          'record_data': record.toRecordDataJson(),
-        },
+        '$baseUrl/records/weight', // ✅ 전용 엔드포인트로 변경
+        data: record.toJson(), // ✅ 평평한 구조
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       if (response.statusCode == 201) {
-        final data = response.data['record_data'];
-        data['record_date'] = record.recordDate;
-        data['cow_id'] = record.cowId;
-        _records.add(WeightRecord.fromJson(data));
+        _records.add(WeightRecord.fromJson(response.data));
         notifyListeners();
       }
     } catch (e) {

@@ -31,22 +31,28 @@ class HealthCheckDetailPage extends StatelessWidget {
         child: ListView(
           children: [
             _buildDetailItem('검진 날짜', record.recordDate),
-            _buildDetailItem('검진 시간', record.checkTime),
-            _buildDetailItem('체온', '${record.bodyTemperature} ℃'),
-            _buildDetailItem('심박수', '${record.heartRate}'),
-            _buildDetailItem('호흡수', '${record.respiratoryRate}'),
-            _buildDetailItem('체형 점수', '${record.bodyConditionScore}'),
-            _buildDetailItem('유방 상태', record.udderCondition),
-            _buildDetailItem('발굽 상태', record.hoofCondition),
-            _buildDetailItem('털 상태', record.coatCondition),
-            _buildDetailItem('눈 상태', record.eyeCondition),
-            _buildDetailItem('코 상태', record.noseCondition),
-            _buildDetailItem('식욕', record.appetite),
-            _buildDetailItem('활동 수준', record.activityLevel),
-            _buildDetailItem('이상 증상', record.abnormalSymptoms.join(', ')),
-            _buildDetailItem('검진자', record.examiner),
-            _buildDetailItem('다음 검진 예정일', record.nextCheckDate),
-            _buildDetailItem('특이사항', record.notes),
+            _buildDetailItem('검진 시간', record.checkTime ?? '-'),
+            _buildDetailItem(
+                '체온',
+                record.bodyTemperature != null
+                    ? '${record.bodyTemperature} ℃'
+                    : '-'),
+            _buildDetailItem('심박수', record.heartRate?.toString() ?? '-'),
+            _buildDetailItem('호흡수', record.respiratoryRate?.toString() ?? '-'),
+            _buildDetailItem(
+                '체형 점수', record.bodyConditionScore?.toString() ?? '-'),
+            _buildDetailItem('유방 상태', record.udderCondition ?? '-'),
+            _buildDetailItem('발굽 상태', record.hoofCondition ?? '-'),
+            _buildDetailItem('털 상태', record.coatCondition ?? '-'),
+            _buildDetailItem('눈 상태', record.eyeCondition ?? '-'),
+            _buildDetailItem('코 상태', record.noseCondition ?? '-'),
+            _buildDetailItem('식욕', record.appetite ?? '-'),
+            _buildDetailItem('활동 수준', record.activityLevel ?? '-'),
+            _buildDetailItem(
+                '이상 증상', (record.abnormalSymptoms ?? []).join(', ')),
+            _buildDetailItem('검진자', record.examiner ?? '-'),
+            _buildDetailItem('다음 검진 예정일', record.nextCheckDate ?? '-'),
+            _buildDetailItem('특이사항', record.notes ?? '-'),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {

@@ -40,13 +40,8 @@ class TreatmentRecordProvider with ChangeNotifier {
 
     try {
       final response = await dio.post(
-        '$baseUrl/records',
-        data: {
-          'cow_id': record.cowId,
-          'record_type': 'treatment',
-          'record_date': record.recordDate,
-          'record_data': record.toRecordDataJson(),
-        },
+        '$baseUrl/records/treatment',
+        data: record.toJson(),
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 

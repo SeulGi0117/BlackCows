@@ -40,13 +40,8 @@ class VaccinationRecordProvider with ChangeNotifier {
 
     try {
       final response = await dio.post(
-        '$baseUrl/records',
-        data: {
-          'cow_id': record.cowId,
-          'record_type': 'vaccination',
-          'record_date': record.recordDate,
-          'record_data': record.toRecordDataJson(),
-        },
+        '$baseUrl/records/vaccination',
+        data: record.toJson(),
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
