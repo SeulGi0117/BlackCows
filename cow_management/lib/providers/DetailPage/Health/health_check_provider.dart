@@ -21,17 +21,28 @@ class HealthCheckProvider with ChangeNotifier {
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
+      print('서버 응답: ${response.data}');
+
       _records = (response.data as List).map((json) {
-        final data = json['record_data'] as Map<String, dynamic>;
-        data['record_date'] = json['record_date'];
-        data['cow_id'] = cowId;
-        return HealthCheckRecord.fromJson(data);
+        // 🧸 record_data 안전하게 처리
+        Map<String, dynamic> recordData = {};
+        if (json['record_data'] != null &&
+            json['record_data'] is Map<String, dynamic>) {
+          recordData = Map<String, dynamic>.from(json['record_data']);
+        }
+
+        // 다른 값들 수동으로 추가해주기
+        recordData['id'] = json['id'];
+        recordData['cow_id'] = json['cow_id'];
+        recordData['record_date'] = json['record_date'];
+
+        return HealthCheckRecord.fromJson(recordData);
       }).toList();
 
       notifyListeners();
       return _records;
     } catch (e) {
-      print('건강검진 기록 불러오기 오류: $e');
+      print('❌ 건강검진 기록 불러오기 오류: $e');
       return [];
     }
   }
@@ -77,7 +88,7 @@ class HealthCheckProvider with ChangeNotifier {
     try {
       final response = await dio.post(
         '$baseUrl/records/health-check',
-        data: record.toBackendJson(), // ✅ 여기로 수정!
+        data: record.toJson(), // ✅ 여기로 수정!
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
@@ -104,7 +115,7 @@ class HealthCheckProvider with ChangeNotifier {
         '$baseUrl/records/$id',
         data: {
           'record_date': updated.recordDate,
-          'record_data': updated.toRecordDataJson(),
+          'record_data': updated.toJson(),
         },
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );

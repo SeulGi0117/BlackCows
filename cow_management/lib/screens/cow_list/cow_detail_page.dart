@@ -72,7 +72,8 @@ class _CowDetailPageState extends State<CowDetailPage> {
           children: [
             _buildBasicInfoCard(),
             const SizedBox(height: 20),
-            if (currentCow.hasLivestockTraceData) _buildLivestockTraceInfoCard(),
+            if (currentCow.hasLivestockTraceData)
+              _buildLivestockTraceInfoCard(),
             const SizedBox(height: 20),
             _buildHealthInfoCard(context, currentCow.id, currentCow.name),
             const SizedBox(height: 20),
@@ -98,36 +99,52 @@ class _CowDetailPageState extends State<CowDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('🐾 기본 정보', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const Text('🐾 기본 정보',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 12),
             Row(
               children: [
-                const Text('이름: ', style: TextStyle(fontWeight: FontWeight.w500)),
+                const Text('이름: ',
+                    style: TextStyle(fontWeight: FontWeight.w500)),
                 Text(currentCow.name.isNotEmpty ? currentCow.name : '미등록'),
               ],
             ),
             Row(
               children: [
-                const Text('개체번호: ', style: TextStyle(fontWeight: FontWeight.w500)),
-                Text(currentCow.earTagNumber.isNotEmpty ? currentCow.earTagNumber : '미등록'),
+                const Text('개체번호: ',
+                    style: TextStyle(fontWeight: FontWeight.w500)),
+                Text(currentCow.earTagNumber.isNotEmpty
+                    ? currentCow.earTagNumber
+                    : '미등록'),
               ],
             ),
             Row(
               children: [
-                const Text('품종: ', style: TextStyle(fontWeight: FontWeight.w500)),
-                Text((currentCow.breed != null && currentCow.breed!.isNotEmpty) ? currentCow.breed! : '미등록'),
+                const Text('품종: ',
+                    style: TextStyle(fontWeight: FontWeight.w500)),
+                Text((currentCow.breed != null && currentCow.breed!.isNotEmpty)
+                    ? currentCow.breed!
+                    : '미등록'),
               ],
             ),
             Row(
               children: [
-                const Text('센서 번호: ', style: TextStyle(fontWeight: FontWeight.w500)),
-                Text((currentCow.sensorNumber != null && currentCow.sensorNumber!.isNotEmpty) ? currentCow.sensorNumber! : '미등록'),
+                const Text('센서 번호: ',
+                    style: TextStyle(fontWeight: FontWeight.w500)),
+                Text((currentCow.sensorNumber != null &&
+                        currentCow.sensorNumber!.isNotEmpty)
+                    ? currentCow.sensorNumber!
+                    : '미등록'),
               ],
             ),
             Row(
               children: [
-                const Text('상태: ', style: TextStyle(fontWeight: FontWeight.w500)),
-                Text((currentCow.status.isNotEmpty && currentCow.status != '알 수 없음') ? currentCow.status : '미등록'),
+                const Text('상태: ',
+                    style: TextStyle(fontWeight: FontWeight.w500)),
+                Text((currentCow.status.isNotEmpty &&
+                        currentCow.status != '알 수 없음')
+                    ? currentCow.status
+                    : '미등록'),
               ],
             ),
             const SizedBox(height: 16),
@@ -154,7 +171,8 @@ class _CowDetailPageState extends State<CowDetailPage> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   textStyle: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
@@ -304,28 +322,28 @@ class _CowDetailPageState extends State<CowDetailPage> {
         _breedingRecordButton(
           title: '발정 기록',
           icon: Icons.waves,
-          route: '/estrus-record/detail',
+          route: '/estrus-record/list',
           addRoute: '/estrus-record/add',
         ),
         const SizedBox(height: 8),
         _breedingRecordButton(
           title: '인공수정 기록',
           icon: Icons.medical_services_outlined,
-          route: '/insemination-record/detail',
+          route: '/insemination-record/list',
           addRoute: '/insemination-record/add',
         ),
         const SizedBox(height: 8),
         _breedingRecordButton(
           title: '임신감정 기록',
           icon: Icons.search,
-          route: '/pregnancy-check-record/detail',
+          route: '/pregnancy-check-record/list',
           addRoute: '/pregnancy-check-record/add',
         ),
         const SizedBox(height: 8),
         _breedingRecordButton(
           title: '분만 기록',
           icon: Icons.child_care,
-          route: '/calving-record/detail',
+          route: '/calving-record/list',
           addRoute: '/calving-record/add',
         ),
       ],
@@ -585,11 +603,11 @@ class _CowDetailPageState extends State<CowDetailPage> {
       return response.statusCode == 200 || response.statusCode == 204;
     } catch (e) {
       CowDetailPage._logger.severe("삭제 중 오류 발생: $e");
-      
+
       if (context.mounted) {
         ErrorUtils.handleError(
-          context, 
-          e, 
+          context,
+          e,
           customMessage: '젖소 삭제 중 오류가 발생했습니다',
           defaultMessage: '삭제에 실패했습니다',
         );
@@ -598,13 +616,15 @@ class _CowDetailPageState extends State<CowDetailPage> {
     }
   }
 
-  Future<void> showDeleteCowDialog(BuildContext context, String cowName, VoidCallback onConfirm) async {
+  Future<void> showDeleteCowDialog(
+      BuildContext context, String cowName, VoidCallback onConfirm) async {
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('정말로 삭제하시겠습니까?', style: TextStyle(fontWeight: FontWeight.bold)),
+          title: const Text('정말로 삭제하시겠습니까?',
+              style: TextStyle(fontWeight: FontWeight.bold)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -650,7 +670,9 @@ class _CowDetailPageState extends State<CowDetailPage> {
     final data = currentCow.livestockTraceData ?? {};
     // 데이터 파싱 (API 구조에 맞게 key 수정 필요)
     final earTag = data['earTag'] ?? currentCow.earTagNumber;
-    final birthDate = data['birthDate'] ?? currentCow.birthdate?.toString().split(' ')[0] ?? '-';
+    final birthDate = data['birthDate'] ??
+        currentCow.birthdate?.toString().split(' ')[0] ??
+        '-';
     final ageMonth = data['ageMonth'] ?? '-';
     final ownerMasked = data['ownerMasked'] ?? '-';
     final farmId = data['farmId'] ?? '-';
@@ -673,23 +695,70 @@ class _CowDetailPageState extends State<CowDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('🔍 축산물이력제 정보', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const Text('🔍 축산물이력제 정보',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 12),
-            Row(children: [const Text('이표번호: ', style: TextStyle(fontWeight: FontWeight.w500)), Text(earTag)]),
-            Row(children: [const Text('개월령: ', style: TextStyle(fontWeight: FontWeight.w500)), Text(ageMonth)]),
-            Row(children: [const Text('출생일: ', style: TextStyle(fontWeight: FontWeight.w500)), Text(birthDate)]),
-            Row(children: [const Text('농가정보: ', style: TextStyle(fontWeight: FontWeight.w500)), Text('$ownerMasked ($farmId)')]),
-            Row(children: [const Text('목장주소: ', style: TextStyle(fontWeight: FontWeight.w500)), Text(farmAddress)]),
+            Row(children: [
+              const Text('이표번호: ',
+                  style: TextStyle(fontWeight: FontWeight.w500)),
+              Text(earTag)
+            ]),
+            Row(children: [
+              const Text('개월령: ',
+                  style: TextStyle(fontWeight: FontWeight.w500)),
+              Text(ageMonth)
+            ]),
+            Row(children: [
+              const Text('출생일: ',
+                  style: TextStyle(fontWeight: FontWeight.w500)),
+              Text(birthDate)
+            ]),
+            Row(children: [
+              const Text('농가정보: ',
+                  style: TextStyle(fontWeight: FontWeight.w500)),
+              Text('$ownerMasked ($farmId)')
+            ]),
+            Row(children: [
+              const Text('목장주소: ',
+                  style: TextStyle(fontWeight: FontWeight.w500)),
+              Text(farmAddress)
+            ]),
             const SizedBox(height: 10),
-            const Text('출생신고 정보', style: TextStyle(fontWeight: FontWeight.bold)),
-            Row(children: [const Text('등록자: ', style: TextStyle(fontWeight: FontWeight.w500)), Text(birthRegistrar)]),
-            Row(children: [const Text('등록일: ', style: TextStyle(fontWeight: FontWeight.w500)), Text(birthReportDate)]),
-            Row(children: [const Text('등록지: ', style: TextStyle(fontWeight: FontWeight.w500)), Text(birthReportAddress)]),
+            const Text('출생신고 정보',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            Row(children: [
+              const Text('등록자: ',
+                  style: TextStyle(fontWeight: FontWeight.w500)),
+              Text(birthRegistrar)
+            ]),
+            Row(children: [
+              const Text('등록일: ',
+                  style: TextStyle(fontWeight: FontWeight.w500)),
+              Text(birthReportDate)
+            ]),
+            Row(children: [
+              const Text('등록지: ',
+                  style: TextStyle(fontWeight: FontWeight.w500)),
+              Text(birthReportAddress)
+            ]),
             const SizedBox(height: 10),
-            const Text('백신/질병검사 정보', style: TextStyle(fontWeight: FontWeight.bold)),
-            Row(children: [const Text('구제역: ', style: TextStyle(fontWeight: FontWeight.w500)), Text(fmd)]),
-            Row(children: [const Text('브루셀라 이동: ', style: TextStyle(fontWeight: FontWeight.w500)), Text(brucellaMove)]),
-            Row(children: [const Text('브루셀라 도축: ', style: TextStyle(fontWeight: FontWeight.w500)), Text(brucellaSlaughter)]),
+            const Text('백신/질병검사 정보',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            Row(children: [
+              const Text('구제역: ',
+                  style: TextStyle(fontWeight: FontWeight.w500)),
+              Text(fmd)
+            ]),
+            Row(children: [
+              const Text('브루셀라 이동: ',
+                  style: TextStyle(fontWeight: FontWeight.w500)),
+              Text(brucellaMove)
+            ]),
+            Row(children: [
+              const Text('브루셀라 도축: ',
+                  style: TextStyle(fontWeight: FontWeight.w500)),
+              Text(brucellaSlaughter)
+            ]),
           ],
         ),
       ),

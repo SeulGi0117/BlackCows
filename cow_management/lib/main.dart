@@ -16,6 +16,7 @@ import 'package:cow_management/providers/DetailPage/Health/vaccination_record_pr
 import 'package:cow_management/providers/DetailPage/feeding_record_provider.dart';
 import 'package:cow_management/providers/DetailPage/Health/weight_record_provider.dart';
 import 'package:cow_management/providers/DetailPage/Health/treatment_record_provider.dart';
+import 'package:cow_management/providers/DetailPage/Reproduction/estrus_record_provider.dart';
 
 import 'package:cow_management/screens/ai_analysis/analysis_page.dart';
 import 'package:cow_management/screens/ai_chatbot/app_wrapper.dart';
@@ -65,6 +66,9 @@ import 'package:cow_management/screens/cow_list/Cow_Detail/Treatment/treatment_a
 import 'package:cow_management/screens/cow_list/Cow_Detail/Treatment/treatment_list_page.dart';
 // import 'package:cow_management/screens/cow_list/Cow_Detail/Treatment/treatment_detail_page.dart';
 
+import 'package:cow_management/screens/cow_list/Cow_Detail/Estrus/estrus_add_page.dart';
+import 'package:cow_management/screens/cow_list/Cow_Detail/Estrus/estrus_list_page.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: "assets/config/.env");
@@ -77,7 +81,7 @@ Future<void> main() async {
   });
 
   // 테스트 모드 설정
-  const bool isTestMode = false;
+  const bool isTestMode = true;
 
   runApp(
     MultiProvider(
@@ -91,6 +95,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => FeedingRecordProvider()),
         ChangeNotifierProvider(create: (_) => WeightRecordProvider()),
         ChangeNotifierProvider(create: (_) => TreatmentRecordProvider()),
+        ChangeNotifierProvider(create: (_) => EstrusRecordProvider()),
       ],
       child: const SoDamApp(isTestMode: isTestMode),
     ),
@@ -272,6 +277,22 @@ class SoDamApp extends StatelessWidget {
             return WeightAddPage(
               cowId: args['cowId'],
               cowName: args['cowName'],
+            );
+          },
+          '/estrus-record/list': (context) {
+            final args = ModalRoute.of(context)!.settings.arguments
+                as Map<String, String>;
+            return EstrusRecordListPage(
+              cowId: args['cowId']!,
+              cowName: args['cowName']!,
+            );
+          },
+          '/estrus-record/add': (context) {
+            final args = ModalRoute.of(context)!.settings.arguments
+                as Map<String, String>;
+            return EstrusAddPage(
+              cowId: args['cowId']!,
+              cowName: args['cowName']!,
             );
           },
         });

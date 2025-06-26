@@ -17,7 +17,7 @@ class HealthCheckListPage extends StatelessWidget {
   Future<void> _fetchFilteredRecords(BuildContext context) async {
     final token = Provider.of<UserProvider>(context, listen: false).accessToken;
     await Provider.of<HealthCheckProvider>(context, listen: false)
-        .fetchFilteredRecords(cowId, token!, 'health_check');
+        .fetchRecords(cowId, token!);
   }
 
   @override
@@ -25,7 +25,9 @@ class HealthCheckListPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text('$cowName - 건강검진 목록')),
       body: FutureBuilder<void>(
-        future: Provider.of<HealthCheckProvider>(context, listen: false).fetchRecords(cowId, Provider.of<UserProvider>(context, listen: false).accessToken!),
+        future: Provider.of<HealthCheckProvider>(context, listen: false)
+            .fetchRecords(cowId,
+                Provider.of<UserProvider>(context, listen: false).accessToken!),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -43,7 +45,8 @@ class HealthCheckListPage extends StatelessWidget {
               final record = records[index];
               return ListTile(
                 title: Text(record.recordDate),
-                subtitle: Text('체온: \\${record.bodyTemperature != null ? record.bodyTemperature.toString() + '℃' : '-'}'),
+                subtitle: Text(
+                    '체온: ${record.bodyTemperature != null ? '${record.bodyTemperature}℃' : '-'}'),
                 onTap: () {
                   Navigator.push(
                     context,
