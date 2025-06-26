@@ -7,89 +7,180 @@ import 'package:cow_management/providers/user_provider.dart';
 class FeedingRecordDetailPage extends StatelessWidget {
   final FeedingRecord record;
 
-  const FeedingRecordDetailPage({super.key, required this.record});
+  const FeedingRecordDetailPage({
+    super.key,
+    required this.record,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('사료 기록 상세'),
+        title: Text('사료급여 상세: ${record.feedingDate}'),
+        backgroundColor: Colors.amber,
+        foregroundColor: Colors.white,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildInfoRow('급여 날짜', record.feedingDate),
-            _buildInfoRow('급여 시간', record.feedTime),
-            _buildInfoRow('사료 종류', record.feedType),
-            _buildInfoRow('급여량', '${record.amount} kg'),
-            _buildInfoRow('비고', record.notes ?? '없음'),
-            const SizedBox(height: 30),
-            Center(
-              child: ElevatedButton.icon(
-                onPressed: () async {
-                  final confirmed = await showDialog<bool>(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('삭제 확인'),
-                      content: const Text('정말 이 사료 기록을 삭제하시겠습니까?'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, false),
-                          child: const Text('취소'),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, true),
-                          child: const Text('삭제',
-                              style: TextStyle(color: Colors.red)),
-                        ),
-                      ],
-                    ),
-                  );
-
-                  if (confirmed == true) {
-                    final token =
-                        Provider.of<UserProvider>(context, listen: false)
-                            .accessToken;
-
-                    final success = await Provider.of<FeedingRecordProvider>(
-                      context,
-                      listen: false,
-                    ).deleteRecord(record.id, token!);
-
-                    if (success && context.mounted) {
-                      Navigator.pop(context, true);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('삭제되었습니다')),
-                      );
-                    }
-                  }
-                },
-                icon: const Icon(Icons.delete),
-                label: const Text('기록 삭제'),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          // 기본 정보 카드
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '🌾 기본 정보',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.amber),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildInfoRow('📅 급여 날짜', record.feedingDate),
+                  _buildInfoRow('⏰ 급여 시간', record.feedTime),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // 사료 정보 카드
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '🥗 사료 정보',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildInfoRow('🌾 사료 종류', record.feedType),
+                  _buildInfoRow('⚖️ 급여량', '${record.amount}kg'),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // 추가 정보 카드
+          if (record.notes != null && record.notes!.isNotEmpty)
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '📝 추가 정보',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.purple),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildInfoRow('📋 특이사항', record.notes!),
+                  ],
+                ),
+              ),
+            ),
+
+          const SizedBox(height: 20),
+
+          // 수정/삭제 버튼
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('수정 기능은 준비 중입니다')),
+                    );
+                  },
+                  icon: const Icon(Icons.edit),
+                  label: const Text('수정'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.amber,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () => _showDeleteConfirmDialog(context),
+                  icon: const Icon(Icons.delete),
+                  label: const Text('삭제'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildInfoRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-              width: 100,
-              child: Text('$label:',
-                  style: const TextStyle(fontWeight: FontWeight.bold))),
-          Expanded(child: Text(value)),
+            width: 130,
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
         ],
       ),
+    );
+  }
+
+  void _showDeleteConfirmDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('🗑️ 기록 삭제'),
+          content: const Text('이 사료급여 기록을 삭제하시겠습니까?\n삭제된 기록은 복구할 수 없습니다.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('취소'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('삭제 기능은 준비 중입니다')),
+                );
+              },
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('삭제'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

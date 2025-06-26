@@ -8,6 +8,7 @@ import 'package:cow_management/screens/cow_list/cow_edit_page.dart';
 import 'package:cow_management/providers/user_provider.dart';
 import 'package:cow_management/utils/error_utils.dart';
 import 'package:cow_management/screens/cow_list/cow_list_page.dart';
+import 'package:cow_management/screens/cow_list/cow_detailed_records_page.dart';
 
 class CowDetailPage extends StatefulWidget {
   final Cow cow;
@@ -148,34 +149,60 @@ class _CowDetailPageState extends State<CowDetailPage> {
               ],
             ),
             const SizedBox(height: 16),
-            SizedBox(
-              width: 160,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => CowEditPage(cow: currentCow),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CowEditPage(cow: currentCow),
+                        ),
+                      ).then((updatedCow) {
+                        if (updatedCow != null) {
+                          setState(() => currentCow = updatedCow);
+                        }
+                      });
+                    },
+                    icon: const Icon(Icons.edit, size: 18),
+                    label: const Text('정보 수정'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      textStyle: const TextStyle(fontWeight: FontWeight.bold),
                     ),
-                  ).then((updatedCow) {
-                    if (updatedCow != null) {
-                      setState(() => currentCow = updatedCow);
-                    }
-                  });
-                },
-                icon: const Icon(Icons.edit, size: 18),
-                label: const Text('정보 수정하기'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
                   ),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  textStyle: const TextStyle(fontWeight: FontWeight.bold),
                 ),
-              ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CowDetailedRecordsPage(cow: currentCow),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.assignment, size: 18),
+                    label: const Text('상세 기록'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.pink,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      textStyle: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

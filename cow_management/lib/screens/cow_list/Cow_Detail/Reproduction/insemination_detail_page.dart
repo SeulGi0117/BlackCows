@@ -1,20 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:cow_management/models/Detail/Reproduction/estrus_record.dart';
+import 'package:provider/provider.dart';
+import 'package:cow_management/models/Detail/Reproduction/insemination_record.dart';
+import 'package:cow_management/providers/DetailPage/Reproduction/insemination_record_provider.dart';
+import 'package:cow_management/providers/user_provider.dart';
 
-class EstrusDetailPage extends StatelessWidget {
-  final EstrusRecord record;
+class InseminationDetailPage extends StatefulWidget {
+  final InseminationRecord record;
+  final String cowId;
+  final String cowName;
 
-  const EstrusDetailPage({
+  const InseminationDetailPage({
     super.key,
     required this.record,
+    required this.cowId,
+    required this.cowName,
   });
 
+  @override
+  State<InseminationDetailPage> createState() => _InseminationDetailPageState();
+}
+
+class _InseminationDetailPageState extends State<InseminationDetailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('발정 기록 상세: ${record.recordDate}'),
-        backgroundColor: Colors.pink.shade300,
+        title: Text('인공수정 상세: ${widget.record.recordDate}'),
+        backgroundColor: Colors.pink,
         foregroundColor: Colors.white,
       ),
       body: ListView(
@@ -28,17 +40,17 @@ class EstrusDetailPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    '💕 기본 정보',
+                    '🎯 기본 정보',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.pink),
                   ),
                   const SizedBox(height: 16),
-                  _buildInfoRow('📅 발정 날짜', record.recordDate),
-                  if (record.estrusStartTime != null && record.estrusStartTime!.isNotEmpty)
-                    _buildInfoRow('⏰ 발정 시간', record.estrusStartTime!),
-                  if (record.detectedBy != null && record.detectedBy!.isNotEmpty)
-                    _buildInfoRow('👨‍🌾 발견자', record.detectedBy!),
-                  if (record.detectionMethod != null && record.detectionMethod!.isNotEmpty)
-                    _buildInfoRow('🔍 발견 방법', record.detectionMethod!),
+                  _buildInfoRow('📅 수정 날짜', widget.record.recordDate),
+                  if (widget.record.inseminationTime != null && widget.record.inseminationTime!.isNotEmpty)
+                    _buildInfoRow('⏰ 수정 시간', widget.record.inseminationTime!),
+                  if (widget.record.veterinarian != null && widget.record.veterinarian!.isNotEmpty)
+                    _buildInfoRow('👨‍⚕️ 수의사', widget.record.veterinarian!),
+                  if (widget.record.inseminationMethod != null && widget.record.inseminationMethod!.isNotEmpty)
+                    _buildInfoRow('🔧 수정 방법', widget.record.inseminationMethod!),
                 ],
               ),
             ),
@@ -46,7 +58,7 @@ class EstrusDetailPage extends StatelessWidget {
 
           const SizedBox(height: 12),
 
-          // 발정 특성 카드
+          // 종축 정보 카드
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -54,16 +66,14 @@ class EstrusDetailPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    '🌡️ 발정 특성',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.red),
+                    '🐂 종축 정보',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.brown),
                   ),
                   const SizedBox(height: 16),
-                  if (record.estrusIntensity != null && record.estrusIntensity!.isNotEmpty)
-                    _buildInfoRow('🔥 발정 강도', record.estrusIntensity!),
-                  if (record.estrusDuration != null && record.estrusDuration! > 0)
-                    _buildInfoRow('⏱️ 지속 시간', '${record.estrusDuration}시간'),
-                  if (record.behaviorSigns != null && record.behaviorSigns!.isNotEmpty)
-                    _buildInfoRow('🎭 행동 징후', record.behaviorSigns!.join(', ')),
+                  if (widget.record.bullInfo != null && widget.record.bullInfo!.isNotEmpty)
+                    _buildInfoRow('🐂 종축 정보', widget.record.bullInfo!),
+                  if (widget.record.semenQuality != null && widget.record.semenQuality!.isNotEmpty)
+                    _buildInfoRow('💧 정액 품질', widget.record.semenQuality!),
                 ],
               ),
             ),
@@ -71,7 +81,7 @@ class EstrusDetailPage extends StatelessWidget {
 
           const SizedBox(height: 12),
 
-          // 생리적 징후 카드
+          // 결과 정보 카드
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -79,16 +89,16 @@ class EstrusDetailPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    '🔬 생리적 징후',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blue),
+                    '📊 결과 정보',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
                   ),
                   const SizedBox(height: 16),
-                  if (record.visualSigns != null && record.visualSigns!.isNotEmpty)
-                    _buildInfoRow('👁️ 육안 관찰', record.visualSigns!.join(', ')),
-                  if (record.nextExpectedEstrus != null && record.nextExpectedEstrus!.isNotEmpty)
-                    _buildInfoRow('📅 다음 발정 예상일', record.nextExpectedEstrus!),
-                  if (record.breedingPlanned != null)
-                    _buildInfoRow('🎯 교배 계획', record.breedingPlanned! ? '예정됨' : '없음'),
+                  if (widget.record.inseminationResult != null && widget.record.inseminationResult!.isNotEmpty)
+                    _buildInfoRow('📈 수정 결과', widget.record.inseminationResult!),
+                  if (widget.record.expectedCalvingDate != null && widget.record.expectedCalvingDate!.isNotEmpty)
+                    _buildInfoRow('📅 분만 예정일', widget.record.expectedCalvingDate!),
+                  if (widget.record.cost != null)
+                    _buildInfoRow('💰 비용', '${widget.record.cost?.toStringAsFixed(0)}원'),
                 ],
               ),
             ),
@@ -97,7 +107,7 @@ class EstrusDetailPage extends StatelessWidget {
           const SizedBox(height: 12),
 
           // 추가 정보 카드
-          if (record.notes != null && record.notes!.isNotEmpty)
+          if (widget.record.notes != null && widget.record.notes!.isNotEmpty)
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -109,7 +119,7 @@ class EstrusDetailPage extends StatelessWidget {
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.purple),
                     ),
                     const SizedBox(height: 16),
-                    _buildInfoRow('📋 특이사항', record.notes!),
+                    _buildInfoRow('📋 특이사항', widget.record.notes!),
                   ],
                 ),
               ),
@@ -130,7 +140,7 @@ class EstrusDetailPage extends StatelessWidget {
                   icon: const Icon(Icons.edit),
                   label: const Text('수정'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.pink.shade300,
+                    backgroundColor: Colors.pink,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
@@ -139,7 +149,7 @@ class EstrusDetailPage extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () => _showDeleteConfirmDialog(context),
+                  onPressed: () => _showDeleteConfirmDialog(),
                   icon: const Icon(Icons.delete),
                   label: const Text('삭제'),
                   style: ElevatedButton.styleFrom(
@@ -187,13 +197,13 @@ class EstrusDetailPage extends StatelessWidget {
     );
   }
 
-  void _showDeleteConfirmDialog(BuildContext context) {
+  void _showDeleteConfirmDialog() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('🗑️ 기록 삭제'),
-          content: const Text('이 발정 기록을 삭제하시겠습니까?\n삭제된 기록은 복구할 수 없습니다.'),
+          content: const Text('이 인공수정 기록을 삭제하시겠습니까?\n삭제된 기록은 복구할 수 없습니다.'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -202,9 +212,7 @@ class EstrusDetailPage extends StatelessWidget {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('삭제 기능은 준비 중입니다')),
-                );
+                _deleteRecord();
               },
               style: TextButton.styleFrom(foregroundColor: Colors.red),
               child: const Text('삭제'),
@@ -214,4 +222,37 @@ class EstrusDetailPage extends StatelessWidget {
       },
     );
   }
-}
+
+  Future<void> _deleteRecord() async {
+    if (widget.record.id == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('삭제할 수 없는 기록입니다'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    try {
+      final token = Provider.of<UserProvider>(context, listen: false).accessToken!;
+      final provider = Provider.of<InseminationRecordProvider>(context, listen: false);
+      final success = await provider.deleteRecord(widget.record.id!, token);
+
+      if (success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('인공수정 기록이 삭제되었습니다'), backgroundColor: Colors.green),
+        );
+        Navigator.of(context).pop(); // 상세 페이지 닫기
+        Navigator.of(context).pop(); // 목록 페이지로 돌아가기
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('기록 삭제에 실패했습니다'), backgroundColor: Colors.red),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('오류가 발생했습니다: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+} 
