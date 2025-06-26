@@ -108,7 +108,7 @@ class _CowDetailPageState extends State<CowDetailPage> {
             ),
             Row(
               children: [
-                const Text('개체번호: ', style: TextStyle(fontWeight: FontWeight.w500)),
+                const Text('이표번호: ', style: TextStyle(fontWeight: FontWeight.w500)),
                 Text(currentCow.earTagNumber.isNotEmpty ? currentCow.earTagNumber : '미등록'),
               ],
             ),

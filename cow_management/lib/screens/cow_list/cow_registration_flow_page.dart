@@ -489,6 +489,16 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
             filled: true,
             fillColor: Colors.white,
           ),
+          onTap: () {
+            if (_earTagController.text.isEmpty) {
+              setState(() {
+                _earTagController.text = '002';
+                _earTagController.selection = TextSelection.fromPosition(
+                  TextPosition(offset: _earTagController.text.length),
+                );
+              });
+            }
+          },
           onChanged: (value) {
             if (_errorMessage != null) {
               setState(() => _errorMessage = null);
@@ -911,6 +921,21 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
             filled: true,
             fillColor: Colors.white,
           ),
+          onTap: () {
+            if (_earTagController.text.isEmpty) {
+              setState(() {
+                _earTagController.text = '002';
+                _earTagController.selection = TextSelection.fromPosition(
+                  TextPosition(offset: _earTagController.text.length),
+                );
+              });
+            }
+          },
+          onChanged: (value) {
+            if (_errorMessage != null) {
+              setState(() => _errorMessage = null);
+            }
+          },
         ),
         const SizedBox(height: 16),
 
