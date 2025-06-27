@@ -15,7 +15,8 @@ class InseminationRecordAddPage extends StatefulWidget {
   });
 
   @override
-  State<InseminationRecordAddPage> createState() => _InseminationRecordAddPageState();
+  State<InseminationRecordAddPage> createState() =>
+      _InseminationRecordAddPageState();
 }
 
 class _InseminationRecordAddPageState extends State<InseminationRecordAddPage> {
@@ -28,6 +29,7 @@ class _InseminationRecordAddPageState extends State<InseminationRecordAddPage> {
   final _costController = TextEditingController();
   final _expectedCalvingDateController = TextEditingController();
   final _notesController = TextEditingController();
+  final _successProbabilityController = TextEditingController();
 
   String _inseminationMethod = '인공수정';
   String _inseminationResult = '대기중';
@@ -48,6 +50,8 @@ class _InseminationRecordAddPageState extends State<InseminationRecordAddPage> {
     _costController.dispose();
     _expectedCalvingDateController.dispose();
     _notesController.dispose();
+    _successProbabilityController.dispose();
+
     super.dispose();
   }
 
@@ -71,7 +75,9 @@ class _InseminationRecordAddPageState extends State<InseminationRecordAddPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('🎯 인공수정 기본 정보', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      const Text('🎯 인공수정 기본 정보',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _recordDateController,
@@ -80,7 +86,8 @@ class _InseminationRecordAddPageState extends State<InseminationRecordAddPage> {
                           border: OutlineInputBorder(),
                           suffixIcon: Icon(Icons.calendar_today),
                         ),
-                        validator: (value) => value?.isEmpty == true ? '수정일을 입력해주세요' : null,
+                        validator: (value) =>
+                            value?.isEmpty == true ? '수정일을 입력해주세요' : null,
                         onTap: () async {
                           final date = await showDatePicker(
                             context: context,
@@ -89,7 +96,8 @@ class _InseminationRecordAddPageState extends State<InseminationRecordAddPage> {
                             lastDate: DateTime.now(),
                           );
                           if (date != null) {
-                            _recordDateController.text = date.toString().split(' ')[0];
+                            _recordDateController.text =
+                                date.toString().split(' ')[0];
                           }
                         },
                       ),
@@ -115,7 +123,8 @@ class _InseminationRecordAddPageState extends State<InseminationRecordAddPage> {
                           DropdownMenuItem(value: '자연교배', child: Text('자연교배')),
                           DropdownMenuItem(value: '동기화', child: Text('동기화')),
                         ],
-                        onChanged: (value) => setState(() => _inseminationMethod = value!),
+                        onChanged: (value) =>
+                            setState(() => _inseminationMethod = value!),
                       ),
                     ],
                   ),
@@ -128,7 +137,9 @@ class _InseminationRecordAddPageState extends State<InseminationRecordAddPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('🐂 종축 및 정액 정보', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      const Text('🐂 종축 및 정액 정보',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _bullInfoController,
@@ -158,7 +169,9 @@ class _InseminationRecordAddPageState extends State<InseminationRecordAddPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('👨‍⚕️ 수정 결과 및 기타', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      const Text('👨‍⚕️ 수정 결과 및 기타',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
                         value: _inseminationResult,
@@ -170,9 +183,11 @@ class _InseminationRecordAddPageState extends State<InseminationRecordAddPage> {
                           DropdownMenuItem(value: '대기중', child: Text('대기중')),
                           DropdownMenuItem(value: '성공', child: Text('성공')),
                           DropdownMenuItem(value: '실패', child: Text('실패')),
-                          DropdownMenuItem(value: '재수정필요', child: Text('재수정필요')),
+                          DropdownMenuItem(
+                              value: '재수정필요', child: Text('재수정필요')),
                         ],
-                        onChanged: (value) => setState(() => _inseminationResult = value!),
+                        onChanged: (value) =>
+                            setState(() => _inseminationResult = value!),
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
@@ -203,12 +218,15 @@ class _InseminationRecordAddPageState extends State<InseminationRecordAddPage> {
                         onTap: () async {
                           final date = await showDatePicker(
                             context: context,
-                            initialDate: DateTime.now().add(const Duration(days: 280)),
+                            initialDate:
+                                DateTime.now().add(const Duration(days: 280)),
                             firstDate: DateTime.now(),
-                            lastDate: DateTime.now().add(const Duration(days: 365)),
+                            lastDate:
+                                DateTime.now().add(const Duration(days: 365)),
                           );
                           if (date != null) {
-                            _expectedCalvingDateController.text = date.toString().split(' ')[0];
+                            _expectedCalvingDateController.text =
+                                date.toString().split(' ')[0];
                           }
                         },
                       ),
@@ -223,7 +241,9 @@ class _InseminationRecordAddPageState extends State<InseminationRecordAddPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('📝 메모', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      const Text('📝 메모',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _notesController,
@@ -247,9 +267,12 @@ class _InseminationRecordAddPageState extends State<InseminationRecordAddPage> {
                     backgroundColor: Colors.blue,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
                   ),
-                  child: const Text('인공수정 기록 저장', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  child: const Text('인공수정 기록 저장',
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -264,39 +287,60 @@ class _InseminationRecordAddPageState extends State<InseminationRecordAddPage> {
 
     final record = InseminationRecord(
       cowId: widget.cowId,
-      recordDate: _recordDateController.text,
-      inseminationTime: _inseminationTimeController.text.isEmpty ? null : _inseminationTimeController.text,
-      bullInfo: _bullInfoController.text.isEmpty ? null : _bullInfoController.text,
-      semenQuality: _semenQualityController.text.isEmpty ? null : _semenQualityController.text,
+      recordDate: _recordDateController.text.trim(),
+      inseminationTime: _inseminationTimeController.text.trim().isEmpty
+          ? null
+          : _inseminationTimeController.text.trim(),
+      bullBreed: _bullInfoController.text.trim().isEmpty
+          ? null
+          : _bullInfoController.text.trim(),
+      semenQuality: _semenQualityController.text.trim().isEmpty
+          ? null
+          : _semenQualityController.text.trim(),
       inseminationMethod: _inseminationMethod,
-      veterinarian: _veterinarianController.text.isEmpty ? null : _veterinarianController.text,
-      cost: _costController.text.isEmpty ? null : double.tryParse(_costController.text),
-      expectedCalvingDate: _expectedCalvingDateController.text.isEmpty ? null : _expectedCalvingDateController.text,
-      inseminationResult: _inseminationResult,
-      notes: _notesController.text.isEmpty ? null : _notesController.text,
+      technicianName: _veterinarianController.text.trim().isEmpty
+          ? null
+          : _veterinarianController.text.trim(),
+      cost: _costController.text.trim().isEmpty
+          ? null
+          : double.tryParse(_costController.text.trim()),
+      expectedCalvingDate: _expectedCalvingDateController.text.trim().isEmpty
+          ? null
+          : _expectedCalvingDateController.text.trim(),
+      successProbability: _successProbabilityController.text.isEmpty
+          ? null
+          : double.tryParse(_successProbabilityController.text),
+      notes: _notesController.text.trim().isEmpty
+          ? null
+          : _notesController.text.trim(),
     );
 
     try {
-      final token = Provider.of<UserProvider>(context, listen: false).accessToken!;
-      final provider = Provider.of<InseminationRecordProvider>(context, listen: false);
+      final token =
+          Provider.of<UserProvider>(context, listen: false).accessToken!;
+      final provider =
+          Provider.of<InseminationRecordProvider>(context, listen: false);
       final success = await provider.addInseminationRecord(record, token);
 
       if (success && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('인공수정 기록이 저장되었습니다'), backgroundColor: Colors.green),
+          const SnackBar(
+              content: Text('인공수정 기록이 저장되었습니다'), backgroundColor: Colors.green),
         );
         Navigator.pop(context);
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('기록 저장에 실패했습니다'), backgroundColor: Colors.red),
+          const SnackBar(
+              content: Text('기록 저장에 실패했습니다'), backgroundColor: Colors.red),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('오류가 발생했습니다: $e'), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text('오류가 발생했습니다: $e'), backgroundColor: Colors.red),
         );
       }
     }
   }
-} 
+}

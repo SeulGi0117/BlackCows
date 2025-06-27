@@ -38,8 +38,10 @@ class _EstrusRecordListPageState extends State<EstrusRecordListPage> {
         _errorMessage = '';
       });
 
-      final token = Provider.of<UserProvider>(context, listen: false).accessToken;
-      final provider = Provider.of<EstrusRecordProvider>(context, listen: false);
+      final token =
+          Provider.of<UserProvider>(context, listen: false).accessToken;
+      final provider =
+          Provider.of<EstrusRecordProvider>(context, listen: false);
       final records = await provider.fetchRecords(widget.cowId, token!);
 
       print("📦 불러온 발정 기록 수: ${records.length}");
@@ -146,17 +148,17 @@ class _EstrusRecordListPageState extends State<EstrusRecordListPage> {
     }
 
     if (records.isEmpty) {
-      return Center(
+      return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.favorite_outline,
               size: 64,
               color: Colors.grey,
             ),
-            const SizedBox(height: 16),
-            const Text(
+            SizedBox(height: 16),
+            Text(
               '발정 기록이 없습니다',
               style: TextStyle(
                 fontSize: 18,
@@ -164,8 +166,8 @@ class _EstrusRecordListPageState extends State<EstrusRecordListPage> {
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const SizedBox(height: 8),
-            const Text(
+            SizedBox(height: 8),
+            Text(
               '아래 + 버튼을 눌러 첫 번째 기록을 추가해보세요',
               style: TextStyle(
                 fontSize: 14,
@@ -182,6 +184,7 @@ class _EstrusRecordListPageState extends State<EstrusRecordListPage> {
       itemCount: records.length,
       itemBuilder: (context, index) {
         final record = records[index];
+        print("🐮 [$index] 발정 강도: ${record.estrusIntensity}");
         return Card(
           margin: const EdgeInsets.only(bottom: 12),
           elevation: 2,
@@ -194,7 +197,7 @@ class _EstrusRecordListPageState extends State<EstrusRecordListPage> {
               ),
             ),
             title: Text(
-              '발정 강도: ${record.estrusIntensity ?? '정보 없음'}',
+              '발정 강도: ${record.estrusIntensity ?? '정보 없음'} / 기간: ${record.estrusDuration != null ? '${record.estrusDuration}시간' : '정보 없음'}',
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
               ),

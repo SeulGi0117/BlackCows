@@ -8,7 +8,8 @@ class InseminationRecordProvider with ChangeNotifier {
 
   List<InseminationRecord> get records => _records;
 
-  Future<List<InseminationRecord>> fetchRecords(String cowId, String token) async {
+  Future<List<InseminationRecord>> fetchRecords(
+      String cowId, String token) async {
     final dio = Dio();
     final baseUrl = dotenv.env['API_BASE_URL'];
 
@@ -19,21 +20,26 @@ class InseminationRecordProvider with ChangeNotifier {
         '$baseUrl/records/cow/$cowId/breeding-records',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
-
+      print('[🐮 DEBUG] Response status: ${response.statusCode}');
+      print('[🐮 DEBUG] Response data: ${response.data}');
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data;
 
         final inseminationRecords = data
-            .where((record) =>
-                record['record_type'] == 'insemination' &&
-                record['record_data'] != null)
+            .where((record) => record['record_type'] == 'insemination')
             .map((json) {
-          final recordData = Map<String, dynamic>.from(json['record_data']);
-          recordData['cow_id'] = json['cow_id'];
-          recordData['record_date'] = json['record_date'];
-          recordData['id'] = json['id'];
-          return InseminationRecord.fromJson(recordData);
-        }).toList();
+              try {
+                return InseminationRecord.fromJson(
+                    Map<String, dynamic>.from(json));
+              } catch (e) {
+                print('! 인공수정 파싱 오류: $e');
+                print('📄 문제가 된 데이터: $json');
+                return null;
+              }
+            })
+            .where((record) => record != null)
+            .cast<InseminationRecord>()
+            .toList();
 
         _records = inseminationRecords;
         notifyListeners();
@@ -55,18 +61,31 @@ class InseminationRecordProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> addInseminationRecord(InseminationRecord record, String token) async {
+  Future<bool> addInseminationRecord(
+      InseminationRecord record, String token) async {
     final dio = Dio();
     final baseUrl = dotenv.env['API_BASE_URL'];
 
     if (baseUrl == null) return false;
 
     try {
+      final requestData = {
+        'cow_id': record.cowId,
+        'record_date': record.recordDate,
+        'record_type': 'insemination',
+        'title': '인공수정 실시',
+        'description': record.notes ?? '',
+        'record_data': record.toJson(), // ✅ 핵심 포인트!
+      };
+
       final response = await dio.post(
         '$baseUrl/records/insemination',
-        data: record.toJson(),
+        data: requestData,
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
+
+      print('🔄 인공수정 기록 저장 요청: $requestData');
+      print('✅ 인공수정 기록 저장 응답: ${response.statusCode}');
 
       return response.statusCode == 201;
     } catch (e) {
@@ -75,7 +94,8 @@ class InseminationRecordProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> updateRecord(String recordId, InseminationRecord record, String token) async {
+  Future<bool> updateRecord(
+      String recordId, InseminationRecord record, String token) async {
     final dio = Dio();
     final baseUrl = dotenv.env['API_BASE_URL'];
 
@@ -113,4 +133,4 @@ class InseminationRecordProvider with ChangeNotifier {
       return false;
     }
   }
-} 
+}

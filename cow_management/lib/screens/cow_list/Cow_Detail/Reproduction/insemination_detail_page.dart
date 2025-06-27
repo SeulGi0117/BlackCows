@@ -41,16 +41,23 @@ class _InseminationDetailPageState extends State<InseminationDetailPage> {
                 children: [
                   const Text(
                     '🎯 기본 정보',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.pink),
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.pink),
                   ),
                   const SizedBox(height: 16),
                   _buildInfoRow('📅 수정 날짜', widget.record.recordDate),
-                  if (widget.record.inseminationTime != null && widget.record.inseminationTime!.isNotEmpty)
+                  if (widget.record.inseminationTime != null &&
+                      widget.record.inseminationTime!.isNotEmpty)
                     _buildInfoRow('⏰ 수정 시간', widget.record.inseminationTime!),
-                  if (widget.record.veterinarian != null && widget.record.veterinarian!.isNotEmpty)
-                    _buildInfoRow('👨‍⚕️ 수의사', widget.record.veterinarian!),
-                  if (widget.record.inseminationMethod != null && widget.record.inseminationMethod!.isNotEmpty)
-                    _buildInfoRow('🔧 수정 방법', widget.record.inseminationMethod!),
+                  if (widget.record.technicianName != null &&
+                      widget.record.technicianName!.isNotEmpty)
+                    _buildInfoRow('👨‍⚕️ 수의사', widget.record.technicianName!),
+                  if (widget.record.inseminationMethod != null &&
+                      widget.record.inseminationMethod!.isNotEmpty)
+                    _buildInfoRow(
+                        '🔧 수정 방법', widget.record.inseminationMethod!),
                 ],
               ),
             ),
@@ -67,12 +74,17 @@ class _InseminationDetailPageState extends State<InseminationDetailPage> {
                 children: [
                   const Text(
                     '🐂 종축 정보',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.brown),
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.brown),
                   ),
                   const SizedBox(height: 16),
-                  if (widget.record.bullInfo != null && widget.record.bullInfo!.isNotEmpty)
-                    _buildInfoRow('🐂 종축 정보', widget.record.bullInfo!),
-                  if (widget.record.semenQuality != null && widget.record.semenQuality!.isNotEmpty)
+                  if (widget.record.bullBreed != null &&
+                      widget.record.bullBreed!.isNotEmpty)
+                    _buildInfoRow('🐂 종축 정보', widget.record.bullBreed!),
+                  if (widget.record.semenQuality != null &&
+                      widget.record.semenQuality!.isNotEmpty)
                     _buildInfoRow('💧 정액 품질', widget.record.semenQuality!),
                 ],
               ),
@@ -90,15 +102,24 @@ class _InseminationDetailPageState extends State<InseminationDetailPage> {
                 children: [
                   const Text(
                     '📊 결과 정보',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green),
                   ),
                   const SizedBox(height: 16),
-                  if (widget.record.inseminationResult != null && widget.record.inseminationResult!.isNotEmpty)
-                    _buildInfoRow('📈 수정 결과', widget.record.inseminationResult!),
-                  if (widget.record.expectedCalvingDate != null && widget.record.expectedCalvingDate!.isNotEmpty)
-                    _buildInfoRow('📅 분만 예정일', widget.record.expectedCalvingDate!),
+                  if (widget.record.successProbability != null)
+                    _buildInfoRow(
+                      '📈 성공 확률',
+                      '${widget.record.successProbability!.toStringAsFixed(1)}%',
+                    ),
+                  if (widget.record.expectedCalvingDate != null &&
+                      widget.record.expectedCalvingDate!.isNotEmpty)
+                    _buildInfoRow(
+                        '📅 분만 예정일', widget.record.expectedCalvingDate!),
                   if (widget.record.cost != null)
-                    _buildInfoRow('💰 비용', '${widget.record.cost?.toStringAsFixed(0)}원'),
+                    _buildInfoRow(
+                        '💰 비용', '${widget.record.cost?.toStringAsFixed(0)}원'),
                 ],
               ),
             ),
@@ -116,7 +137,10 @@ class _InseminationDetailPageState extends State<InseminationDetailPage> {
                   children: [
                     const Text(
                       '📝 추가 정보',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.purple),
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.purple),
                     ),
                     const SizedBox(height: 16),
                     _buildInfoRow('📋 특이사항', widget.record.notes!),
@@ -226,33 +250,39 @@ class _InseminationDetailPageState extends State<InseminationDetailPage> {
   Future<void> _deleteRecord() async {
     if (widget.record.id == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('삭제할 수 없는 기록입니다'), backgroundColor: Colors.red),
+        const SnackBar(
+            content: Text('삭제할 수 없는 기록입니다'), backgroundColor: Colors.red),
       );
       return;
     }
 
     try {
-      final token = Provider.of<UserProvider>(context, listen: false).accessToken!;
-      final provider = Provider.of<InseminationRecordProvider>(context, listen: false);
+      final token =
+          Provider.of<UserProvider>(context, listen: false).accessToken!;
+      final provider =
+          Provider.of<InseminationRecordProvider>(context, listen: false);
       final success = await provider.deleteRecord(widget.record.id!, token);
 
       if (success && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('인공수정 기록이 삭제되었습니다'), backgroundColor: Colors.green),
+          const SnackBar(
+              content: Text('인공수정 기록이 삭제되었습니다'), backgroundColor: Colors.green),
         );
         Navigator.of(context).pop(); // 상세 페이지 닫기
         Navigator.of(context).pop(); // 목록 페이지로 돌아가기
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('기록 삭제에 실패했습니다'), backgroundColor: Colors.red),
+          const SnackBar(
+              content: Text('기록 삭제에 실패했습니다'), backgroundColor: Colors.red),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('오류가 발생했습니다: $e'), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text('오류가 발생했습니다: $e'), backgroundColor: Colors.red),
         );
       }
     }
   }
-} 
+}

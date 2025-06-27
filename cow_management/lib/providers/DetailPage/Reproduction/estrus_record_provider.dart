@@ -16,7 +16,7 @@ class EstrusRecordProvider with ChangeNotifier {
 
     try {
       print('🔄 발정 기록 조회 시작: $baseUrl/records/cow/$cowId/breeding-records');
-      
+
       final response = await dio.get(
         '$baseUrl/records/cow/$cowId/breeding-records',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
@@ -32,15 +32,18 @@ class EstrusRecordProvider with ChangeNotifier {
         final estrusRecords = data
             .where((record) => record['record_type'] == 'estrus')
             .map((json) {
-          try {
-            // 전체 JSON을 그대로 전달 (key_values 포함)
-            return EstrusRecord.fromJson(Map<String, dynamic>.from(json));
-          } catch (e) {
-            print('! 발정 기록 파싱 오류: $e');
-            print('📄 문제가 된 데이터: $json');
-            return null;
-          }
-        }).where((record) => record != null).cast<EstrusRecord>().toList();
+              try {
+                // 전체 JSON을 그대로 전달 (key_values 포함)
+                return EstrusRecord.fromJson(Map<String, dynamic>.from(json));
+              } catch (e) {
+                print('! 발정 기록 파싱 오류: $e');
+                print('📄 문제가 된 데이터: $json');
+                return null;
+              }
+            })
+            .where((record) => record != null)
+            .cast<EstrusRecord>()
+            .toList();
 
         _records = estrusRecords;
         notifyListeners();
@@ -74,7 +77,8 @@ class EstrusRecordProvider with ChangeNotifier {
         'cow_id': record.cowId,
         'record_date': record.recordDate,
         'title': '발정 기록',
-        'description': record.notes?.isNotEmpty == true ? record.notes : '발정 발견',
+        'description':
+            record.notes?.isNotEmpty == true ? record.notes : '발정 발견',
         'record_data': record.toJson(),
       };
 
@@ -82,7 +86,7 @@ class EstrusRecordProvider with ChangeNotifier {
 
       final response = await dio.post(
         '$baseUrl/records/estrus',
-        data: requestData,
+        data: record.toJson(),
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
