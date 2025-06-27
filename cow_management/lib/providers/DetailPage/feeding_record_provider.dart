@@ -50,13 +50,11 @@ class FeedingRecordProvider with ChangeNotifier {
         for (var item in dataList) {
           if (item is Map<String, dynamic>) {
             try {
-              final data = item['record_data'] ?? {};
-              data['cow_id'] = cowId;
-              data['record_date'] = item['record_date'];
-              _records.add(FeedingRecord.fromJson(data));
+              // 전체 JSON을 그대로 전달 (key_values 포함)
+              _records.add(FeedingRecord.fromJson(Map<String, dynamic>.from(item)));
               feedingCount++;
             } catch (e) {
-              print('⚠️ 사료급여 기록 파싱 오류: $e');
+              print('! 사료급여 기록 파싱 오류: $e');
               print('📄 문제가 된 데이터: $item');
             }
           }
@@ -130,7 +128,7 @@ class FeedingRecordProvider with ChangeNotifier {
 
     try {
       final response = await dio.delete(
-        '$baseUrl/records/feeding/$id',
+        '$baseUrl/records/$id',  // 수정: 통일된 패턴 사용
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
@@ -141,6 +139,36 @@ class FeedingRecordProvider with ChangeNotifier {
       }
     } catch (e) {
       print('사료 기록 삭제 오류: $e');
+    }
+    return false;
+  }
+
+  Future<bool> updateRecord(String id, FeedingRecord updated, String token) async {
+    final dio = Dio();
+    final baseUrl = dotenv.env['API_BASE_URL'];
+
+    if (baseUrl == null) return false;
+
+    try {
+      final response = await dio.put(
+        '$baseUrl/records/$id',  // 수정: 통일된 패턴 사용
+        data: {
+          'record_date': updated.feedingDate,  // 수정: recordDate → feedingDate
+          'record_data': updated.toJson(),
+        },
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      if (response.statusCode == 200) {
+        final index = _records.indexWhere((r) => r.id == id);
+        if (index != -1) {
+          _records[index] = updated;
+          notifyListeners();
+        }
+        return true;
+      }
+    } catch (e) {
+      print('사료급여 기록 수정 오류: $e');
     }
     return false;
   }

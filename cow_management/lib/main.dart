@@ -8,6 +8,7 @@ import 'package:cow_management/models/cow.dart';
 import 'package:cow_management/models/Detail/feeding_record.dart';
 import 'package:cow_management/models/Detail/Health/vaccination_record.dart';
 import 'package:cow_management/models/Detail/Health/treatment_record.model.dart';
+import 'package:cow_management/models/Detail/Health/weight_record_model.dart';
 
 import 'package:cow_management/providers/user_provider.dart';
 import 'package:cow_management/providers/cow_provider.dart';
@@ -294,6 +295,10 @@ class SoDamApp extends StatelessWidget {
               cowId: args['cowId'],
               cowName: args['cowName'],
             );
+          },
+          '/weight/detail': (context) {
+            final record = ModalRoute.of(context)!.settings.arguments as WeightRecord;
+            return WeightDetailPage(record: record);
           },
           '/estrus-record/list': (context) {
             final args = ModalRoute.of(context)!.settings.arguments

@@ -36,20 +36,14 @@ class HealthCheckProvider with ChangeNotifier {
         // record_type이 'health_check'인 것만 필터링
         return json['record_type'] == 'health_check';
       }).map((json) {
-        // 🧸 record_data 안전하게 처리
-        Map<String, dynamic> recordData = {};
-        if (json['record_data'] != null &&
-            json['record_data'] is Map<String, dynamic>) {
-          recordData = Map<String, dynamic>.from(json['record_data']);
-        }
-
-        // 다른 값들 수동으로 추가해주기
-        recordData['id'] = json['id'];
-        recordData['cow_id'] = json['cow_id'];
-        recordData['record_date'] = json['record_date'];
-
-        return HealthCheckRecord.fromJson(recordData);
+        // 전체 JSON을 그대로 전달 (key_values 포함)
+        return HealthCheckRecord.fromJson(json);
       }).toList();
+
+      print('✅ 파싱된 건강검진 기록 수: ${_records.length}');
+      for (var record in _records) {
+        print('기록: 날짜=${record.recordDate}, 체온=${record.bodyTemperature}, BCS=${record.bodyConditionScore}, 메모=${record.notes}');
+      }
 
       notifyListeners();
       return _records;
@@ -91,11 +85,8 @@ class HealthCheckProvider with ChangeNotifier {
       if (response.statusCode == 200) {
         final data = response.data as List;
         _records = data.map((json) {
-          final recordData = json['record_data'] as Map<String, dynamic>;
-          recordData['id'] = json['id'];
-          recordData['record_date'] = json['record_date'];
-          recordData['cow_id'] = cowId;
-          return HealthCheckRecord.fromJson(recordData);
+          // 전체 JSON을 그대로 전달
+          return HealthCheckRecord.fromJson(json);
         }).toList();
 
         notifyListeners();
@@ -117,8 +108,11 @@ class HealthCheckProvider with ChangeNotifier {
     try {
       final response = await dio.post(
         '$baseUrl/records/health-check',
-        data: record.toJson(), // ✅ 여기로 수정!
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
+        data: record.toJson(), // 여기로 수정!
+        options: Options(headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        }),
       );
 
       if (response.statusCode == 201) {

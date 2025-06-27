@@ -182,26 +182,28 @@ class _MilkingRecordPageState extends State<MilkingRecordPage> {
       });
       
       if (response.statusCode == 201 || response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.check_circle, color: Colors.white),
-                SizedBox(width: 8),
-                Text('착유 기록이 성공적으로 등록되었습니다!'),
-              ],
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Row(
+                children: [
+                  Icon(Icons.check_circle, color: Colors.white),
+                  SizedBox(width: 8),
+                  Text('착유 기록이 성공적으로 등록되었습니다!'),
+                ],
+              ),
+              backgroundColor: Colors.green,
             ),
-            backgroundColor: Colors.green,
-          ),
-        );
-        Navigator.pushReplacementNamed(
-          context,
-          '/milking-records',
-          arguments: {
-            'cowId': widget.cowId,
-            'cowName': widget.cowName,
-          },
-        );
+          );
+          Navigator.pushReplacementNamed(
+            context,
+            '/milking-records',
+            arguments: {
+              'cowId': widget.cowId,
+              'cowName': widget.cowName,
+            },
+          );
+        }
       } else {
         throw Exception("등록 실패");
       }
@@ -209,18 +211,20 @@ class _MilkingRecordPageState extends State<MilkingRecordPage> {
       setState(() {
         _isLoading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(Icons.error, color: Colors.white),
-              const SizedBox(width: 8),
-              Expanded(child: Text("착유 기록 등록 실패: $e")),
-            ],
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error, color: Colors.white),
+                const SizedBox(width: 8),
+                Expanded(child: Text("착유 기록 등록 실패: $e")),
+              ],
+            ),
+            backgroundColor: Colors.red,
           ),
-          backgroundColor: Colors.red,
-        ),
-      );
+        );
+      }
     }
   }
 
@@ -249,11 +253,11 @@ class _MilkingRecordPageState extends State<MilkingRecordPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    const Row(
                       children: [
-                        const Icon(Icons.local_drink, color: Colors.blue, size: 24),
-                        const SizedBox(width: 8),
-                        const Text(
+                        Icon(Icons.local_drink, color: Colors.blue, size: 24),
+                        SizedBox(width: 8),
+                        Text(
                           '기본 착유 정보',
                           style: TextStyle(
                             fontSize: 18,
@@ -383,11 +387,11 @@ class _MilkingRecordPageState extends State<MilkingRecordPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    const Row(
                       children: [
-                        const Icon(Icons.science, color: Colors.green, size: 24),
-                        const SizedBox(width: 8),
-                        const Text(
+                        Icon(Icons.science, color: Colors.green, size: 24),
+                        SizedBox(width: 8),
+                        Text(
                           '우유 품질 정보',
                           style: TextStyle(
                             fontSize: 18,
@@ -484,7 +488,7 @@ class _MilkingRecordPageState extends State<MilkingRecordPage> {
             ),
             const SizedBox(height: 16),
 
-            // 📊 추가 측정 정보 섹션
+            // 추가 측정 정보 섹션
             Card(
               elevation: 2,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -493,11 +497,11 @@ class _MilkingRecordPageState extends State<MilkingRecordPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    const Row(
                       children: [
-                        const Icon(Icons.analytics, color: Colors.orange, size: 24),
-                        const SizedBox(width: 8),
-                        const Text(
+                        Icon(Icons.analytics, color: Colors.orange, size: 24),
+                        SizedBox(width: 8),
+                        Text(
                           '추가 측정 정보',
                           style: TextStyle(
                             fontSize: 18,
@@ -581,11 +585,11 @@ class _MilkingRecordPageState extends State<MilkingRecordPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    const Row(
                       children: [
-                        const Icon(Icons.note_alt, color: Colors.purple, size: 24),
-                        const SizedBox(width: 8),
-                        const Text(
+                        Icon(Icons.note_alt, color: Colors.purple, size: 24),
+                        SizedBox(width: 8),
+                        Text(
                           '추가 정보',
                           style: TextStyle(
                             fontSize: 18,

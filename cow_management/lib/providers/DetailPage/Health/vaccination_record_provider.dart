@@ -50,13 +50,11 @@ class VaccinationRecordProvider with ChangeNotifier {
         for (var item in dataList) {
           if (item is Map<String, dynamic> && item['record_type'] == 'vaccination') {
             try {
-              final data = item['record_data'] ?? {};
-              data['cow_id'] = cowId;
-              data['record_date'] = item['record_date'];
-              _records.add(VaccinationRecord.fromJson(data));
+              // 전체 JSON을 그대로 전달 (key_values 포함)
+              _records.add(VaccinationRecord.fromJson(Map<String, dynamic>.from(item)));
               vaccinationCount++;
             } catch (e) {
-              print('⚠️ 백신접종 기록 파싱 오류: $e');
+              print('! 백신접종 기록 파싱 오류: $e');
               print('📄 문제가 된 데이터: $item');
             }
           }
@@ -103,17 +101,30 @@ class VaccinationRecordProvider with ChangeNotifier {
     final baseUrl = dotenv.env['API_BASE_URL'];
 
     try {
+      final requestData = {
+        'cow_id': record.cowId,
+        'record_date': record.recordDate,
+        'title': '백신접종 (${record.vaccineName ?? '백신'})',
+        'description': record.notes?.isNotEmpty == true ? record.notes : '백신접종 실시',
+        'record_data': record.toRecordDataJson(),
+      };
+
+      print('🔄 백신접종 기록 저장 요청: $requestData');
+
       final response = await dio.post(
         '$baseUrl/records/vaccination',
-        data: record.toJson(),
+        data: requestData,
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
+      print('✅ 백신접종 기록 저장 응답: ${response.statusCode}');
+
       if (response.statusCode == 201) {
-        _records.add(VaccinationRecord.fromJson(response.data['record_data']));
+        _records.add(VaccinationRecord.fromJson(response.data));
         notifyListeners();
       }
     } catch (e) {
+      print('❌ 백신접종 기록 추가 실패: $e');
       throw Exception('백신접종 기록 추가 실패: $e');
     }
   }

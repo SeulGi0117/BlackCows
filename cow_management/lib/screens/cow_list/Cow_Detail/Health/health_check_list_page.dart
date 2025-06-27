@@ -158,8 +158,34 @@ class _HealthCheckListPageState extends State<HealthCheckListPage> {
         itemCount: records.length,
         itemBuilder: (context, index) {
           final record = records[index];
+          
+          // 표시할 정보들 준비
+          List<String> displayInfo = [];
+          
+          if (record.bodyTemperature > 0) {
+            displayInfo.add('체온: ${record.bodyTemperature.toStringAsFixed(1)}℃');
+          }
+          
+          if (record.bodyConditionScore > 0) {
+            displayInfo.add('BCS: ${record.bodyConditionScore.toStringAsFixed(1)}');
+          }
+          
+          if (record.examiner.isNotEmpty) {
+            displayInfo.add('검진자: ${record.examiner}');
+          }
+          
+          if (record.notes.isNotEmpty) {
+            displayInfo.add('메모: ${record.notes.length > 20 ? '${record.notes.substring(0, 20)}...' : record.notes}');
+          }
+          
+          if (displayInfo.isEmpty) {
+            displayInfo.add('건강검진 기록');
+          }
+          
           return Card(
             margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+            elevation: 2,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             child: ListTile(
               leading: const CircleAvatar(
                 backgroundColor: Colors.blue,
@@ -167,16 +193,19 @@ class _HealthCheckListPageState extends State<HealthCheckListPage> {
               ),
               title: Text(
                 record.recordDate,
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('체온: ${record.bodyTemperature != null ? '${record.bodyTemperature}℃' : '-'}'),
-                  Text('검진자: ${record.examiner ?? '-'}'),
-                ],
+              subtitle: Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: displayInfo.map((info) => Text(
+                    info,
+                    style: const TextStyle(fontSize: 14, color: Colors.grey),
+                  )).toList(),
+                ),
               ),
-              trailing: const Icon(Icons.arrow_forward_ios),
+              trailing: const Icon(Icons.arrow_forward_ios, color: Colors.blue),
               onTap: () {
                 Navigator.push(
                   context,

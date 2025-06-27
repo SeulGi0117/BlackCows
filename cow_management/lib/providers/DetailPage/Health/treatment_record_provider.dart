@@ -48,15 +48,16 @@ class TreatmentRecordProvider with ChangeNotifier {
 
         int treatmentCount = 0;
         for (var item in dataList) {
-          if (item is Map<String, dynamic> && item['record_type'] == 'treatment') {
+          if (item is Map<String, dynamic>) {
             try {
-              final data = item['record_data'] ?? {};
-              data['cow_id'] = cowId;
-              data['record_date'] = item['record_date'];
-              _records.add(TreatmentRecord.fromJson(data));
+              // 서버 응답 전체를 모델에 전달
+              final record = TreatmentRecord.fromJson(Map<String, dynamic>.from(item));
+              
+              _records.add(record);
               treatmentCount++;
             } catch (e) {
-              print('⚠️ 치료 기록 파싱 오류: $e');
+              // 개별 파싱 실패해도 계속 진행
+              print('! 치료 기록 파싱 오류: $e');
               print('📄 문제가 된 데이터: $item');
             }
           }
@@ -110,14 +111,13 @@ class TreatmentRecordProvider with ChangeNotifier {
       );
 
       if (response.statusCode == 201) {
-        _records.add(TreatmentRecord.fromJson(response.data['record_data']));
+        _records.add(TreatmentRecord.fromJson(response.data));
         notifyListeners();
-        return true; // ✅ 성공 시 true 반환
+        return true; // 성공 시 true 반환
       }
     } catch (e) {
-      print('치료 기록 추가 실패: $e');
+      print('치료 기록 추가 오류: $e');
     }
-
-    return false; // ❌ 실패 시 false 반환
+    return false; // 실패 시 false 반환
   }
 }
