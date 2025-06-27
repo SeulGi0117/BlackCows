@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:cow_management/screens/cow_list/cow_registration_flow_page.dart';
 import 'package:cow_management/screens/cow_list/cow_add_page.dart';
@@ -6,7 +5,7 @@ import 'package:cow_management/providers/cow_provider.dart';
 import 'package:cow_management/providers/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import 'package:cow_management/models/cow.dart';
 import 'package:logging/logging.dart';
 import 'package:cow_management/utils/error_utils.dart';
@@ -31,7 +30,10 @@ class _CowListPageState extends State<CowListPage> {
     final cowProvider = Provider.of<CowProvider>(context, listen: false);
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     // 소 목록이 비어있고, 아직 한 번도 불러오지 않았다면 서버에서 한 번만 불러오기
-    if (!_cowsLoadedOnce && cowProvider.cows.isEmpty && userProvider.isLoggedIn && userProvider.accessToken != null) {
+    if (!_cowsLoadedOnce &&
+        cowProvider.cows.isEmpty &&
+        userProvider.isLoggedIn &&
+        userProvider.accessToken != null) {
       _cowsLoadedOnce = true;
       cowProvider.fetchCowsFromBackend(userProvider.accessToken!);
     }
@@ -39,9 +41,9 @@ class _CowListPageState extends State<CowListPage> {
 
   Future<void> _fetchCowsFromBackend() async {
     if (_isLoading) return;
-    
+
     setState(() => _isLoading = true);
-    
+
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final apiUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
 
@@ -58,17 +60,23 @@ class _CowListPageState extends State<CowListPage> {
     }
 
     try {
-      final response = await http.get(
-        Uri.parse('$apiUrl/cows/?sortDirection=DESCENDING'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${userProvider.accessToken}',
+      final dio = Dio();
+
+      final response = await dio.get(
+        '$apiUrl/cows/',
+        queryParameters: {
+          'sortDirection': 'DESCENDING',
         },
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ${userProvider.accessToken}',
+          },
+        ),
       );
 
       if (response.statusCode == 200) {
-        final decoded = utf8.decode(response.bodyBytes);
-        final List<dynamic> jsonList = jsonDecode(decoded);
+        final List<dynamic> jsonList = response.data;
         final List<Cow> cows =
             jsonList.map((json) => Cow.fromJson(json)).toList();
 
@@ -76,7 +84,6 @@ class _CowListPageState extends State<CowListPage> {
           final cowProvider = Provider.of<CowProvider>(context, listen: false);
           cowProvider.setCows(cows);
 
-          // 즐겨찾기 정보 동기화
           final token = userProvider.accessToken;
           if (token != null) {
             await cowProvider.syncFavoritesFromServer(token);
@@ -85,11 +92,13 @@ class _CowListPageState extends State<CowListPage> {
       } else {
         _logger.severe('API 요청 실패: ${response.statusCode}');
         _logger.severe('API URL: $apiUrl');
-        _logger.severe('응답 내용: ${utf8.decode(response.bodyBytes)}');
-        
+        _logger.severe('응답 내용: ${response.data}');
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('젖소 목록을 불러오는데 실패했습니다: ${response.statusCode}')),
+            SnackBar(
+              content: Text('젖소 목록을 불러오는데 실패했습니다: ${response.statusCode}'),
+            ),
           );
         }
       }
@@ -97,8 +106,8 @@ class _CowListPageState extends State<CowListPage> {
       _logger.severe('요청 중 오류 발생: $e');
       if (mounted) {
         ErrorUtils.handleError(
-          context, 
-          e, 
+          context,
+          e,
           customMessage: '젖소 목록을 불러오는 중 오류가 발생했습니다',
           defaultMessage: '네트워크 오류가 발생했습니다',
         );
@@ -148,7 +157,7 @@ class _CowListPageState extends State<CowListPage> {
                 ),
               ),
               const SizedBox(height: 24),
-              
+
               // 신버전 (축산물이력제 연동)
               ListTile(
                 leading: Container(
@@ -168,7 +177,8 @@ class _CowListPageState extends State<CowListPage> {
                   style: TextStyle(fontSize: 12),
                 ),
                 trailing: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: Colors.green.shade100,
                     borderRadius: BorderRadius.circular(12),
@@ -192,9 +202,9 @@ class _CowListPageState extends State<CowListPage> {
                   ).then((_) => _refreshCowList());
                 },
               ),
-              
+
               const Divider(),
-              
+
               // 구버전 (수동 입력)
               ListTile(
                 leading: Container(
@@ -223,7 +233,7 @@ class _CowListPageState extends State<CowListPage> {
                   ).then((_) => _refreshCowList());
                 },
               ),
-              
+
               const SizedBox(height: 20),
             ],
           ),
@@ -342,7 +352,8 @@ class _CowListPageState extends State<CowListPage> {
                         )
                       : ListView.builder(
                           itemCount: cows.length,
-                          itemBuilder: (context, index) => _buildCowCard(cows[index]),
+                          itemBuilder: (context, index) =>
+                              _buildCowCard(cows[index]),
                         ),
                 ),
             ],
@@ -534,7 +545,8 @@ class _CowListPageState extends State<CowListPage> {
                   ),
                   const SizedBox(height: 4),
                   Text('이표번호: ${cow.earTagNumber}'),
-                  Text('출생일: ${cow.birthdate?.toIso8601String().split('T')[0] ?? '미등록'}'),
+                  Text(
+                      '출생일: ${cow.birthdate?.toIso8601String().split('T')[0] ?? '미등록'}'),
                   Text('건강상태: ${cow.status}'),
                 ],
               ),
@@ -543,7 +555,8 @@ class _CowListPageState extends State<CowListPage> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
                     color: _getStatusColor(cow.status),
@@ -585,13 +598,15 @@ class _CowListPageState extends State<CowListPage> {
   }
 
   // 젖소 삭제 안내 다이얼로그 함수 추가
-  Future<void> showDeleteCowDialog(BuildContext context, String cowName, VoidCallback onConfirm) async {
+  Future<void> showDeleteCowDialog(
+      BuildContext context, String cowName, VoidCallback onConfirm) async {
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('정말로 삭제하시겠습니까?', style: TextStyle(fontWeight: FontWeight.bold)),
+          title: const Text('정말로 삭제하시겠습니까?',
+              style: TextStyle(fontWeight: FontWeight.bold)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
