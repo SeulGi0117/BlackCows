@@ -16,10 +16,12 @@ class InseminationRecordListPage extends StatefulWidget {
   });
 
   @override
-  State<InseminationRecordListPage> createState() => _InseminationRecordListPageState();
+  State<InseminationRecordListPage> createState() =>
+      _InseminationRecordListPageState();
 }
 
-class _InseminationRecordListPageState extends State<InseminationRecordListPage> {
+class _InseminationRecordListPageState
+    extends State<InseminationRecordListPage> {
   bool _isLoading = true;
 
   @override
@@ -30,7 +32,8 @@ class _InseminationRecordListPageState extends State<InseminationRecordListPage>
 
   Future<void> _loadRecords() async {
     final token = Provider.of<UserProvider>(context, listen: false).accessToken;
-    final provider = Provider.of<InseminationRecordProvider>(context, listen: false);
+    final provider =
+        Provider.of<InseminationRecordProvider>(context, listen: false);
     await provider.fetchRecords(widget.cowId, token!);
     setState(() => _isLoading = false);
   }
@@ -52,9 +55,11 @@ class _InseminationRecordListPageState extends State<InseminationRecordListPage>
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.medical_services_outlined, size: 64, color: Colors.grey),
+                      Icon(Icons.medical_services_outlined,
+                          size: 64, color: Colors.grey),
                       SizedBox(height: 16),
-                      Text('인공수정 기록이 없습니다', style: TextStyle(fontSize: 16, color: Colors.grey)),
+                      Text('인공수정 기록이 없습니다',
+                          style: TextStyle(fontSize: 16, color: Colors.grey)),
                     ],
                   ),
                 )
@@ -72,18 +77,19 @@ class _InseminationRecordListPageState extends State<InseminationRecordListPage>
                             color: Colors.blue.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Text('🎯', style: TextStyle(fontSize: 20)),
+                          child:
+                              const Text('🎯', style: TextStyle(fontSize: 20)),
                         ),
                         title: Text('${record.recordDate} 인공수정'),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            if (record.bullInfo != null)
-                              Text('종축: ${record.bullInfo}'),
-                            if (record.veterinarian != null)
-                              Text('수의사: ${record.veterinarian}'),
-                            if (record.inseminationResult != null)
-                              Text('결과: ${record.inseminationResult}'),
+                            if (record.bullBreed != null)
+                              Text('종축: ${record.bullBreed}'),
+                            if (record.technicianName != null)
+                              Text('수의사: ${record.technicianName}'),
+                            if (record.successProbability != null)
+                              Text('결과: ${record.successProbability}'),
                           ],
                         ),
                         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
@@ -119,4 +125,4 @@ class _InseminationRecordListPageState extends State<InseminationRecordListPage>
       ),
     );
   }
-} 
+}

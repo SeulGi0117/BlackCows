@@ -2,14 +2,18 @@ class InseminationRecord {
   final String? id;
   final String cowId;
   final String recordDate;
+
   final String? inseminationTime;
-  final String? bullInfo;
+  final String? bullId;
+  final String? bullBreed;
+  final String? semenBatch;
   final String? semenQuality;
   final String? inseminationMethod;
-  final String? veterinarian;
+  final String? technicianName;
+  final String? cervixCondition;
+  final double? successProbability;
+  final String? pregnancyCheckScheduled;
   final double? cost;
-  final String? expectedCalvingDate;
-  final String? inseminationResult;
   final String? notes;
 
   InseminationRecord({
@@ -17,72 +21,79 @@ class InseminationRecord {
     required this.cowId,
     required this.recordDate,
     this.inseminationTime,
-    this.bullInfo,
+    this.bullId,
+    this.bullBreed,
+    this.semenBatch,
     this.semenQuality,
     this.inseminationMethod,
-    this.veterinarian,
+    this.technicianName,
+    this.cervixCondition,
+    this.successProbability,
+    this.pregnancyCheckScheduled,
     this.cost,
-    this.expectedCalvingDate,
-    this.inseminationResult,
     this.notes,
   });
 
-  InseminationRecord copyWith({
-    String? cowId,
-    String? recordDate,
-    String? inseminationTime,
-    String? bullInfo,
-    String? semenQuality,
-    String? inseminationMethod,
-    String? veterinarian,
-    double? cost,
-    String? expectedCalvingDate,
-    String? inseminationResult,
-    String? notes,
-  }) {
-    return InseminationRecord(
-      cowId: cowId ?? this.cowId,
-      recordDate: recordDate ?? this.recordDate,
-      inseminationTime: inseminationTime ?? this.inseminationTime,
-      bullInfo: bullInfo ?? this.bullInfo,
-      semenQuality: semenQuality ?? this.semenQuality,
-      inseminationMethod: inseminationMethod ?? this.inseminationMethod,
-      veterinarian: veterinarian ?? this.veterinarian,
-      cost: cost ?? this.cost,
-      expectedCalvingDate: expectedCalvingDate ?? this.expectedCalvingDate,
-      inseminationResult: inseminationResult ?? this.inseminationResult,
-      notes: notes ?? this.notes,
-    );
+  static double? _parseDouble(dynamic value) {
+    if (value == null) return null;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value);
+    return null;
   }
 
   factory InseminationRecord.fromJson(Map<String, dynamic> json) {
+    final Map<String, dynamic> safeJson = Map<String, dynamic>.from(json);
+    final Map<String, dynamic> data = {};
+
+    if (safeJson['record_data'] != null) {
+      data.addAll(Map<String, dynamic>.from(safeJson['record_data']));
+    }
+    if (safeJson['key_values'] != null) {
+      data.addAll(Map<String, dynamic>.from(safeJson['key_values']));
+    }
+
+    data['cow_id'] = safeJson['cow_id'];
+    data['record_date'] = safeJson['record_date'];
+
     return InseminationRecord(
-      id: json['id'],
-      cowId: json['cow_id'],
-      recordDate: json['record_date'],
-      inseminationTime: json['insemination_time'],
-      bullInfo: json['bull_info'],
-      semenQuality: json['semen_quality'],
-      inseminationMethod: json['insemination_method'],
-      veterinarian: json['veterinarian'],
-      cost: json['cost']?.toDouble(),
-      expectedCalvingDate: json['expected_calving_date'],
-      inseminationResult: json['insemination_result'],
-      notes: json['notes'],
+      id: safeJson['id']?.toString(),
+      cowId: data['cow_id'] ?? '',
+      recordDate: data['record_date'] ?? '',
+      inseminationTime: data['insemination_time'],
+      bullId: data['bull_id'],
+      bullBreed: data['bull_breed'] ?? data['bull'],
+      semenBatch: data['semen_batch'],
+      semenQuality: data['semen_quality'] ?? data['quality'],
+      inseminationMethod: data['insemination_method'] ?? data['method'],
+      technicianName: data['technician_name'] ?? data['technician'],
+      cervixCondition: data['cervix_condition'],
+      successProbability: _parseDouble(data['success_probability']),
+      pregnancyCheckScheduled: data['pregnancy_check_scheduled'],
+      cost: _parseDouble(data['cost']),
+      notes: data['notes'] ?? safeJson['description'],
     );
   }
 
   Map<String, dynamic> toJson() => {
         'cow_id': cowId,
         'record_date': recordDate,
-        'insemination_time': inseminationTime,
-        'bull_info': bullInfo,
-        'semen_quality': semenQuality,
-        'insemination_method': inseminationMethod,
-        'veterinarian': veterinarian,
-        'cost': cost,
-        'expected_calving_date': expectedCalvingDate,
-        'insemination_result': inseminationResult,
-        'notes': notes,
+        'title': '인공수정 기록',
+        'description': notes ?? '인공수정 실시',
+        if (inseminationTime != null) 'insemination_time': inseminationTime,
+        if (bullId != null) 'bull_id': bullId,
+        if (bullBreed != null) 'bull_breed': bullBreed,
+        if (semenBatch != null) 'semen_batch': semenBatch,
+        if (semenQuality != null) 'semen_quality': semenQuality,
+        if (inseminationMethod != null)
+          'insemination_method': inseminationMethod,
+        if (technicianName != null) 'technician_name': technicianName,
+        if (cervixCondition != null) 'cervix_condition': cervixCondition,
+        if (successProbability != null)
+          'success_probability': successProbability,
+        if (pregnancyCheckScheduled != null)
+          'pregnancy_check_scheduled': pregnancyCheckScheduled,
+        if (cost != null) 'cost': cost,
+        if (notes != null) 'notes': notes,
       };
-} 
+}
