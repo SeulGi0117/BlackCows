@@ -7,6 +7,7 @@ import 'package:cow_management/models/cow.dart';
 import 'package:cow_management/screens/cow_list/cow_edit_page.dart';
 import 'package:cow_management/providers/user_provider.dart';
 import 'package:cow_management/utils/error_utils.dart';
+import 'package:cow_management/screens/cow_list/cow_list_page.dart';
 import 'package:cow_management/screens/cow_list/cow_detailed_records_page.dart';
 
 class CowDetailPage extends StatefulWidget {
@@ -33,13 +34,11 @@ class _CowDetailPageState extends State<CowDetailPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('${currentCow.name} 상세 정보'),
-        centerTitle: true,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 1,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.delete, color: Colors.red),
+          TextButton.icon(
             onPressed: () async {
               await showDeleteCowDialog(context, currentCow.name, () async {
                 final success = await deleteCow(context, currentCow.id);
@@ -52,15 +51,25 @@ class _CowDetailPageState extends State<CowDetailPage> {
                   );
                   Navigator.pop(context, true);
                 }
+                // 실패 시에는 deleteCow 함수에서 이미 ErrorUtils로 처리됨
               });
             },
+            icon: const Icon(Icons.delete, color: Colors.red),
+            label: const Text(
+              '삭제하기',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.red,
+              ),
+            ),
           ),
         ],
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildBasicInfoCard(),
             const SizedBox(height: 20),
@@ -103,8 +112,11 @@ class _CowDetailPageState extends State<CowDetailPage> {
             ),
             Row(
               children: [
-                const Text('이표번호: ', style: TextStyle(fontWeight: FontWeight.w500)),
-                Text(currentCow.earTagNumber.isNotEmpty ? currentCow.earTagNumber : '미등록'),
+                const Text('이표번호: ',
+                    style: TextStyle(fontWeight: FontWeight.w500)),
+                Text(currentCow.earTagNumber.isNotEmpty
+                    ? currentCow.earTagNumber
+                    : '미등록'),
               ],
             ),
             Row(
@@ -136,30 +148,455 @@ class _CowDetailPageState extends State<CowDetailPage> {
                     : '미등록'),
               ],
             ),
-
-
-  Widget infoTile(IconData icon, String label, String value) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.grey.shade200,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(icon, size: 24),
-        ),
-        const SizedBox(width: 16),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label,
-                style:
-                    const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-            const SizedBox(height: 4),
-            Text(value, style: TextStyle(color: Colors.grey.shade600)),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CowEditPage(cow: currentCow),
+                        ),
+                      ).then((updatedCow) {
+                        if (updatedCow != null) {
+                          setState(() => currentCow = updatedCow);
+                        }
+                      });
+                    },
+                    icon: const Icon(Icons.edit, size: 18),
+                    label: const Text('정보 수정'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      textStyle: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              CowDetailedRecordsPage(cow: currentCow),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.assignment, size: 18),
+                    label: const Text('상세 기록'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.pink,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      textStyle: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _infoCardBase({
+    required IconData icon,
+    required String title,
+    required List<Widget> children,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 20),
+              const SizedBox(width: 6),
+              Text(title,
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHealthInfoCard(
+      BuildContext context, String cowId, String cowName) {
+    return _infoCardBase(
+      icon: Icons.healing,
+      title: '건강 정보',
+      children: [
+        _healthRecordButton(
+          context: context,
+          title: '건강검진 기록',
+          icon: Icons.monitor_heart,
+          listRoute: '/health-check/list',
+          addRoute: '/health-check/add',
+          cowId: cowId,
+          cowName: cowName,
+          recordType: 'health_check',
+        ),
+        const SizedBox(height: 8),
+        _healthRecordButton(
+          context: context,
+          title: '백신접종 기록',
+          icon: Icons.vaccines,
+          listRoute: '/vaccination/list',
+          addRoute: '/vaccination/add',
+          cowId: cowId,
+          cowName: cowName,
+          recordType: 'vaccination',
+        ),
+        const SizedBox(height: 8),
+        _healthRecordButton(
+          context: context,
+          title: '체중 측정 기록',
+          icon: Icons.monitor_weight,
+          listRoute: '/weight/list',
+          addRoute: '/weight/add',
+          cowId: cowId,
+          cowName: cowName,
+          recordType: 'weight',
+        ),
+        const SizedBox(height: 8),
+        _healthRecordButton(
+          context: context,
+          title: '치료 기록',
+          icon: Icons.medical_services,
+          listRoute: '/treatment/list',
+          addRoute: '/treatment/add',
+          cowId: cowId,
+          cowName: cowName,
+          recordType: 'treatment',
+        ),
+      ],
+    );
+  }
+
+  Widget _healthRecordButton({
+    required BuildContext context,
+    required String title,
+    required IconData icon,
+    required String listRoute,
+    required String addRoute,
+    required String cowId,
+    required String cowName,
+    required String recordType,
+  }) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        ElevatedButton.icon(
+          icon: Icon(icon),
+          label: Text('$title 보기'),
+          onPressed: () {
+            Navigator.pushNamed(
+              context,
+              listRoute,
+              arguments: {
+                'cowId': cowId,
+                'cowName': cowName,
+                'recordType': recordType,
+              },
+            );
+          },
+        ),
+        OutlinedButton.icon(
+          icon: const Icon(Icons.add),
+          label: const Text('추가'),
+          onPressed: () {
+            Navigator.pushNamed(
+              context,
+              addRoute,
+              arguments: {
+                'cowId': cowId,
+                'cowName': cowName,
+              },
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBreedingInfoCard() {
+    return _infoCardBase(
+      icon: Icons.pregnant_woman,
+      title: '번식 정보',
+      children: [
+        _breedingRecordButton(
+          title: '발정 기록',
+          icon: Icons.waves,
+          route: '/estrus-record/list',
+          addRoute: '/estrus-record/add',
+        ),
+        const SizedBox(height: 8),
+        _breedingRecordButton(
+          title: '인공수정 기록',
+          icon: Icons.medical_services_outlined,
+          route: '/insemination-record/list',
+          addRoute: '/insemination-record/add',
+        ),
+        const SizedBox(height: 8),
+        _breedingRecordButton(
+          title: '임신감정 기록',
+          icon: Icons.search,
+          route: '/pregnancy-check-record/list',
+          addRoute: '/pregnancy-check-record/add',
+        ),
+        const SizedBox(height: 8),
+        _breedingRecordButton(
+          title: '분만 기록',
+          icon: Icons.child_care,
+          route: '/calving-record/list',
+          addRoute: '/calving-record/add',
+        ),
+      ],
+    );
+  }
+
+  Widget _breedingRecordButton({
+    required String title,
+    required IconData icon,
+    required String route,
+    required String addRoute,
+  }) {
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: () {
+              Navigator.pushNamed(
+                context,
+                route,
+                arguments: {
+                  'cowId': currentCow.id,
+                  'cowName': currentCow.name,
+                },
+              );
+            },
+            icon: Icon(icon),
+            label: Text(title),
+          ),
+        ),
+        const SizedBox(width: 10),
+        OutlinedButton(
+          onPressed: () {
+            Navigator.pushNamed(
+              context,
+              addRoute,
+              arguments: {
+                'cowId': currentCow.id,
+                'cowName': currentCow.name,
+              },
+            );
+          },
+          child: const Text('기록 추가'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFeedingInfoCard() {
+    final feedingRecords = currentCow.feedingRecords;
+    final hasRecords = feedingRecords.isNotEmpty;
+
+    return _infoCardBase(
+      icon: Icons.rice_bowl,
+      title: '사료 정보',
+      children: [
+        if (hasRecords)
+          ...feedingRecords.map((record) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Text(
+                    '📅 ${record.feedingDate} - ${record.feedType} ${record.amount}kg'),
+              ))
+        else
+          const Text('사료 섭취 기록이 없습니다.'),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.pushNamed(
+                    context,
+                    '/feeding-record/list',
+                    arguments: {
+                      'cowId': currentCow.id,
+                      'cowName': currentCow.name,
+                    },
+                  );
+                },
+                icon: const Icon(Icons.list),
+                label: const Text('기록 보기'),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.pushNamed(
+                    context,
+                    '/feeding-record/add',
+                    arguments: {
+                      'cowId': currentCow.id,
+                      'cowName': currentCow.name,
+                    },
+                  );
+                },
+                icon: const Icon(Icons.add),
+                label: const Text('기록 추가'),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMilkingInfoCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.local_drink, size: 20),
+              SizedBox(width: 6),
+              Text('우유 착유 정보',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+              '최근 착유량: ${currentCow.milk.isNotEmpty ? currentCow.milk : '정보 없음'}'),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.pushNamed(
+                      context,
+                      '/milking-records',
+                      arguments: {
+                        'cowId': currentCow.id,
+                        'cowName': currentCow.name,
+                      },
+                    );
+                  },
+                  icon: const Icon(Icons.list),
+                  label: const Text('착유 기록 보기'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.pushNamed(
+                      context,
+                      '/milking-record',
+                      arguments: {
+                        'cowId': currentCow.id,
+                        'cowName': currentCow.name,
+                      },
+                    );
+                  },
+                  icon: const Icon(Icons.add),
+                  label: const Text('착유 기록 추가'),
+                ),
+              ),
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _infoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          SizedBox(
+              width: 80,
+              child: Text('$label:',
+                  style: const TextStyle(fontWeight: FontWeight.w500))),
+          Expanded(child: Text(value)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButtons(BuildContext context) {
+    return Column(
+      children: [
+        const SizedBox(height: 10),
+        ElevatedButton(
+          onPressed: () async {
+            final confirmed = await showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text("삭제 확인"),
+                content: const Text("정말 이 젖소를 삭제하시겠습니까?"),
+                actions: [
+                  TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text("취소")),
+                  TextButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text("삭제")),
+                ],
+              ),
+            );
+
+            if (confirmed == true) {
+              final success = await deleteCow(context, currentCow.id);
+              if (success && context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("젖소가 삭제되었습니다"),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+                Navigator.pop(context, true);
+              }
+              // 실패 시에는 deleteCow 함수에서 이미 ErrorUtils로 처리됨
+            }
+          },
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+          child: const Text("❌ 삭제하기   "),
         ),
       ],
     );
@@ -207,8 +644,57 @@ class _CowDetailPageState extends State<CowDetailPage> {
     }
   }
 
+  Future<void> showDeleteCowDialog(
+      BuildContext context, String cowName, VoidCallback onConfirm) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('정말로 삭제하시겠습니까?',
+              style: TextStyle(fontWeight: FontWeight.bold)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('젖소 "$cowName"을(를) 삭제하면,'),
+              const SizedBox(height: 8),
+              const Text(
+                '• 이 젖소와 관련된 모든 데이터(기록 등)가 데이터베이스에서 완전히 삭제됩니다.',
+                style: TextStyle(color: Colors.redAccent),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                '• 삭제된 데이터는 복구할 수 없습니다.',
+                style: TextStyle(color: Colors.redAccent),
+              ),
+              const SizedBox(height: 16),
+              const Text('정말로 삭제하시겠습니까?'),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('취소'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+              ),
+              child: const Text('영구 삭제', style: TextStyle(color: Colors.white)),
+              onPressed: () {
+                Navigator.of(context).pop();
+                onConfirm();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   // 축산물이력제 상세 정보 카드 추가
-  Widget buildLivestockTraceInfoCard() {
+  Widget _buildLivestockTraceInfoCard() {
     final data = currentCow.livestockTraceData ?? {};
     // 데이터 파싱 (API 구조에 맞게 key 수정 필요)
     final earTag = data['earTag'] ?? currentCow.earTagNumber;
@@ -304,55 +790,6 @@ class _CowDetailPageState extends State<CowDetailPage> {
           ],
         ),
       ),
-    );
-  }
-
-  Future<void> showDeleteCowDialog(
-      BuildContext context, String cowName, VoidCallback onConfirm) async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('정말로 삭제하시겠습니까?',
-              style: TextStyle(fontWeight: FontWeight.bold)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('젖소 "$cowName"을(를) 삭제하면,'),
-              const SizedBox(height: 8),
-              const Text(
-                '• 이 젖소와 관련된 모든 데이터(기록 등)가 데이터베이스에서 완전히 삭제됩니다.',
-                style: TextStyle(color: Colors.redAccent),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                '• 삭제된 데이터는 복구할 수 없습니다.',
-                style: TextStyle(color: Colors.redAccent),
-              ),
-              const SizedBox(height: 16),
-              const Text('정말로 삭제하시겠습니까?'),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('취소'),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.redAccent,
-              ),
-              child: const Text('영구 삭제', style: TextStyle(color: Colors.white)),
-              onPressed: () {
-                Navigator.of(context).pop();
-                onConfirm();
-              },
-            ),
-          ],
-        );
-      },
     );
   }
 }
