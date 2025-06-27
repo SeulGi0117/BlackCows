@@ -1,3 +1,5 @@
+// app_wrapper.dart
+
 import 'package:flutter/material.dart';
 import 'floating_chatbot_button.dart';
 
