@@ -3,9 +3,18 @@ import 'package:provider/provider.dart';
 import 'package:cow_management/providers/user_provider.dart';
 import 'package:cow_management/screens/accounts/login.dart';
 import 'package:cow_management/providers/cow_provider.dart';
+import 'package:flutter/services.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  String? _deleteErrorMessage;
+  bool _obscureDeletePassword = true;
 
   @override
   Widget build(BuildContext context) {
@@ -387,77 +396,133 @@ class ProfilePage extends StatelessWidget {
 
   void _showDeleteAccountDialog(BuildContext context, UserProvider userProvider) {
     final TextEditingController passwordController = TextEditingController();
+    _deleteErrorMessage = null;
+    _obscureDeletePassword = true;
 
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text(
-            '회원 탈퇴',
-            style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                '정말로 회원 탈퇴하시겠습니까?',
-                style: TextStyle(fontWeight: FontWeight.bold),
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text(
+                '회원 탈퇴',
+                style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 8),
-              const Text(
-                '• 모든 젖소 데이터가 삭제됩니다\n• 계정 복구가 불가능합니다\n• 즐겨찾기 및 기록이 모두 삭제됩니다',
-                style: TextStyle(color: Colors.red, fontSize: 12),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '정말로 회원 탈퇴하시겠습니까?',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    '• 모든 젖소 데이터가 삭제됩니다\n• 계정 복구가 불가능합니다\n• 즐겨찾기 및 기록이 모두 삭제됩니다',
+                    style: TextStyle(color: Colors.red, fontSize: 12),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text('현재 비밀번호를 입력해주세요:'),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: passwordController,
+                    obscureText: _obscureDeletePassword,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(
+                        RegExp(r'[a-zA-Z0-9!"#\$%&()*+,./:;<=>?@^_`{|}~\-\[\]\\]'),
+                      ),
+                    ],
+                    decoration: InputDecoration(
+                      labelText: '현재 비밀번호',
+                      border: const OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                        icon: Icon(_obscureDeletePassword ? Icons.visibility_off : Icons.visibility),
+                        onPressed: () {
+                          setState(() {
+                            _obscureDeletePassword = !_obscureDeletePassword;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    '영어, 숫자, 허용된 특수문자만 사용 가능합니다.',
+                    style: TextStyle(fontSize: 11, color: Colors.grey),
+                  ),
+                  if (_deleteErrorMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10.0),
+                      child: Text(
+                        _deleteErrorMessage!,
+                        style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                ],
               ),
-              const SizedBox(height: 16),
-              const Text('비밀번호를 입력해주세요:'),
-              const SizedBox(height: 8),
-              TextField(
-                controller: passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: '현재 비밀번호',
-                  border: OutlineInputBorder(),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: const Text('취소'),
                 ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('취소'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final password = passwordController.text.trim();
-                if (password.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('비밀번호를 입력해주세요.')),
-                  );
-                  return;
-                }
-                Navigator.pop(context);
-                _deleteAccount(context, userProvider, password);
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('탈퇴하기', style: TextStyle(color: Colors.white)),
-            ),
-          ],
+                ElevatedButton(
+                  onPressed: () async {
+                    final password = passwordController.text.trim();
+                    if (password.isEmpty) {
+                      setState(() {
+                        _deleteErrorMessage = '비밀번호를 입력해주세요.';
+                      });
+                      return;
+                    }
+                    final result = await _deleteAccountWithResult(context, userProvider, password);
+                    if (result == 'success') {
+                      if (mounted) {
+                        Navigator.of(dialogContext).pop();
+                        // 다이얼로그가 닫힌 후에 로그인 화면으로 이동
+                        await Future.delayed(const Duration(milliseconds: 100));
+                        if (context.mounted) {
+                          Navigator.pushNamedAndRemoveUntil(
+                            context,
+                            '/login',
+                            (route) => false,
+                          );
+                        }
+                      }
+                    } else if (result == 'wrong_password') {
+                      setState(() {
+                        _deleteErrorMessage = '비밀번호가 올바르지 않습니다. 다시 입력해주세요.';
+                        passwordController.clear();
+                      });
+                    } else {
+                      setState(() {
+                        _deleteErrorMessage = '알 수 없는 오류가 발생했습니다.';
+                      });
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                  child: const Text('탈퇴하기', style: TextStyle(color: Colors.white)),
+                ),
+              ],
+            );
+          },
         );
       },
     );
   }
 
-  void _deleteAccount(BuildContext context, UserProvider userProvider, String password) async {
+  Future<String> _deleteAccountWithResult(BuildContext context, UserProvider userProvider, String password) async {
+    BuildContext? dialogContext;
     bool isDialogOpen = true;
-    
-    // 로딩 다이얼로그 표시 (확실한 제어를 위해)
+    // 로딩 다이얼로그 표시
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext dialogContext) {
+      builder: (BuildContext dContext) {
+        dialogContext = dContext;
         return WillPopScope(
-          onWillPop: () async => false, // 뒤로가기 버튼 비활성화
+          onWillPop: () async => false,
           child: AlertDialog(
             content: Column(
               mainAxisSize: MainAxisSize.min,
@@ -468,10 +533,7 @@ class ProfilePage extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   '모든 데이터를 삭제하고 있습니다.',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 ),
               ],
             ),
@@ -479,74 +541,39 @@ class ProfilePage extends StatelessWidget {
         );
       },
     );
-
     try {
       final success = await userProvider.deleteAccount(password);
-      
-      // 로딩 다이얼로그가 열려있으면 닫기 (성공/실패 모두에서 반드시 닫음)
-      if (isDialogOpen && context.mounted) {
-        Navigator.of(context).pop();
+      if (isDialogOpen && dialogContext != null && Navigator.of(dialogContext!).canPop()) {
+        Navigator.of(dialogContext!).pop();
         isDialogOpen = false;
       }
-      
-      if (context.mounted) {
-        if (success) {
-          // 회원탈퇴 성공 시 CowProvider 데이터도 초기화
-          Provider.of<CowProvider>(context, listen: false).clearAll();
-          // 성공 메시지 표시
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Row(
-                children: [
-                  Icon(Icons.check_circle, color: Colors.white),
-                  SizedBox(width: 8),
-                  Text('회원 탈퇴가 완료되었습니다.'),
-                ],
-              ),
-              backgroundColor: Colors.green,
-              duration: Duration(seconds: 2),
+      if (success) {
+        Provider.of<CowProvider>(context, listen: false).clearAll();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white),
+                SizedBox(width: 8),
+                Text('회원 탈퇴가 완료되었습니다.'),
+              ],
             ),
-          );
-          // 3초 뒤에 무조건 로딩 다이얼로그 닫고 로그인 화면으로 이동
-          await Future.delayed(const Duration(seconds: 3));
-          if (context.mounted && Navigator.of(context).canPop()) {
-            Navigator.of(context).pop();
-          }
-          if (context.mounted) {
-            Navigator.pushNamedAndRemoveUntil(
-              context,
-              '/login',
-              (route) => false,
-            );
-          }
-        } else {
-          // 실패 메시지 표시
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Row(
-                children: [
-                  Icon(Icons.error, color: Colors.white),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Text('회원 탈퇴에 실패했습니다. 비밀번호를 확인해주세요.'),
-                  ),
-                ],
-              ),
-              backgroundColor: Colors.red,
-              duration: Duration(seconds: 3),
-            ),
-          );
-        }
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+        await Future.delayed(const Duration(seconds: 1));
+        return 'success';
+      } else {
+        // 실패: 비밀번호 오류 또는 기타 오류 구분
+        return 'wrong_password';
       }
     } catch (e) {
-      // 로딩 다이얼로그가 열려있으면 닫기
-      if (isDialogOpen && context.mounted) {
-        Navigator.of(context).pop();
+      if (isDialogOpen && dialogContext != null && Navigator.of(dialogContext!).canPop()) {
+        Navigator.of(dialogContext!).pop();
         isDialogOpen = false;
       }
-      
       if (context.mounted) {
-        // 에러 메시지 표시
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
@@ -563,6 +590,7 @@ class ProfilePage extends StatelessWidget {
           ),
         );
       }
+      return 'error';
     }
   }
 

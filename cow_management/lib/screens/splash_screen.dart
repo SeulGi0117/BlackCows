@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cow_management/providers/user_provider.dart';
+import 'package:cow_management/providers/cow_provider.dart';
 import 'package:cow_management/main.dart';
 import 'package:cow_management/screens/accounts/login.dart';
 import 'package:logging/logging.dart';
@@ -23,8 +24,13 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _checkAutoLogin() async {
     try {
+      _logger.info('스플래시 화면 시작 - 자동 로그인 확인');
+      
       // 최소 1초는 스플래시 화면을 보여줌
-      final autoLoginFuture = Provider.of<UserProvider>(context, listen: false).checkAutoLogin();
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final cowProvider = Provider.of<CowProvider>(context, listen: false);
+      
+      final autoLoginFuture = userProvider.checkAutoLogin();
       final delayFuture = Future.delayed(const Duration(seconds: 1));
       
       final results = await Future.wait([autoLoginFuture, delayFuture]);
@@ -33,9 +39,25 @@ class _SplashScreenState extends State<SplashScreen> {
       if (!mounted) return;
 
       if (isLoggedIn) {
-        // 자동 로그인 성공 시 메인 화면으로
+        _logger.info('자동 로그인 성공 - 사용자 데이터 로딩');
+        
+        // 자동 로그인 성공 시 소 목록도 함께 로드
+        if (userProvider.accessToken != null) {
+          try {
+            // CowProvider 초기화 및 데이터 로드
+            cowProvider.clearAll();
+            await cowProvider.fetchCowsFromBackend(userProvider.accessToken!);
+            _logger.info('소 목록 데이터 로딩 완료');
+          } catch (e) {
+            _logger.warning('소 목록 로딩 실패 (자동 로그인 시): $e');
+            // 소 목록 로딩 실패해도 메인 화면으로 이동
+          }
+        }
+        
+        // 메인 화면으로 이동
         Navigator.pushReplacementNamed(context, '/main');
       } else {
+        _logger.info('자동 로그인 실패 - 로그인 화면으로 이동');
         // 자동 로그인 실패 시 로그인 화면으로
         Navigator.pushReplacementNamed(context, '/login');
       }

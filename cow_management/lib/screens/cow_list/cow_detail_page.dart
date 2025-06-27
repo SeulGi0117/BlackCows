@@ -62,89 +62,81 @@ class _CowDetailPageState extends State<CowDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const SizedBox(height: 16),
-            if (currentCow.name.isNotEmpty)
-              Text(currentCow.name,
-                  style: const TextStyle(
-                      fontSize: 24, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            if (currentCow.earTagNumber.isNotEmpty)
-              Text('이표번호: ${currentCow.earTagNumber}',
-                  style: TextStyle(color: Colors.grey.shade600)),
-            if (currentCow.breed?.isNotEmpty == true)
-              Text('품종: ${currentCow.breed}',
-                  style: TextStyle(color: Colors.grey.shade600)),
-            const SizedBox(height: 32),
-            if (currentCow.sensorNumber?.isNotEmpty == true)
-              infoTile(Icons.wifi, '센서 번호', currentCow.sensorNumber!),
-            const SizedBox(height: 16),
-            if (currentCow.status.isNotEmpty && currentCow.status != '알 수 없음')
-              infoTile(Icons.show_chart, '상태', currentCow.status),
-            const SizedBox(height: 16),
-            if (currentCow.birthdate != null)
-              infoTile(Icons.calendar_today, '출생일',
-                  currentCow.birthdate.toString().split(' ')[0]),
-            const Spacer(),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => CowEditPage(cow: currentCow),
-                        ),
-                      ).then((updatedCow) {
-                        if (updatedCow != null) {
-                          setState(() => currentCow = updatedCow);
-                        }
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue.shade100,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      elevation: 0,
-                    ),
-                    child: const Text('정보 수정',
-                        style: TextStyle(color: Colors.black)),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              CowDetailedRecordsPage(cow: currentCow),
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey.shade300,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      elevation: 0,
-                    ),
-                    child: const Text('상세 기록',
-                        style: TextStyle(color: Colors.black)),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
+            _buildBasicInfoCard(),
+            const SizedBox(height: 20),
+            if (currentCow.hasLivestockTraceData)
+              _buildLivestockTraceInfoCard(),
+            const SizedBox(height: 20),
+            _buildHealthInfoCard(context, currentCow.id, currentCow.name),
+            const SizedBox(height: 20),
+            _buildMilkingInfoCard(),
+            const SizedBox(height: 20),
+            _buildBreedingInfoCard(),
+            const SizedBox(height: 20),
+            _buildFeedingInfoCard(),
           ],
         ),
       ),
     );
   }
+
+  Widget _buildBasicInfoCard() {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 0,
+      color: Colors.grey.shade50,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('🐾 기본 정보',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                const Text('이름: ',
+                    style: TextStyle(fontWeight: FontWeight.w500)),
+                Text(currentCow.name.isNotEmpty ? currentCow.name : '미등록'),
+              ],
+            ),
+            Row(
+              children: [
+                const Text('이표번호: ', style: TextStyle(fontWeight: FontWeight.w500)),
+                Text(currentCow.earTagNumber.isNotEmpty ? currentCow.earTagNumber : '미등록'),
+              ],
+            ),
+            Row(
+              children: [
+                const Text('품종: ',
+                    style: TextStyle(fontWeight: FontWeight.w500)),
+                Text((currentCow.breed != null && currentCow.breed!.isNotEmpty)
+                    ? currentCow.breed!
+                    : '미등록'),
+              ],
+            ),
+            Row(
+              children: [
+                const Text('센서 번호: ',
+                    style: TextStyle(fontWeight: FontWeight.w500)),
+                Text((currentCow.sensorNumber != null &&
+                        currentCow.sensorNumber!.isNotEmpty)
+                    ? currentCow.sensorNumber!
+                    : '미등록'),
+              ],
+            ),
+            Row(
+              children: [
+                const Text('상태: ',
+                    style: TextStyle(fontWeight: FontWeight.w500)),
+                Text((currentCow.status.isNotEmpty &&
+                        currentCow.status != '알 수 없음')
+                    ? currentCow.status
+                    : '미등록'),
+              ],
+            ),
+
 
   Widget infoTile(IconData icon, String label, String value) {
     return Row(
