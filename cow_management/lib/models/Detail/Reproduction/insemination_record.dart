@@ -62,11 +62,11 @@ class InseminationRecord {
       recordDate: data['record_date'] ?? '',
       inseminationTime: data['insemination_time'],
       bullId: data['bull_id'],
-      bullBreed: data['bull_breed'] ?? data['bull'], // ✅ 보완
+      bullBreed: data['bull_breed'] ?? data['bull'],
       semenBatch: data['semen_batch'],
-      semenQuality: data['semen_quality'] ?? data['quality'], // ✅ 보완
-      inseminationMethod: data['insemination_method'] ?? data['method'], // ✅ 보완
-      technicianName: data['technician_name'] ?? data['technician'], // ✅ 보완
+      semenQuality: data['semen_quality'] ?? data['quality'],
+      inseminationMethod: data['insemination_method'] ?? data['method'],
+      technicianName: data['technician_name'] ?? data['technician'],
       cervixCondition: data['cervix_condition'],
       successProbability: _parseDouble(data['success_probability']),
       pregnancyCheckScheduled: data['pregnancy_check_scheduled'],
