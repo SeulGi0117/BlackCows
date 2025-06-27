@@ -2,6 +2,7 @@ class InseminationRecord {
   final String? id;
   final String cowId;
   final String recordDate;
+
   final String? inseminationTime;
   final String? bullId;
   final String? bullBreed;
@@ -11,11 +12,9 @@ class InseminationRecord {
   final String? technicianName;
   final String? cervixCondition;
   final double? successProbability;
-  final String? expectedCalvingDate;
   final String? pregnancyCheckScheduled;
   final double? cost;
   final String? notes;
-  final String? inseminationResult;
 
   InseminationRecord({
     this.id,
@@ -30,50 +29,10 @@ class InseminationRecord {
     this.technicianName,
     this.cervixCondition,
     this.successProbability,
-    this.expectedCalvingDate,
     this.pregnancyCheckScheduled,
     this.cost,
     this.notes,
-    this.inseminationResult,
   });
-
-  InseminationRecord copyWith({
-    String? cowId,
-    String? recordDate,
-    String? inseminationTime,
-    String? bullId,
-    String? inseminationResult,
-    String? bullBreed,
-    String? semenBatch,
-    String? semenQuality,
-    String? inseminationMethod,
-    String? technicianName,
-    String? cervixCondition,
-    double? successProbability,
-    String? expectedCalvingDate,
-    String? pregnancyCheckScheduled,
-    double? cost,
-    String? notes,
-  }) {
-    return InseminationRecord(
-      cowId: cowId ?? this.cowId,
-      recordDate: recordDate ?? this.recordDate,
-      inseminationTime: inseminationTime ?? this.inseminationTime,
-      bullId: bullId ?? this.bullId,
-      bullBreed: bullBreed ?? this.bullBreed,
-      semenBatch: semenBatch ?? this.semenBatch,
-      semenQuality: semenQuality ?? this.semenQuality,
-      inseminationMethod: inseminationMethod ?? this.inseminationMethod,
-      technicianName: technicianName ?? this.technicianName,
-      cervixCondition: cervixCondition ?? this.cervixCondition,
-      successProbability: successProbability ?? this.successProbability,
-      expectedCalvingDate: expectedCalvingDate ?? this.expectedCalvingDate,
-      pregnancyCheckScheduled:
-          pregnancyCheckScheduled ?? this.pregnancyCheckScheduled,
-      cost: cost ?? this.cost,
-      notes: notes ?? this.notes,
-    );
-  }
 
   static double? _parseDouble(dynamic value) {
     if (value == null) return null;
@@ -85,9 +44,8 @@ class InseminationRecord {
 
   factory InseminationRecord.fromJson(Map<String, dynamic> json) {
     final Map<String, dynamic> safeJson = Map<String, dynamic>.from(json);
-    Map<String, dynamic> data = {};
+    final Map<String, dynamic> data = {};
 
-    // ✅ record_data, key_values 병합
     if (safeJson['record_data'] != null) {
       data.addAll(Map<String, dynamic>.from(safeJson['record_data']));
     }
@@ -95,7 +53,6 @@ class InseminationRecord {
       data.addAll(Map<String, dynamic>.from(safeJson['key_values']));
     }
 
-    // ✅ cow_id, record_date 포함
     data['cow_id'] = safeJson['cow_id'];
     data['record_date'] = safeJson['record_date'];
 
@@ -105,35 +62,38 @@ class InseminationRecord {
       recordDate: data['record_date'] ?? '',
       inseminationTime: data['insemination_time'],
       bullId: data['bull_id'],
-      bullBreed: data['bull_breed'],
+      bullBreed: data['bull_breed'] ?? data['bull'], // ✅ 보완
       semenBatch: data['semen_batch'],
-      semenQuality: data['semen_quality'],
-      inseminationMethod: data['insemination_method'],
-      technicianName: data['technician_name'],
+      semenQuality: data['semen_quality'] ?? data['quality'], // ✅ 보완
+      inseminationMethod: data['insemination_method'] ?? data['method'], // ✅ 보완
+      technicianName: data['technician_name'] ?? data['technician'], // ✅ 보완
       cervixCondition: data['cervix_condition'],
       successProbability: _parseDouble(data['success_probability']),
       pregnancyCheckScheduled: data['pregnancy_check_scheduled'],
       cost: _parseDouble(data['cost']),
       notes: data['notes'] ?? safeJson['description'],
-      inseminationResult: data['insemination_result'],
     );
   }
 
   Map<String, dynamic> toJson() => {
         'cow_id': cowId,
         'record_date': recordDate,
-        'insemination_time': inseminationTime,
-        'bull_id': bullId,
-        'bull_breed': bullBreed,
-        'semen_batch': semenBatch,
-        'semen_quality': semenQuality,
-        'insemination_method': inseminationMethod,
-        'technician_name': technicianName,
-        'cervix_condition': cervixCondition,
-        'success_probability': successProbability,
-        'pregnancy_check_scheduled': pregnancyCheckScheduled,
-        'cost': cost,
-        'notes': notes,
-        'insemination_result': inseminationResult,
+        'title': '인공수정 기록',
+        'description': notes ?? '인공수정 실시',
+        if (inseminationTime != null) 'insemination_time': inseminationTime,
+        if (bullId != null) 'bull_id': bullId,
+        if (bullBreed != null) 'bull_breed': bullBreed,
+        if (semenBatch != null) 'semen_batch': semenBatch,
+        if (semenQuality != null) 'semen_quality': semenQuality,
+        if (inseminationMethod != null)
+          'insemination_method': inseminationMethod,
+        if (technicianName != null) 'technician_name': technicianName,
+        if (cervixCondition != null) 'cervix_condition': cervixCondition,
+        if (successProbability != null)
+          'success_probability': successProbability,
+        if (pregnancyCheckScheduled != null)
+          'pregnancy_check_scheduled': pregnancyCheckScheduled,
+        if (cost != null) 'cost': cost,
+        if (notes != null) 'notes': notes,
       };
 }

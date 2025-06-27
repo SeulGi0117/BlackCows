@@ -23,6 +23,9 @@ class InseminationDetailPage extends StatefulWidget {
 class _InseminationDetailPageState extends State<InseminationDetailPage> {
   @override
   Widget build(BuildContext context) {
+    print('✅ 성공확률: ${widget.record.successProbability}');
+    print('✅ 임신감정 예정일: ${widget.record.pregnancyCheckScheduled}');
+    print('✅ 비용: ${widget.record.cost}');
     return Scaffold(
       appBar: AppBar(
         title: Text('인공수정 상세: ${widget.record.recordDate}'),
@@ -113,10 +116,10 @@ class _InseminationDetailPageState extends State<InseminationDetailPage> {
                       '📈 성공 확률',
                       '${widget.record.successProbability!.toStringAsFixed(1)}%',
                     ),
-                  if (widget.record.expectedCalvingDate != null &&
-                      widget.record.expectedCalvingDate!.isNotEmpty)
+                  if (widget.record.pregnancyCheckScheduled != null &&
+                      widget.record.pregnancyCheckScheduled!.isNotEmpty)
                     _buildInfoRow(
-                        '📅 분만 예정일', widget.record.expectedCalvingDate!),
+                        '📅 분만 예정일', widget.record.pregnancyCheckScheduled!),
                   if (widget.record.cost != null)
                     _buildInfoRow(
                         '💰 비용', '${widget.record.cost?.toStringAsFixed(0)}원'),

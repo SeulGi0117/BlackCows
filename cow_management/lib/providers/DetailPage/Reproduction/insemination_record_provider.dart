@@ -69,14 +69,7 @@ class InseminationRecordProvider with ChangeNotifier {
     if (baseUrl == null) return false;
 
     try {
-      final requestData = {
-        'cow_id': record.cowId,
-        'record_date': record.recordDate,
-        'record_type': 'insemination',
-        'title': '인공수정 실시',
-        'description': record.notes ?? '',
-        'record_data': record.toJson(), // ✅ 핵심 포인트!
-      };
+      final requestData = record.toJson(); // ✅ 핵심 수정 포인트
 
       final response = await dio.post(
         '$baseUrl/records/insemination',
