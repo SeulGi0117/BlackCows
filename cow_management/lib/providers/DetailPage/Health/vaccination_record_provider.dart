@@ -12,23 +12,86 @@ class VaccinationRecordProvider with ChangeNotifier {
     final dio = Dio();
     final baseUrl = dotenv.env['API_BASE_URL'];
 
+    if (baseUrl == null) {
+      print('⚠️ API_BASE_URL이 설정되지 않았습니다.');
+      return;
+    }
+
     try {
+      print('🔄 백신접종 기록 조회 시작: $baseUrl/records/cow/$cowId/health-records');
+      
       final response = await dio.get(
-        '$baseUrl/records/cow/$cowId/vaccination-records',
+        '$baseUrl/records/cow/$cowId/health-records',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
+      print('✅ 백신접종 기록 조회 응답: ${response.statusCode}');
+      print('📄 응답 데이터: ${response.data}');
+
       if (response.statusCode == 200) {
         _records.clear();
-        for (var item in response.data) {
-          final data = item['record_data']; // record_data만 파싱
-          data['record_date'] = item['record_date']; // 날짜도 넣어줌
-          data['cow_id'] = cowId;
-          _records.add(VaccinationRecord.fromJson(data));
+        
+        if (response.data == null) {
+          print('⚠️ 응답 데이터가 null입니다.');
+          notifyListeners();
+          return;
         }
+
+        if (response.data is! List) {
+          print('⚠️ 응답 데이터가 List 형태가 아닙니다: ${response.data.runtimeType}');
+          notifyListeners();
+          return;
+        }
+
+        final List<dynamic> dataList = response.data as List<dynamic>;
+        print('📊 전체 건강 기록 수: ${dataList.length}');
+
+        int vaccinationCount = 0;
+        for (var item in dataList) {
+          if (item is Map<String, dynamic> && item['record_type'] == 'vaccination') {
+            try {
+              // 전체 JSON을 그대로 전달 (key_values 포함)
+              _records.add(VaccinationRecord.fromJson(Map<String, dynamic>.from(item)));
+              vaccinationCount++;
+            } catch (e) {
+              print('! 백신접종 기록 파싱 오류: $e');
+              print('📄 문제가 된 데이터: $item');
+            }
+          }
+        }
+        
+        print('✅ 백신접종 기록 필터링 완료: $vaccinationCount개');
         notifyListeners();
+      } else {
+        print('❌ 예상치 못한 응답 코드: ${response.statusCode}');
+        throw Exception('백신접종 기록 조회 실패: HTTP ${response.statusCode}');
       }
+    } on DioException catch (e) {
+      print('🚨 Dio 오류 발생:');
+      print('   - 오류 타입: ${e.type}');
+      print('   - 상태 코드: ${e.response?.statusCode}');
+      print('   - 오류 메시지: ${e.message}');
+      
+      if (e.response?.statusCode == 500) {
+        print('🚨 서버 내부 오류 (500): 백엔드 서버에 문제가 있습니다.');
+        print('서버 응답: ${e.response?.data}');
+        
+        // 500 오류 시에도 빈 목록으로 처리하여 앱이 크래시되지 않도록 함
+        _records.clear();
+        notifyListeners();
+        return;
+      }
+      
+      if (e.response?.statusCode == 404) {
+        print('📭 백신접종 기록이 없습니다 (404)');
+        _records.clear();
+        notifyListeners();
+        return;
+      }
+      
+      throw Exception('백신접종 기록 불러오기 실패: $e');
     } catch (e) {
+      print('❌ 일반 오류: $e');
       throw Exception('백신접종 기록 불러오기 실패: $e');
     }
   }
@@ -38,17 +101,30 @@ class VaccinationRecordProvider with ChangeNotifier {
     final baseUrl = dotenv.env['API_BASE_URL'];
 
     try {
+      final requestData = {
+        'cow_id': record.cowId,
+        'record_date': record.recordDate,
+        'title': '백신접종 (${record.vaccineName ?? '백신'})',
+        'description': record.notes?.isNotEmpty == true ? record.notes : '백신접종 실시',
+        'record_data': record.toRecordDataJson(),
+      };
+
+      print('🔄 백신접종 기록 저장 요청: $requestData');
+
       final response = await dio.post(
         '$baseUrl/records/vaccination',
-        data: record.toJson(),
+        data: requestData,
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
+      print('✅ 백신접종 기록 저장 응답: ${response.statusCode}');
+
       if (response.statusCode == 201) {
-        _records.add(VaccinationRecord.fromJson(response.data['record_data']));
+        _records.add(VaccinationRecord.fromJson(response.data));
         notifyListeners();
       }
     } catch (e) {
+      print('❌ 백신접종 기록 추가 실패: $e');
       throw Exception('백신접종 기록 추가 실패: $e');
     }
   }

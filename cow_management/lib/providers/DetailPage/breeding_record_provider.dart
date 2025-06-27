@@ -53,43 +53,46 @@ class BreedingRecordProvider with ChangeNotifier {
   Future<void> addRecord(BreedingRecord record, String token) async {
     try {
       final response = await _dio.post(
-        '$baseUrl/basic-records/breeding',
+        '$baseUrl/records/breeding',
         data: record.toJson(),
         options: Options(headers: {
           'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
         }),
       );
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
+      if (response.statusCode == 201) {
         _records.add(record);
         notifyListeners();
+      } else {
+        throw Exception('번식 기록 추가 실패: ${response.statusCode}');
       }
     } catch (e) {
+      print('🚨 번식 기록 추가 실패: $e');
       throw Exception('번식 기록 추가 실패: $e');
     }
   }
 
-  Future<void> updateRecord(
-      String recordId, BreedingRecord updated, String token) async {
+  Future<void> updateRecord(String recordId, BreedingRecord record, String token) async {
     try {
       final response = await _dio.put(
-        '$baseUrl/records/breeding/$recordId',
-        data: updated.toUpdateJson(),
+        '$baseUrl/records/$recordId',
+        data: record.toJson(),
         options: Options(headers: {
           'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
         }),
       );
 
       if (response.statusCode == 200) {
         final index = _records.indexWhere((r) => r.id == recordId);
         if (index != -1) {
-          _records[index] = updated;
+          _records[index] = record;
           notifyListeners();
         }
+      } else {
+        throw Exception('번식 기록 수정 실패: ${response.statusCode}');
       }
     } catch (e) {
+      print('🚨 번식 기록 수정 실패: $e');
       throw Exception('번식 기록 수정 실패: $e');
     }
   }
@@ -97,7 +100,7 @@ class BreedingRecordProvider with ChangeNotifier {
   Future<void> deleteRecord(String recordId, String token) async {
     try {
       final response = await _dio.delete(
-        '$baseUrl/records/breeding/$recordId',
+        '$baseUrl/records/$recordId',
         options: Options(headers: {
           'Authorization': 'Bearer $token',
         }),
@@ -106,8 +109,11 @@ class BreedingRecordProvider with ChangeNotifier {
       if (response.statusCode == 200 || response.statusCode == 204) {
         _records.removeWhere((r) => r.id == recordId);
         notifyListeners();
+      } else {
+        throw Exception('번식 기록 삭제 실패: ${response.statusCode}');
       }
     } catch (e) {
+      print('🚨 번식 기록 삭제 실패: $e');
       throw Exception('번식 기록 삭제 실패: $e');
     }
   }

@@ -1,24 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:cow_management/models/Detail/Health/vaccination_record.dart';
-import 'package:cow_management/providers/DetailPage/Health/vaccination_record_provider.dart';
+import 'package:cow_management/models/Detail/Reproduction/estrus_record.dart';
+import 'package:cow_management/providers/DetailPage/Reproduction/estrus_record_provider.dart';
 import 'package:cow_management/providers/user_provider.dart';
+import 'package:cow_management/screens/cow_list/Cow_Detail/Estrus/estrus_detail.dart';
 
-class VaccinationListPage extends StatefulWidget {
+class EstrusRecordListPage extends StatefulWidget {
   final String cowId;
   final String cowName;
 
-  const VaccinationListPage({
+  const EstrusRecordListPage({
     super.key,
     required this.cowId,
     required this.cowName,
   });
 
   @override
-  State<VaccinationListPage> createState() => _VaccinationListPageState();
+  State<EstrusRecordListPage> createState() => _EstrusRecordListPageState();
 }
 
-class _VaccinationListPageState extends State<VaccinationListPage> {
+class _EstrusRecordListPageState extends State<EstrusRecordListPage> {
   bool _isLoading = true;
   bool _hasError = false;
   String _errorMessage = '';
@@ -38,31 +39,33 @@ class _VaccinationListPageState extends State<VaccinationListPage> {
       });
 
       final token = Provider.of<UserProvider>(context, listen: false).accessToken;
-      await Provider.of<VaccinationRecordProvider>(context, listen: false)
-          .fetchRecords(widget.cowId, token!);
-      
+      final provider = Provider.of<EstrusRecordProvider>(context, listen: false);
+      final records = await provider.fetchRecords(widget.cowId, token!);
+
+      print("📦 불러온 발정 기록 수: ${records.length}");
+
       setState(() {
         _isLoading = false;
       });
     } catch (e) {
-      print('백신접종 목록 로딩 오류: $e');
+      print('발정 기록 목록 로딩 오류: $e');
       setState(() {
         _isLoading = false;
         _hasError = true;
         _errorMessage = e.toString().contains('500')
             ? '서버에 일시적인 문제가 있습니다.\n잠시 후 다시 시도해주세요.'
-            : '백신접종 기록을 불러오는 중 오류가 발생했습니다.';
+            : '발정 기록을 불러오는 중 오류가 발생했습니다.';
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final records = Provider.of<VaccinationRecordProvider>(context).records;
+    final records = Provider.of<EstrusRecordProvider>(context).records;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.cowName} 백신접종 기록'),
+        title: Text('${widget.cowName} 발정 기록'),
         backgroundColor: Colors.pink,
         foregroundColor: Colors.white,
         actions: [
@@ -81,7 +84,7 @@ class _VaccinationListPageState extends State<VaccinationListPage> {
         onPressed: () {
           Navigator.pushNamed(
             context,
-            '/vaccination/add',
+            '/estrus-record/add',
             arguments: {
               'cowId': widget.cowId,
               'cowName': widget.cowName,
@@ -94,7 +97,7 @@ class _VaccinationListPageState extends State<VaccinationListPage> {
     );
   }
 
-  Widget _buildBody(List<VaccinationRecord> records) {
+  Widget _buildBody(List<EstrusRecord> records) {
     if (_isLoading) {
       return const Center(
         child: Column(
@@ -102,7 +105,7 @@ class _VaccinationListPageState extends State<VaccinationListPage> {
           children: [
             CircularProgressIndicator(color: Colors.pink),
             SizedBox(height: 16),
-            Text('백신접종 기록을 불러오는 중...'),
+            Text('발정 기록을 불러오는 중...'),
           ],
         ),
       );
@@ -148,13 +151,13 @@ class _VaccinationListPageState extends State<VaccinationListPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(
-              Icons.vaccines_outlined,
+              Icons.favorite_outline,
               size: 64,
               color: Colors.grey,
             ),
             const SizedBox(height: 16),
             const Text(
-              '백신접종 기록이 없습니다',
+              '발정 기록이 없습니다',
               style: TextStyle(
                 fontSize: 18,
                 color: Colors.grey,
@@ -186,12 +189,12 @@ class _VaccinationListPageState extends State<VaccinationListPage> {
             leading: CircleAvatar(
               backgroundColor: Colors.pink.shade100,
               child: const Icon(
-                Icons.vaccines,
+                Icons.favorite,
                 color: Colors.pink,
               ),
             ),
             title: Text(
-              record.vaccineName ?? '백신명 없음',
+              '발정 강도: ${record.estrusIntensity ?? '정보 없음'}',
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
               ),
@@ -200,17 +203,18 @@ class _VaccinationListPageState extends State<VaccinationListPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 4),
-                Text('접종일: ${record.recordDate}'),
-                if (record.vaccineType != null)
-                  Text('종류: ${record.vaccineType}'),
+                Text('발정일: ${record.recordDate}'),
+                if (record.estrusStartTime != null)
+                  Text('시작 시간: ${record.estrusStartTime}'),
               ],
             ),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
-              Navigator.pushNamed(
+              Navigator.push(
                 context,
-                '/vaccination/detail',
-                arguments: record,
+                MaterialPageRoute(
+                  builder: (context) => EstrusDetailPage(record: record),
+                ),
               );
             },
           ),

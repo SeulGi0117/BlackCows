@@ -13,7 +13,10 @@ class HealthCheckProvider with ChangeNotifier {
     final dio = Dio();
     final baseUrl = dotenv.env['API_BASE_URL'];
 
-    if (baseUrl == null) return [];
+    if (baseUrl == null) {
+      print('⚠️ API_BASE_URL이 설정되지 않았습니다.');
+      return [];
+    }
 
     try {
       final response = await dio.get(
@@ -21,17 +24,48 @@ class HealthCheckProvider with ChangeNotifier {
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
-      _records = (response.data as List).map((json) {
-        final data = json['record_data'] as Map<String, dynamic>;
-        data['record_date'] = json['record_date'];
-        data['cow_id'] = cowId;
-        return HealthCheckRecord.fromJson(data);
+      print('✅ 건강검진 기록 조회 성공: ${response.statusCode}');
+      print('서버 응답: ${response.data}');
+
+      if (response.data == null || response.data is! List) {
+        print('⚠️ 서버 응답 데이터가 올바르지 않습니다.');
+        return [];
+      }
+
+      _records = (response.data as List).where((json) {
+        // record_type이 'health_check'인 것만 필터링
+        return json['record_type'] == 'health_check';
+      }).map((json) {
+        // 전체 JSON을 그대로 전달 (key_values 포함)
+        return HealthCheckRecord.fromJson(json);
       }).toList();
+
+      print('✅ 파싱된 건강검진 기록 수: ${_records.length}');
+      for (var record in _records) {
+        print('기록: 날짜=${record.recordDate}, 체온=${record.bodyTemperature}, BCS=${record.bodyConditionScore}, 메모=${record.notes}');
+      }
 
       notifyListeners();
       return _records;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 500) {
+        print('🚨 서버 내부 오류 (500): 백엔드 서버에 문제가 있습니다.');
+        print('서버 응답: ${e.response?.data}');
+        // 서버 오류 시 빈 리스트 반환하여 앱이 계속 작동하도록 함
+        _records = [];
+        notifyListeners();
+        return [];
+      } else if (e.response?.statusCode == 404) {
+        print('📭 건강검진 기록이 없습니다 (404)');
+        _records = [];
+        notifyListeners();
+        return [];
+      } else {
+        print('❌ 건강검진 기록 불러오기 네트워크 오류: ${e.message}');
+        return [];
+      }
     } catch (e) {
-      print('건강검진 기록 불러오기 오류: $e');
+      print('❌ 건강검진 기록 불러오기 예상치 못한 오류: $e');
       return [];
     }
   }
@@ -51,11 +85,8 @@ class HealthCheckProvider with ChangeNotifier {
       if (response.statusCode == 200) {
         final data = response.data as List;
         _records = data.map((json) {
-          final recordData = json['record_data'] as Map<String, dynamic>;
-          recordData['id'] = json['id'];
-          recordData['record_date'] = json['record_date'];
-          recordData['cow_id'] = cowId;
-          return HealthCheckRecord.fromJson(recordData);
+          // 전체 JSON을 그대로 전달
+          return HealthCheckRecord.fromJson(json);
         }).toList();
 
         notifyListeners();
@@ -77,8 +108,11 @@ class HealthCheckProvider with ChangeNotifier {
     try {
       final response = await dio.post(
         '$baseUrl/records/health-check',
-        data: record.toBackendJson(), // ✅ 여기로 수정!
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
+        data: record.toJson(), // 여기로 수정!
+        options: Options(headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        }),
       );
 
       if (response.statusCode == 201) {
@@ -104,7 +138,7 @@ class HealthCheckProvider with ChangeNotifier {
         '$baseUrl/records/$id',
         data: {
           'record_date': updated.recordDate,
-          'record_data': updated.toRecordDataJson(),
+          'record_data': updated.toJson(),
         },
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );

@@ -1,20 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:cow_management/models/Detail/Health/weight_record_model.dart';
+import 'package:provider/provider.dart';
+import 'package:cow_management/models/Detail/Reproduction/insemination_record.dart';
+import 'package:cow_management/providers/DetailPage/Reproduction/insemination_record_provider.dart';
+import 'package:cow_management/providers/user_provider.dart';
 
-class WeightDetailPage extends StatelessWidget {
-  final WeightRecord record;
+class InseminationDetailPage extends StatefulWidget {
+  final InseminationRecord record;
+  final String cowId;
+  final String cowName;
 
-  const WeightDetailPage({
+  const InseminationDetailPage({
     super.key,
     required this.record,
+    required this.cowId,
+    required this.cowName,
   });
 
+  @override
+  State<InseminationDetailPage> createState() => _InseminationDetailPageState();
+}
+
+class _InseminationDetailPageState extends State<InseminationDetailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('체중측정 상세: ${record.recordDate}'),
-        backgroundColor: Colors.indigo,
+        title: Text('인공수정 상세: ${widget.record.recordDate}'),
+        backgroundColor: Colors.pink,
         foregroundColor: Colors.white,
       ),
       body: ListView(
@@ -28,17 +40,17 @@ class WeightDetailPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    '⚖️ 기본 정보',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.indigo),
+                    '🎯 기본 정보',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.pink),
                   ),
                   const SizedBox(height: 16),
-                  _buildInfoRow('📅 측정 날짜', record.recordDate),
-                  if (record.measurementTime != null)
-                    _buildInfoRow('⏰ 측정 시간', record.measurementTime!),
-                  if (record.measurer != null)
-                    _buildInfoRow('👨‍⚕️ 측정자', record.measurer!),
-                  if (record.measurementMethod != null)
-                    _buildInfoRow('🔧 측정 방법', record.measurementMethod!),
+                  _buildInfoRow('📅 수정 날짜', widget.record.recordDate),
+                  if (widget.record.inseminationTime != null && widget.record.inseminationTime!.isNotEmpty)
+                    _buildInfoRow('⏰ 수정 시간', widget.record.inseminationTime!),
+                  if (widget.record.veterinarian != null && widget.record.veterinarian!.isNotEmpty)
+                    _buildInfoRow('👨‍⚕️ 수의사', widget.record.veterinarian!),
+                  if (widget.record.inseminationMethod != null && widget.record.inseminationMethod!.isNotEmpty)
+                    _buildInfoRow('🔧 수정 방법', widget.record.inseminationMethod!),
                 ],
               ),
             ),
@@ -46,7 +58,7 @@ class WeightDetailPage extends StatelessWidget {
 
           const SizedBox(height: 12),
 
-          // 측정 정보 카드
+          // 종축 정보 카드
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -54,45 +66,39 @@ class WeightDetailPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    '📏 측정 정보',
+                    '🐂 종축 정보',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.brown),
+                  ),
+                  const SizedBox(height: 16),
+                  if (widget.record.bullInfo != null && widget.record.bullInfo!.isNotEmpty)
+                    _buildInfoRow('🐂 종축 정보', widget.record.bullInfo!),
+                  if (widget.record.semenQuality != null && widget.record.semenQuality!.isNotEmpty)
+                    _buildInfoRow('💧 정액 품질', widget.record.semenQuality!),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // 결과 정보 카드
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '📊 결과 정보',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
                   ),
                   const SizedBox(height: 16),
-                  if (record.weight != null)
-                    _buildInfoRow('⚖️ 체중', '${record.weight}kg'),
-                  if (record.heightWithers != null)
-                    _buildInfoRow('📐 체고', '${record.heightWithers}cm'),
-                  if (record.bodyLength != null)
-                    _buildInfoRow('📏 체장', '${record.bodyLength}cm'),
-                  if (record.chestGirth != null)
-                    _buildInfoRow('📊 흉위', '${record.chestGirth}cm'),
-                ],
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          // 체형 평가 카드
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    '🎯 체형 평가',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.orange),
-                  ),
-                  const SizedBox(height: 16),
-                  if (record.bodyConditionScore != null)
-                    _buildInfoRow('📊 체형점수(BCS)', record.bodyConditionScore.toString()),
-                  if (record.weightCategory != null)
-                    _buildInfoRow('📈 체중 분류', record.weightCategory!),
-                  if (record.growthRate != null)
-                    _buildInfoRow('📈 증체율', '${record.growthRate}%'),
-                  if (record.targetWeight != null)
-                    _buildInfoRow('🎯 목표 체중', '${record.targetWeight}kg'),
+                  if (widget.record.inseminationResult != null && widget.record.inseminationResult!.isNotEmpty)
+                    _buildInfoRow('📈 수정 결과', widget.record.inseminationResult!),
+                  if (widget.record.expectedCalvingDate != null && widget.record.expectedCalvingDate!.isNotEmpty)
+                    _buildInfoRow('📅 분만 예정일', widget.record.expectedCalvingDate!),
+                  if (widget.record.cost != null)
+                    _buildInfoRow('💰 비용', '${widget.record.cost?.toStringAsFixed(0)}원'),
                 ],
               ),
             ),
@@ -101,7 +107,7 @@ class WeightDetailPage extends StatelessWidget {
           const SizedBox(height: 12),
 
           // 추가 정보 카드
-          if (record.notes != null && record.notes!.isNotEmpty)
+          if (widget.record.notes != null && widget.record.notes!.isNotEmpty)
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -113,7 +119,7 @@ class WeightDetailPage extends StatelessWidget {
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.purple),
                     ),
                     const SizedBox(height: 16),
-                    _buildInfoRow('📋 특이사항', record.notes!),
+                    _buildInfoRow('📋 특이사항', widget.record.notes!),
                   ],
                 ),
               ),
@@ -134,7 +140,7 @@ class WeightDetailPage extends StatelessWidget {
                   icon: const Icon(Icons.edit),
                   label: const Text('수정'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.indigo,
+                    backgroundColor: Colors.pink,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
@@ -143,7 +149,7 @@ class WeightDetailPage extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () => _showDeleteConfirmDialog(context),
+                  onPressed: () => _showDeleteConfirmDialog(),
                   icon: const Icon(Icons.delete),
                   label: const Text('삭제'),
                   style: ElevatedButton.styleFrom(
@@ -191,13 +197,13 @@ class WeightDetailPage extends StatelessWidget {
     );
   }
 
-  void _showDeleteConfirmDialog(BuildContext context) {
+  void _showDeleteConfirmDialog() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('🗑️ 기록 삭제'),
-          content: const Text('이 체중측정 기록을 삭제하시겠습니까?\n삭제된 기록은 복구할 수 없습니다.'),
+          content: const Text('이 인공수정 기록을 삭제하시겠습니까?\n삭제된 기록은 복구할 수 없습니다.'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -206,9 +212,7 @@ class WeightDetailPage extends StatelessWidget {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('삭제 기능은 준비 중입니다')),
-                );
+                _deleteRecord();
               },
               style: TextButton.styleFrom(foregroundColor: Colors.red),
               child: const Text('삭제'),
@@ -218,4 +222,37 @@ class WeightDetailPage extends StatelessWidget {
       },
     );
   }
-}
+
+  Future<void> _deleteRecord() async {
+    if (widget.record.id == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('삭제할 수 없는 기록입니다'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    try {
+      final token = Provider.of<UserProvider>(context, listen: false).accessToken!;
+      final provider = Provider.of<InseminationRecordProvider>(context, listen: false);
+      final success = await provider.deleteRecord(widget.record.id!, token);
+
+      if (success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('인공수정 기록이 삭제되었습니다'), backgroundColor: Colors.green),
+        );
+        Navigator.of(context).pop(); // 상세 페이지 닫기
+        Navigator.of(context).pop(); // 목록 페이지로 돌아가기
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('기록 삭제에 실패했습니다'), backgroundColor: Colors.red),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('오류가 발생했습니다: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+} 

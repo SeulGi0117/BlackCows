@@ -74,7 +74,7 @@ class MilkingRecordProvider with ChangeNotifier {
       String recordId, MilkingRecord updated, String token) async {
     try {
       final response = await _dio.put(
-        '$baseUrl/records/milking/$recordId',
+        '$baseUrl/records/$recordId',
         data: updated.toJson(),
         options: Options(headers: {
           'Authorization': 'Bearer $token',
@@ -97,7 +97,7 @@ class MilkingRecordProvider with ChangeNotifier {
   Future<void> deleteRecord(String recordId, String token) async {
     try {
       final response = await _dio.delete(
-        '$baseUrl/records/milking/$recordId',
+        '$baseUrl/records/$recordId',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 

@@ -6,6 +6,9 @@ import 'package:logging/logging.dart';
 
 import 'package:cow_management/models/cow.dart';
 import 'package:cow_management/models/Detail/feeding_record.dart';
+import 'package:cow_management/models/Detail/Health/vaccination_record.dart';
+import 'package:cow_management/models/Detail/Health/treatment_record.model.dart';
+import 'package:cow_management/models/Detail/Health/weight_record_model.dart';
 
 import 'package:cow_management/providers/user_provider.dart';
 import 'package:cow_management/providers/cow_provider.dart';
@@ -16,6 +19,10 @@ import 'package:cow_management/providers/DetailPage/Health/vaccination_record_pr
 import 'package:cow_management/providers/DetailPage/feeding_record_provider.dart';
 import 'package:cow_management/providers/DetailPage/Health/weight_record_provider.dart';
 import 'package:cow_management/providers/DetailPage/Health/treatment_record_provider.dart';
+import 'package:cow_management/providers/DetailPage/Reproduction/estrus_record_provider.dart';
+import 'package:cow_management/providers/DetailPage/Reproduction/insemination_record_provider.dart';
+import 'package:cow_management/providers/DetailPage/Reproduction/pregnancy_check_provider.dart';
+import 'package:cow_management/providers/DetailPage/Reproduction/calving_record_provider.dart';
 
 import 'package:cow_management/screens/ai_analysis/analysis_page.dart';
 import 'package:cow_management/screens/ai_chatbot/app_wrapper.dart';
@@ -63,7 +70,17 @@ import 'package:cow_management/screens/cow_list/Cow_Detail/Weight/weight_detail_
 
 import 'package:cow_management/screens/cow_list/Cow_Detail/Treatment/treatment_add_page.dart';
 import 'package:cow_management/screens/cow_list/Cow_Detail/Treatment/treatment_list_page.dart';
-// import 'package:cow_management/screens/cow_list/Cow_Detail/Treatment/treatment_detail_page.dart';
+import 'package:cow_management/screens/cow_list/Cow_Detail/Treatment/treatment_detail_page..dart';
+
+import 'package:cow_management/screens/cow_list/Cow_Detail/Estrus/estrus_add_page.dart';
+import 'package:cow_management/screens/cow_list/Cow_Detail/Estrus/estrus_list_page.dart';
+
+import 'package:cow_management/screens/cow_list/Cow_Detail/Reproduction/insemination_list_page.dart';
+import 'package:cow_management/screens/cow_list/Cow_Detail/Reproduction/insemination_add_page.dart';
+import 'package:cow_management/screens/cow_list/Cow_Detail/Reproduction/pregnancy_check_list_page.dart';
+import 'package:cow_management/screens/cow_list/Cow_Detail/Reproduction/pregnancy_check_add_page.dart';
+import 'package:cow_management/screens/cow_list/Cow_Detail/Reproduction/calving_record_list_page.dart';
+import 'package:cow_management/screens/cow_list/Cow_Detail/Reproduction/calving_record_add_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -77,7 +94,7 @@ Future<void> main() async {
   });
 
   // 테스트 모드 설정
-  const bool isTestMode = false;
+  const bool isTestMode = true;
 
   runApp(
     MultiProvider(
@@ -91,6 +108,10 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => FeedingRecordProvider()),
         ChangeNotifierProvider(create: (_) => WeightRecordProvider()),
         ChangeNotifierProvider(create: (_) => TreatmentRecordProvider()),
+        ChangeNotifierProvider(create: (_) => EstrusRecordProvider()),
+        ChangeNotifierProvider(create: (_) => InseminationRecordProvider()),
+        ChangeNotifierProvider(create: (_) => PregnancyCheckProvider()),
+        ChangeNotifierProvider(create: (_) => CalvingRecordProvider()),
       ],
       child: const SoDamApp(isTestMode: isTestMode),
     ),
@@ -231,6 +252,10 @@ class SoDamApp extends StatelessWidget {
               cowName: args['cowName'],
             );
           },
+          '/treatment/detail': (context) {
+            final record = ModalRoute.of(context)!.settings.arguments as TreatmentRecord;
+            return TreatmentDetailPage(record: record);
+          },
 
           '/vaccination/add': (context) {
             final args = ModalRoute.of(context)!.settings.arguments as Map;
@@ -240,11 +265,8 @@ class SoDamApp extends StatelessWidget {
             );
           },
           '/vaccination/detail': (context) {
-            final args = ModalRoute.of(context)!.settings.arguments as Map;
-            return VaccinationDetailPage(
-              cowId: args['cowId'],
-              cowName: args['cowName'],
-            );
+            final record = ModalRoute.of(context)!.settings.arguments as VaccinationRecord;
+            return VaccinationDetailPage(record: record);
           },
 
           '/feeding-record/list': (context) {
@@ -272,6 +294,77 @@ class SoDamApp extends StatelessWidget {
             return WeightAddPage(
               cowId: args['cowId'],
               cowName: args['cowName'],
+            );
+          },
+          '/weight/detail': (context) {
+            final record = ModalRoute.of(context)!.settings.arguments as WeightRecord;
+            return WeightDetailPage(record: record);
+          },
+          '/estrus-record/list': (context) {
+            final args = ModalRoute.of(context)!.settings.arguments
+                as Map<String, String>;
+            return EstrusRecordListPage(
+              cowId: args['cowId']!,
+              cowName: args['cowName']!,
+            );
+          },
+          '/estrus-record/add': (context) {
+            final args = ModalRoute.of(context)!.settings.arguments
+                as Map<String, String>;
+            return EstrusAddPage(
+              cowId: args['cowId']!,
+              cowName: args['cowName']!,
+            );
+          },
+          // 인공수정 기록 라우트
+          '/insemination-record/list': (context) {
+            final args = ModalRoute.of(context)!.settings.arguments
+                as Map<String, String>;
+            return InseminationRecordListPage(
+              cowId: args['cowId']!,
+              cowName: args['cowName']!,
+            );
+          },
+          '/insemination-record/add': (context) {
+            final args = ModalRoute.of(context)!.settings.arguments
+                as Map<String, String>;
+            return InseminationRecordAddPage(
+              cowId: args['cowId']!,
+              cowName: args['cowName']!,
+            );
+          },
+          // 임신감정 기록 라우트
+          '/pregnancy-check/list': (context) {
+            final args = ModalRoute.of(context)!.settings.arguments
+                as Map<String, String>;
+            return PregnancyCheckListPage(
+              cowId: args['cowId']!,
+              cowName: args['cowName']!,
+            );
+          },
+          '/pregnancy-check/add': (context) {
+            final args = ModalRoute.of(context)!.settings.arguments
+                as Map<String, String>;
+            return PregnancyCheckAddPage(
+              cowId: args['cowId']!,
+              cowName: args['cowName']!,
+            );
+          },
+          // 분만 기록 라우트
+          '/calving-record/list': (context) {
+            final args = ModalRoute.of(context)!.settings.arguments
+                as Map<String, String>;
+            return CalvingRecordListPage(
+              cowId: args['cowId']!,
+              cowName: args['cowName']!,
+            );
+          },
+          '/calving-record/add': (context) {
+            final args = ModalRoute.of(context)!.settings.arguments
+                as Map<String, String>;
+            return CalvingRecordAddPage(
+              cowId: args['cowId']!,
+              cowName: args['cowName']!,
             );
           },
         });

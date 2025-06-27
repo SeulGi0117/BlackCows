@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:cow_management/providers/DetailPage/feeding_record_provider.dart';
-import 'package:cow_management/models/Detail/feeding_record.dart';
-import 'package:cow_management/providers/user_provider.dart';
+import 'package:cow_management/models/Detail/Reproduction/estrus_record.dart';
 
-class FeedingRecordDetailPage extends StatelessWidget {
-  final FeedingRecord record;
+class EstrusDetailPage extends StatelessWidget {
+  final EstrusRecord record;
 
-  const FeedingRecordDetailPage({
+  const EstrusDetailPage({
     super.key,
     required this.record,
   });
@@ -16,8 +13,8 @@ class FeedingRecordDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('사료급여 상세: ${record.feedingDate}'),
-        backgroundColor: Colors.amber,
+        title: Text('발정 기록 상세: ${record.recordDate}'),
+        backgroundColor: Colors.pink.shade300,
         foregroundColor: Colors.white,
       ),
       body: ListView(
@@ -31,12 +28,17 @@ class FeedingRecordDetailPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    '🌾 기본 정보',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.amber),
+                    '💕 기본 정보',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.pink),
                   ),
                   const SizedBox(height: 16),
-                  _buildInfoRow('📅 급여 날짜', record.feedingDate),
-                  _buildInfoRow('⏰ 급여 시간', record.feedTime),
+                  _buildInfoRow('📅 발정 날짜', record.recordDate),
+                  if (record.estrusStartTime != null && record.estrusStartTime!.isNotEmpty)
+                    _buildInfoRow('⏰ 발정 시간', record.estrusStartTime!),
+                  if (record.detectedBy != null && record.detectedBy!.isNotEmpty)
+                    _buildInfoRow('👨‍🌾 발견자', record.detectedBy!),
+                  if (record.detectionMethod != null && record.detectionMethod!.isNotEmpty)
+                    _buildInfoRow('🔍 발견 방법', record.detectionMethod!),
                 ],
               ),
             ),
@@ -44,7 +46,7 @@ class FeedingRecordDetailPage extends StatelessWidget {
 
           const SizedBox(height: 12),
 
-          // 사료 정보 카드
+          // 발정 특성 카드
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -52,12 +54,41 @@ class FeedingRecordDetailPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    '🥗 사료 정보',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
+                    '🌡️ 발정 특성',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.red),
                   ),
                   const SizedBox(height: 16),
-                  _buildInfoRow('🌾 사료 종류', record.feedType),
-                  _buildInfoRow('⚖️ 급여량', '${record.amount}kg'),
+                  if (record.estrusIntensity != null && record.estrusIntensity!.isNotEmpty)
+                    _buildInfoRow('🔥 발정 강도', record.estrusIntensity!),
+                  if (record.estrusDuration != null && record.estrusDuration! > 0)
+                    _buildInfoRow('⏱️ 지속 시간', '${record.estrusDuration}시간'),
+                  if (record.behaviorSigns != null && record.behaviorSigns!.isNotEmpty)
+                    _buildInfoRow('🎭 행동 징후', record.behaviorSigns!.join(', ')),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // 생리적 징후 카드
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '🔬 생리적 징후',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blue),
+                  ),
+                  const SizedBox(height: 16),
+                  if (record.visualSigns != null && record.visualSigns!.isNotEmpty)
+                    _buildInfoRow('👁️ 육안 관찰', record.visualSigns!.join(', ')),
+                  if (record.nextExpectedEstrus != null && record.nextExpectedEstrus!.isNotEmpty)
+                    _buildInfoRow('📅 다음 발정 예상일', record.nextExpectedEstrus!),
+                  if (record.breedingPlanned != null)
+                    _buildInfoRow('🎯 교배 계획', record.breedingPlanned! ? '예정됨' : '없음'),
                 ],
               ),
             ),
@@ -99,7 +130,7 @@ class FeedingRecordDetailPage extends StatelessWidget {
                   icon: const Icon(Icons.edit),
                   label: const Text('수정'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.amber,
+                    backgroundColor: Colors.pink.shade300,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
@@ -162,7 +193,7 @@ class FeedingRecordDetailPage extends StatelessWidget {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('🗑️ 기록 삭제'),
-          content: const Text('이 사료급여 기록을 삭제하시겠습니까?\n삭제된 기록은 복구할 수 없습니다.'),
+          content: const Text('이 발정 기록을 삭제하시겠습니까?\n삭제된 기록은 복구할 수 없습니다.'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
