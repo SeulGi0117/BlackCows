@@ -98,13 +98,17 @@ class _SplashScreenState extends State<SplashScreen> {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: Colors.pink.shade50,
+                color: Color(0xFF4CAF50).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(60),
               ),
-              child: Icon(
-                Icons.pets,
-                size: 60,
-                color: Colors.pink,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(60),
+                child: Image.asset(
+                  'assets/images/app_icon.png',
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.contain,
+                ),
               ),
             ),
             const SizedBox(height: 24),
@@ -132,7 +136,7 @@ class _SplashScreenState extends State<SplashScreen> {
             
             // 로딩 인디케이터
             const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.pink),
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50)),
             ),
             const SizedBox(height: 16),
             
