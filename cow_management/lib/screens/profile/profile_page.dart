@@ -183,7 +183,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   _buildMenuTile(
                     icon: Icons.help_outline,
-                    title: '키우소에 문의하기',
+                    title: '개발자에게 문의하기',
                     onTap: () {
                       // 문의 기능 구현
                       ScaffoldMessenger.of(context).showSnackBar(
