@@ -62,50 +62,28 @@ class VaccinationRecord {
   }
 
   factory VaccinationRecord.fromJson(Map<String, dynamic> json) {
-    // 안전한 타입 캐스팅
     final Map<String, dynamic> safeJson = Map<String, dynamic>.from(json);
-    
-    // 데이터 소스 우선순위: key_values > record_data > 기본 json
     Map<String, dynamic> data = {};
-    
-    // 기본 json 데이터 추가
-    data.addAll(safeJson);
-    
-    // record_data가 있으면 추가
+
+    // ✅ record_data, key_values 병합
     if (safeJson['record_data'] != null) {
-      final recordData = Map<String, dynamic>.from(safeJson['record_data']);
-      data.addAll(recordData);
+      data.addAll(Map<String, dynamic>.from(safeJson['record_data']));
     }
-    
-    // key_values가 있으면 우선적으로 사용 (서버 응답 형태)
     if (safeJson['key_values'] != null) {
-      final keyValues = Map<String, dynamic>.from(safeJson['key_values']);
-      
-      // key_values에서 필드 매핑
-      if (keyValues.containsKey('vaccine')) {
-        data['vaccine_name'] = keyValues['vaccine'];
-      }
-      if (keyValues.containsKey('dosage')) {
-        data['dosage'] = keyValues['dosage'];
-      }
+      data.addAll(Map<String, dynamic>.from(safeJson['key_values']));
     }
 
-    String recordDateStr;
-    final recordDateRaw = safeJson['record_date'] ?? data['record_date'];
-    if (recordDateRaw is int) {
-      recordDateStr = DateTime.fromMillisecondsSinceEpoch(recordDateRaw * 1000)
-          .toIso8601String()
-          .split('T')[0];
-    } else {
-      recordDateStr = recordDateRaw?.toString() ?? '';
-    }
+    // 🧷 cow_id, record_date 등도 병합
+    data['cow_id'] = safeJson['cow_id'];
+    data['record_date'] = safeJson['record_date'];
 
     return VaccinationRecord(
       id: safeJson['id']?.toString(),
-      cowId: safeJson['cow_id']?.toString() ?? data['cow_id']?.toString() ?? '',
-      recordDate: recordDateStr,
+      cowId: data['cow_id']?.toString() ?? '',
+      recordDate: data['record_date']?.toString() ?? '',
       vaccinationTime: data['vaccination_time']?.toString(),
-      vaccineName: data['vaccine_name']?.toString(),
+      vaccineName:
+          data['vaccine_name']?.toString() ?? data['vaccine']?.toString(),
       vaccineType: data['vaccine_type']?.toString(),
       vaccineBatch: data['vaccine_batch']?.toString(),
       dosage: _parseDouble(data['dosage']),
@@ -114,41 +92,38 @@ class VaccinationRecord {
       administrator: data['administrator']?.toString(),
       vaccineManufacturer: data['vaccine_manufacturer']?.toString(),
       expiryDate: data['expiry_date']?.toString(),
-      adverseReaction: data['adverse_reaction'] as bool?,
+      adverseReaction: data['adverse_reaction'] is bool
+          ? data['adverse_reaction']
+          : (data['adverse_reaction']?.toString().toLowerCase() == 'true'),
       reactionDetails: data['reaction_details']?.toString(),
       nextVaccinationDue: data['next_vaccination_due']?.toString(),
       cost: _parseInt(data['cost']),
-      notes: data['notes']?.toString() ?? safeJson['description']?.toString(),
+      notes: data['notes']?.toString() ??
+          safeJson['description']?.toString() ??
+          '',
     );
   }
 
-  // 전체 JSON (안 써도 됨)
-  Map<String, dynamic> toJson() {
-    return {
-      'cow_id': cowId,
-      'record_date': recordDate,
-      ...toRecordDataJson(), // 재사용
-    };
-  }
-
-  // 백엔드에 보내는 record_data 전용
-  Map<String, dynamic> toRecordDataJson() {
-    return {
-      'vaccination_time': vaccinationTime,
-      'vaccine_name': vaccineName,
-      'vaccine_type': vaccineType,
-      'vaccine_batch': vaccineBatch,
-      'dosage': dosage,
-      'injection_site': injectionSite,
-      'injection_method': injectionMethod,
-      'administrator': administrator,
-      'vaccine_manufacturer': vaccineManufacturer,
-      'expiry_date': expiryDate,
-      'adverse_reaction': adverseReaction,
-      'reaction_details': reactionDetails,
-      'next_vaccination_due': nextVaccinationDue,
-      'cost': cost,
-      'notes': notes,
-    };
-  }
+  @override
+  Map<String, dynamic> toJson() => {
+        'cow_id': cowId,
+        'record_date': recordDate,
+        'title': '백신 접종',
+        'description': notes?.isNotEmpty == true ? notes : '백신 접종 기록',
+        'vaccination_time': vaccinationTime,
+        'vaccine_name': vaccineName,
+        'vaccine_type': vaccineType,
+        'vaccine_batch': vaccineBatch,
+        'dosage': dosage,
+        'injection_site': injectionSite,
+        'injection_method': injectionMethod,
+        'administrator': administrator,
+        'vaccine_manufacturer': vaccineManufacturer,
+        'expiry_date': expiryDate,
+        'adverse_reaction': adverseReaction,
+        'reaction_details': reactionDetails,
+        'next_vaccination_due': nextVaccinationDue,
+        'cost': cost,
+        'notes': notes,
+      };
 }

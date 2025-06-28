@@ -11,6 +11,7 @@ class WeightDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('📌 BCS 값: ${record.bodyConditionScore}');
     return Scaffold(
       appBar: AppBar(
         title: Text('체중측정 상세: ${record.recordDate}'),
@@ -29,7 +30,10 @@ class WeightDetailPage extends StatelessWidget {
                 children: [
                   const Text(
                     '⚖️ 기본 정보',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.indigo),
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.indigo),
                   ),
                   const SizedBox(height: 16),
                   _buildInfoRow('📅 측정 날짜', record.recordDate),
@@ -55,7 +59,10 @@ class WeightDetailPage extends StatelessWidget {
                 children: [
                   const Text(
                     '📏 측정 정보',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green),
                   ),
                   const SizedBox(height: 16),
                   if (record.weight != null)
@@ -82,11 +89,15 @@ class WeightDetailPage extends StatelessWidget {
                 children: [
                   const Text(
                     '🎯 체형 평가',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.orange),
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange),
                   ),
                   const SizedBox(height: 16),
                   if (record.bodyConditionScore != null)
-                    _buildInfoRow('📊 체형점수(BCS)', record.bodyConditionScore.toString()),
+                    _buildInfoRow(
+                        '📊 체형점수(BCS)', record.bodyConditionScore.toString()),
                   if (record.weightCategory != null)
                     _buildInfoRow('📈 체중 분류', record.weightCategory!),
                   if (record.growthRate != null)
@@ -110,7 +121,10 @@ class WeightDetailPage extends StatelessWidget {
                   children: [
                     const Text(
                       '📝 추가 정보',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.purple),
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.purple),
                     ),
                     const SizedBox(height: 16),
                     _buildInfoRow('📋 특이사항', record.notes!),

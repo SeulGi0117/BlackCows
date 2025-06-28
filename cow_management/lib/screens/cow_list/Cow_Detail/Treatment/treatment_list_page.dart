@@ -37,10 +37,11 @@ class _TreatmentListPageState extends State<TreatmentListPage> {
         _errorMessage = '';
       });
 
-      final token = Provider.of<UserProvider>(context, listen: false).accessToken;
+      final token =
+          Provider.of<UserProvider>(context, listen: false).accessToken;
       await Provider.of<TreatmentRecordProvider>(context, listen: false)
           .fetchRecords(widget.cowId, token!);
-      
+
       setState(() {
         _isLoading = false;
       });
@@ -59,6 +60,7 @@ class _TreatmentListPageState extends State<TreatmentListPage> {
   @override
   Widget build(BuildContext context) {
     final records = Provider.of<TreatmentRecordProvider>(context).records;
+    print('치료 기록 목록: ${records.map((r) => r.toJson()).toList()}');
 
     return Scaffold(
       appBar: AppBar(
@@ -143,17 +145,17 @@ class _TreatmentListPageState extends State<TreatmentListPage> {
     }
 
     if (records.isEmpty) {
-      return Center(
+      return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.medical_services_outlined,
               size: 64,
               color: Colors.grey,
             ),
-            const SizedBox(height: 16),
-            const Text(
+            SizedBox(height: 16),
+            Text(
               '치료 기록이 없습니다',
               style: TextStyle(
                 fontSize: 18,
@@ -161,8 +163,8 @@ class _TreatmentListPageState extends State<TreatmentListPage> {
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const SizedBox(height: 8),
-            const Text(
+            SizedBox(height: 8),
+            Text(
               '아래 + 버튼을 눌러 첫 번째 기록을 추가해보세요',
               style: TextStyle(
                 fontSize: 14,
@@ -179,6 +181,13 @@ class _TreatmentListPageState extends State<TreatmentListPage> {
       itemCount: records.length,
       itemBuilder: (context, index) {
         final record = records[index];
+
+        final String notesText = record.notes?.isNotEmpty == true
+            ? (record.notes!.length > 20
+                ? '${record.notes!.substring(0, 20)}...'
+                : record.notes!)
+            : '메모 없음';
+
         return Card(
           margin: const EdgeInsets.only(bottom: 12),
           elevation: 2,
@@ -201,8 +210,10 @@ class _TreatmentListPageState extends State<TreatmentListPage> {
               children: [
                 const SizedBox(height: 4),
                 Text('치료일: ${record.recordDate}'),
-                if (record.medicationUsed != null && record.medicationUsed!.isNotEmpty)
+                if (record.medicationUsed != null &&
+                    record.medicationUsed!.isNotEmpty)
                   Text('치료약물: ${record.medicationUsed!.join(", ")}'),
+                Text(notesText), // ✅ 여기에 안전하게 넣어줌
               ],
             ),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),

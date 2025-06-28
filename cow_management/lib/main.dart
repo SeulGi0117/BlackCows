@@ -75,12 +75,12 @@ import 'package:cow_management/screens/cow_list/Cow_Detail/Treatment/treatment_d
 import 'package:cow_management/screens/cow_list/Cow_Detail/Estrus/estrus_add_page.dart';
 import 'package:cow_management/screens/cow_list/Cow_Detail/Estrus/estrus_list_page.dart';
 
-import 'package:cow_management/screens/cow_list/Cow_Detail/Reproduction/insemination_list_page.dart';
-import 'package:cow_management/screens/cow_list/Cow_Detail/Reproduction/insemination_add_page.dart';
-import 'package:cow_management/screens/cow_list/Cow_Detail/Reproduction/pregnancy_check_list_page.dart';
-import 'package:cow_management/screens/cow_list/Cow_Detail/Reproduction/pregnancy_check_add_page.dart';
-import 'package:cow_management/screens/cow_list/Cow_Detail/Reproduction/calving_record_list_page.dart';
-import 'package:cow_management/screens/cow_list/Cow_Detail/Reproduction/calving_record_add_page.dart';
+import 'package:cow_management/screens/cow_list/Cow_Detail/Insemination/insemination_list_page.dart';
+import 'package:cow_management/screens/cow_list/Cow_Detail/Insemination/insemination_add_page.dart';
+import 'package:cow_management/screens/cow_list/Cow_Detail/Pregnancy/pregnancy_check_list_page.dart';
+import 'package:cow_management/screens/cow_list/Cow_Detail/Pregnancy/pregnancy_check_add_page.dart';
+import 'package:cow_management/screens/cow_list/Cow_Detail/Calving/calving_record_list_page.dart';
+import 'package:cow_management/screens/cow_list/Cow_Detail/Calving/calving_record_add_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

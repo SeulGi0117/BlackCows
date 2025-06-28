@@ -47,18 +47,48 @@ class PregnancyCheckRecord {
     );
   }
 
-  factory PregnancyCheckRecord.fromJson(Map<String, dynamic> json) {
+  static int? _parseInt(dynamic value) {
+    if (value == null) return null;
+    return int.tryParse(value.toString().replaceAll(RegExp(r'[^\d]'), ''));
+  }
+
+  static double? _parseDouble(dynamic value) {
+    if (value == null) return null;
+    return double.tryParse(value.toString().replaceAll(RegExp(r'[^\d.]'), ''));
+  }
+
+  factory PregnancyCheckRecord.fromRecordDataJson(
+    Map<String, dynamic> json, {
+    required String cowId,
+    required String recordDate,
+    String? id,
+  }) {
+    final Map<String, dynamic> safeJson = Map<String, dynamic>.from(json);
+    Map<String, dynamic> data = {};
+
+    // ✅ record_data, key_values 병합
+    if (safeJson['record_data'] != null) {
+      data.addAll(Map<String, dynamic>.from(safeJson['record_data']));
+    }
+    if (safeJson['key_values'] != null) {
+      data.addAll(Map<String, dynamic>.from(safeJson['key_values']));
+    }
+
+    // 🧷 cow_id, record_date 병합
+    data['cow_id'] = cowId;
+    data['record_date'] = recordDate;
+
     return PregnancyCheckRecord(
-      id: json['id'],
-      cowId: json['cow_id'],
-      recordDate: json['record_date'],
-      checkMethod: json['check_method'],
-      checkResult: json['check_result'],
-      expectedCalvingDate: json['expected_calving_date'],
-      pregnancyDays: json['pregnancy_days']?.toInt(),
-      veterinarian: json['veterinarian'],
-      cost: json['cost']?.toDouble(),
-      notes: json['notes'],
+      id: id,
+      cowId: data['cow_id'] ?? '',
+      recordDate: data['record_date'] ?? '',
+      checkMethod: data['check_method']?.toString(),
+      checkResult: data['check_result']?.toString(),
+      expectedCalvingDate: data['expected_calving_date']?.toString(),
+      pregnancyDays: _parseInt(data['pregnancy_days']),
+      veterinarian: data['veterinarian']?.toString(),
+      cost: _parseDouble(data['cost']),
+      notes: data['notes']?.toString(),
     );
   }
 
@@ -73,4 +103,4 @@ class PregnancyCheckRecord {
         'cost': cost,
         'notes': notes,
       };
-} 
+}
