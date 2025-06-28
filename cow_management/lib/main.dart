@@ -113,14 +113,13 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => PregnancyCheckProvider()),
         ChangeNotifierProvider(create: (_) => CalvingRecordProvider()),
       ],
-      child: const SoDamApp(isTestMode: isTestMode),
+      child: const SoDamApp(),
     ),
   );
 }
 
 class SoDamApp extends StatelessWidget {
-  final bool isTestMode;
-  const SoDamApp({super.key, this.isTestMode = false});
+  const SoDamApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -139,7 +138,7 @@ class SoDamApp extends StatelessWidget {
         routes: {
           '/': (context) => const SplashScreen(), // 스플래시 화면
           '/main': (context) => const MainScaffold(), // 메인 홈
-          '/login': (context) => LoginPage(isTestMode: isTestMode), // 로그인
+          '/login': (context) => const LoginPage(), // 로그인
           '/signup': (context) => const SignupPage(), // 회원가입
           '/cows': (context) => const CowListPage(), // 소 목록
           '/analysis': (context) => const AnalysisPage(), // AI 분석

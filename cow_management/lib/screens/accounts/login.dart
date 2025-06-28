@@ -10,8 +10,7 @@ import 'find_user_id_page.dart';
 import 'find_password_page.dart';
 
 class LoginPage extends StatefulWidget {
-  final bool isTestMode;
-  const LoginPage({super.key, this.isTestMode=false});
+  const LoginPage({super.key});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -49,69 +48,9 @@ class _LoginPageState extends State<LoginPage> {
     if (baseUrl.isEmpty) {
       _logger.warning('경고: API_BASE_URL이 설정되지 않았습니다. .env 파일을 확인해주세요.');
     }
-
-    // 테스트 모드일 경우 자동 로그인
-    if (widget.isTestMode) {
-      _autoLogin();
-    }
   }
 
-  Future<void> _autoLogin() async {
-    setState(() => _isLoading = true);
-    
-    try {
-      _logger.info('자동 로그인 시작 - 서버 URL: $baseUrl');
-      
-      if (baseUrl.isEmpty) {
-        throw Exception('API_BASE_URL이 설정되지 않았습니다');
-      }
-      
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
-      final result = await userProvider.loginWithResult('tttt', 'tttt1234', '$baseUrl/auth/login');
 
-      setState(() => _isLoading = false);
-
-      if (result.success && mounted) {
-        _logger.info('자동 로그인 성공');
-        final cowProvider = Provider.of<CowProvider>(context, listen: false);
-        cowProvider.clearAll();
-        if (userProvider.accessToken != null) {
-          await cowProvider.fetchCowsFromBackend(userProvider.accessToken!);
-        }
-        Navigator.pushReplacementNamed(context, '/main');
-      } else {
-        _logger.warning('자동 로그인 실패: ${result.message} (ErrorType: ${result.errorType})');
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('개발자 모드 로그인 실패: ${result.message}'),
-              backgroundColor: Colors.orange,
-              duration: const Duration(seconds: 5),
-              action: SnackBarAction(
-                label: '수동 로그인',
-                onPressed: () {
-                  // 스낵바를 닫고 수동 로그인 모드로 전환
-                },
-              ),
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      _logger.severe('자동 로그인 예외 발생: $e');
-      setState(() => _isLoading = false);
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('개발자 모드 오류: ${e.toString()}'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 5),
-          ),
-        );
-      }
-    }
-  }
 
   // 개발자 문의 다이얼로그 표시
   void _showDeveloperContactDialog() {
@@ -457,48 +396,6 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
       ),
-      
-      // 개발자 모드 자동 로그인 로딩 오버레이
-      if (_isLoading && widget.isTestMode)
-        Container(
-          color: Colors.black.withOpacity(0.7),
-          child: const Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 3,
-                ),
-                SizedBox(height: 20),
-                Text(
-                  '🐄 개발자 모드',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  '자동 로그인 중이에요...',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 16,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  '잠시만 기다려주세요! ✨',
-                  style: TextStyle(
-                    color: Colors.white60,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
     ],
   ),
 );
