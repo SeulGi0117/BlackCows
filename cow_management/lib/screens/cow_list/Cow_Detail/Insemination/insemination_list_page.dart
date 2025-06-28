@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:cow_management/models/Detail/Reproduction/insemination_record.dart';
 import 'package:cow_management/providers/DetailPage/Reproduction/insemination_record_provider.dart';
 import 'package:cow_management/providers/user_provider.dart';
-import 'package:cow_management/screens/cow_list/Cow_Detail/Reproduction/insemination_detail_page.dart';
+import 'package:cow_management/screens/cow_list/Cow_Detail/Insemination/insemination_detail_page.dart';
 
 class InseminationRecordListPage extends StatefulWidget {
   final String cowId;

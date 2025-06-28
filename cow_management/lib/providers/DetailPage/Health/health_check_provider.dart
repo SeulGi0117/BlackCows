@@ -42,7 +42,8 @@ class HealthCheckProvider with ChangeNotifier {
 
       print('✅ 파싱된 건강검진 기록 수: ${_records.length}');
       for (var record in _records) {
-        print('기록: 날짜=${record.recordDate}, 체온=${record.bodyTemperature}, BCS=${record.bodyConditionScore}, 메모=${record.notes}');
+        print(
+            '기록: 날짜=${record.recordDate}, 체온=${record.bodyTemperature}, BCS=${record.bodyConditionScore}, 메모=${record.notes}');
       }
 
       notifyListeners();
@@ -81,7 +82,7 @@ class HealthCheckProvider with ChangeNotifier {
         '$apiUrl/records/cow/$cowId',
         queryParameters: {'record_type': recordType},
       );
-
+      print('✅ 건강검진 기록 필터링 조회 성공: ${response.data}');
       if (response.statusCode == 200) {
         final data = response.data as List;
         _records = data.map((json) {
@@ -114,7 +115,7 @@ class HealthCheckProvider with ChangeNotifier {
           'Content-Type': 'application/json',
         }),
       );
-
+      print('✅ 건강검진 기록 추가 성공: ${response.data}');
       if (response.statusCode == 201) {
         _records.add(HealthCheckRecord.fromJson(response.data));
         notifyListeners();

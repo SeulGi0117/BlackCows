@@ -20,7 +20,7 @@ class WeightAddPage extends StatefulWidget {
 
 class _WeightAddPageState extends State<WeightAddPage> {
   final _formKey = GlobalKey<FormState>();
-  
+
   // 컨트롤러들
   final _dateController = TextEditingController();
   final _timeController = TextEditingController();
@@ -37,12 +37,8 @@ class _WeightAddPageState extends State<WeightAddPage> {
   bool _isSubmitting = false;
 
   // 옵션들
-  final List<String> _measurementMethods = [
-    '체중계', '체중추정기', '줄자측정', '목측', '기타'
-  ];
-  final List<String> _weightCategories = [
-    '저체중', '정상', '과체중', '비만'
-  ];
+  final List<String> _measurementMethods = ['체중계', '체중추정기', '줄자측정', '목측', '기타'];
+  final List<String> _weightCategories = ['저체중', '정상', '과체중', '비만'];
 
   @override
   void initState() {
@@ -50,14 +46,16 @@ class _WeightAddPageState extends State<WeightAddPage> {
     _dateController.text = DateTime.now().toString().split(' ')[0];
     // 기본 시간 문자열로 설정
     final now = TimeOfDay.now();
-    _timeController.text = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+    _timeController.text =
+        '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     // context가 완전히 초기화된 후에 올바른 형식으로 업데이트
-    if (_timeController.text.contains(':') && _timeController.text.length == 5) {
+    if (_timeController.text.contains(':') &&
+        _timeController.text.length == 5) {
       final time = TimeOfDay.now();
       _timeController.text = time.format(context);
     }
@@ -112,7 +110,8 @@ class _WeightAddPageState extends State<WeightAddPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('⚖️ 기본 정보', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text('⚖️ 기본 정보',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             _buildDateField(),
             const SizedBox(height: 16),
@@ -125,7 +124,8 @@ class _WeightAddPageState extends State<WeightAddPage> {
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.person),
               ),
-              validator: (value) => value?.isEmpty == true ? '측정자를 입력해주세요' : null,
+              validator: (value) =>
+                  value?.isEmpty == true ? '측정자를 입력해주세요' : null,
             ),
           ],
         ),
@@ -187,9 +187,11 @@ class _WeightAddPageState extends State<WeightAddPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('📏 측정 정보', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text('📏 측정 정보',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
-            _buildDropdownField('측정 방법', _measurementMethod, _measurementMethods, (value) {
+            _buildDropdownField(
+                '측정 방법', _measurementMethod, _measurementMethods, (value) {
               setState(() => _measurementMethod = value!);
             }),
             const SizedBox(height: 16),
@@ -204,13 +206,16 @@ class _WeightAddPageState extends State<WeightAddPage> {
                       prefixIcon: Icon(Icons.monitor_weight),
                       hintText: '예: 450.5',
                     ),
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    validator: (value) => value?.isEmpty == true ? '체중을 입력해주세요' : null,
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    validator: (value) =>
+                        value?.isEmpty == true ? '체중을 입력해주세요' : null,
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: _buildDropdownField('체중 분류', _weightCategory, _weightCategories, (value) {
+                  child: _buildDropdownField(
+                      '체중 분류', _weightCategory, _weightCategories, (value) {
                     setState(() => _weightCategory = value!);
                   }),
                 ),
@@ -228,7 +233,8 @@ class _WeightAddPageState extends State<WeightAddPage> {
                       prefixIcon: Icon(Icons.height),
                       hintText: '예: 140',
                     ),
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -241,7 +247,8 @@ class _WeightAddPageState extends State<WeightAddPage> {
                       prefixIcon: Icon(Icons.straighten),
                       hintText: '예: 180',
                     ),
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
                   ),
                 ),
               ],
@@ -259,9 +266,11 @@ class _WeightAddPageState extends State<WeightAddPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('🎯 체형 평가', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text('🎯 체형 평가',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
-            const Text('체형 점수 (BCS)', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16)),
+            const Text('체형 점수 (BCS)',
+                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16)),
             const SizedBox(height: 8),
             Slider(
               value: _bodyConditionScore,
@@ -274,10 +283,13 @@ class _WeightAddPageState extends State<WeightAddPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('1.0 (매우 마름)', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-                Text('현재: ${_bodyConditionScore.toStringAsFixed(1)}', 
-                     style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                Text('5.0 (매우 비만)', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                Text('1.0 (매우 마름)',
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                Text('현재: ${_bodyConditionScore.toStringAsFixed(1)}',
+                    style: const TextStyle(
+                        fontSize: 14, fontWeight: FontWeight.bold)),
+                Text('5.0 (매우 비만)',
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600])),
               ],
             ),
             const SizedBox(height: 16),
@@ -291,11 +303,15 @@ class _WeightAddPageState extends State<WeightAddPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('BCS 참고 기준:', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Text('BCS 참고 기준:',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
-                  Text('1.0-2.0: 매우 마름 (영양 보충 필요)', style: TextStyle(fontSize: 12, color: Colors.grey[700])),
-                  Text('2.5-3.5: 정상 (이상적인 체형)', style: TextStyle(fontSize: 12, color: Colors.grey[700])),
-                  Text('4.0-5.0: 과체중/비만 (사료 조절 필요)', style: TextStyle(fontSize: 12, color: Colors.grey[700])),
+                  Text('1.0-2.0: 매우 마름 (영양 보충 필요)',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[700])),
+                  Text('2.5-3.5: 정상 (이상적인 체형)',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[700])),
+                  Text('4.0-5.0: 과체중/비만 (사료 조절 필요)',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[700])),
                 ],
               ),
             ),
@@ -312,7 +328,8 @@ class _WeightAddPageState extends State<WeightAddPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('📝 추가 정보', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text('📝 추가 정보',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             TextFormField(
               controller: _notesController,
@@ -330,17 +347,20 @@ class _WeightAddPageState extends State<WeightAddPage> {
     );
   }
 
-  Widget _buildDropdownField(String label, String value, List<String> options, ValueChanged<String?> onChanged) {
+  Widget _buildDropdownField(String label, String value, List<String> options,
+      ValueChanged<String?> onChanged) {
     return DropdownButtonFormField<String>(
       value: value,
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),
       ),
-      items: options.map((option) => DropdownMenuItem(
-        value: option,
-        child: Text(option),
-      )).toList(),
+      items: options
+          .map((option) => DropdownMenuItem(
+                value: option,
+                child: Text(option),
+              ))
+          .toList(),
       onChanged: onChanged,
     );
   }
@@ -356,16 +376,21 @@ class _WeightAddPageState extends State<WeightAddPage> {
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
-        child: _isSubmitting 
-          ? const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)),
-                SizedBox(width: 12),
-                Text('저장 중...', style: TextStyle(fontSize: 16)),
-              ],
-            )
-          : const Text('체중측정 기록 저장', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        child: _isSubmitting
+            ? const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                          color: Colors.white, strokeWidth: 2)),
+                  SizedBox(width: 12),
+                  Text('저장 중...', style: TextStyle(fontSize: 16)),
+                ],
+              )
+            : const Text('체중측정 기록 저장',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
       ),
     );
   }
@@ -376,15 +401,21 @@ class _WeightAddPageState extends State<WeightAddPage> {
     setState(() => _isSubmitting = true);
 
     try {
-      final token = Provider.of<UserProvider>(context, listen: false).accessToken;
+      final token =
+          Provider.of<UserProvider>(context, listen: false).accessToken;
 
       final newRecord = WeightRecord(
         cowId: widget.cowId,
         recordDate: _dateController.text,
+        measurementTime: _timeController.text,
         weight: double.tryParse(_weightController.text),
         measurementMethod: _measurementMethod,
         bodyConditionScore: _bodyConditionScore,
-        notes: _notesController.text.isEmpty ? '' : _notesController.text,
+        heightWithers: double.tryParse(_heightController.text),
+        chestGirth: double.tryParse(_chestController.text),
+        weightCategory: _weightCategory,
+        measurer: _measuredByController.text,
+        notes: _notesController.text,
       );
 
       await Provider.of<WeightRecordProvider>(context, listen: false)
@@ -392,14 +423,16 @@ class _WeightAddPageState extends State<WeightAddPage> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('체중측정 기록이 저장되었습니다'), backgroundColor: Colors.green),
+          const SnackBar(
+              content: Text('체중측정 기록이 저장되었습니다'), backgroundColor: Colors.green),
         );
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('오류가 발생했습니다: $e'), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text('오류가 발생했습니다: $e'), backgroundColor: Colors.red),
         );
       }
     } finally {

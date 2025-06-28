@@ -36,42 +36,58 @@ class InseminationRecord {
 
   static double? _parseDouble(dynamic value) {
     if (value == null) return null;
-    if (value is double) return value;
-    if (value is int) return value.toDouble();
-    if (value is String) return double.tryParse(value);
-    return null;
+    return double.tryParse(value.toString().replaceAll('%', '').trim());
+  }
+
+  static int? _parseInt(dynamic value) {
+    if (value == null) return null;
+    return int.tryParse(value.toString().replaceAll(RegExp(r'[^\d]'), ''));
+  }
+
+  static double? _parsePercentage(dynamic value) {
+    if (value == null) return null;
+    return double.tryParse(value.toString().replaceAll('%', '').trim());
+  }
+
+  static int? _extractNumber(dynamic value) {
+    if (value == null) return null;
+    final cleaned = value.toString().replaceAll(RegExp(r'[^\d]'), '');
+    return int.tryParse(cleaned);
   }
 
   factory InseminationRecord.fromJson(Map<String, dynamic> json) {
-    final Map<String, dynamic> safeJson = Map<String, dynamic>.from(json);
-    final Map<String, dynamic> data = {};
+    final data = <String, dynamic>{};
 
-    if (safeJson['record_data'] != null) {
-      data.addAll(Map<String, dynamic>.from(safeJson['record_data']));
+    if (json['record_data'] != null && json['record_data'] is Map) {
+      data.addAll(Map<String, dynamic>.from(json['record_data']));
     }
-    if (safeJson['key_values'] != null) {
-      data.addAll(Map<String, dynamic>.from(safeJson['key_values']));
+    if (json['key_values'] != null && json['key_values'] is Map) {
+      data.addAll(Map<String, dynamic>.from(json['key_values']));
     }
 
-    data['cow_id'] = safeJson['cow_id'];
-    data['record_date'] = safeJson['record_date'];
+    // 바깥 json도 병합
+    data['cow_id'] = json['cow_id'];
+    data['record_date'] = json['record_date'];
 
     return InseminationRecord(
-      id: safeJson['id']?.toString(),
       cowId: data['cow_id'] ?? '',
       recordDate: data['record_date'] ?? '',
-      inseminationTime: data['insemination_time'],
-      bullId: data['bull_id'],
-      bullBreed: data['bull_breed'] ?? data['bull'],
-      semenBatch: data['semen_batch'],
-      semenQuality: data['semen_quality'] ?? data['quality'],
-      inseminationMethod: data['insemination_method'] ?? data['method'],
-      technicianName: data['technician_name'] ?? data['technician'],
-      cervixCondition: data['cervix_condition'],
-      successProbability: _parseDouble(data['success_probability']),
-      pregnancyCheckScheduled: data['pregnancy_check_scheduled'],
-      cost: _parseDouble(data['cost']),
-      notes: data['notes'] ?? safeJson['description'],
+      inseminationTime: data['insemination_time']?.toString(),
+      bullId: data['bull_id']?.toString(),
+      bullBreed: data['bull_breed']?.toString() ?? data['bull']?.toString(),
+      semenBatch: data['semen_batch']?.toString(),
+      semenQuality:
+          data['semen_quality']?.toString() ?? data['quality']?.toString(),
+      technicianName:
+          data['technician_name']?.toString() ?? data['technician']?.toString(),
+      inseminationMethod:
+          data['insemination_method']?.toString() ?? data['method']?.toString(),
+      cervixCondition: data['cervix_condition']?.toString(),
+      successProbability:
+          _parseDouble(data['success_probability'] ?? data['success']),
+      cost: (json['cost'] as num?)?.toDouble(),
+      pregnancyCheckScheduled: data['pregnancy_check_scheduled']?.toString(),
+      notes: data['notes']?.toString() ?? json['description']?.toString(),
     );
   }
 

@@ -75,78 +75,98 @@ class TreatmentRecord {
     return null;
   }
 
+  static List<String>? _parseStringList(dynamic value) {
+    if (value == null) return null;
+    if (value is List) return value.map((e) => e.toString()).toList();
+    return null;
+  }
+
+  static int? _extractNumber(dynamic value) {
+    if (value == null) return null;
+    final cleaned = value.toString().replaceAll(RegExp(r'[^\d]'), '');
+    return int.tryParse(cleaned);
+  }
+
   factory TreatmentRecord.fromJson(Map<String, dynamic> json) {
-    final safeJson = Map<String, dynamic>.from(json);
-    
-    Map<String, dynamic> recordData = {};
-    
-    if (safeJson.containsKey('key_values') && safeJson['key_values'] != null) {
-      final keyValues = Map<String, dynamic>.from(safeJson['key_values']);
-      
-      if (keyValues.containsKey('diagnosis')) {
-        recordData['diagnosis'] = keyValues['diagnosis'];
-      }
-      if (keyValues.containsKey('cost')) {
-        recordData['treatment_cost'] = keyValues['cost'];
-      }
+    final Map<String, dynamic> safeJson = Map<String, dynamic>.from(json);
+    Map<String, dynamic> data = {};
+
+    // ✅ record_data 병합
+    if (safeJson['record_data'] != null && safeJson['record_data'] is Map) {
+      data.addAll(Map<String, dynamic>.from(safeJson['record_data']));
     }
-    
-    if (safeJson.containsKey('record_data') && safeJson['record_data'] != null) {
-      final existingData = Map<String, dynamic>.from(safeJson['record_data']);
-      recordData.addAll(existingData);
+
+    // ✅ key_values도 병합 (한글 key 대응)
+    if (safeJson['key_values'] != null && safeJson['key_values'] is Map) {
+      final kv = Map<String, dynamic>.from(safeJson['key_values']);
+      data.addAll({
+        'diagnosis': kv['진단명'],
+        'treatment_method': kv['치료 방법'],
+        'veterinarian': kv['수의사'],
+        'medication_used': kv['투여 약물'] != null
+            ? kv['투여 약물'].toString().split(',').map((e) => e.trim()).toList()
+            : [],
+        'treatment_cost': _extractNumber(kv['비용']),
+        'follow_up_date': kv['추후 검사일'],
+        'treatment_response': kv['치료 반응'],
+        'side_effects': kv['부작용'],
+        'notes': kv['비고'],
+      });
     }
-    
-    recordData.addAll(safeJson);
+
+    data['cow_id'] = safeJson['cow_id'];
+    data['record_date'] = safeJson['record_date'];
 
     return TreatmentRecord(
-      id: recordData['id']?.toString(),
-      cowId: recordData['cow_id']?.toString() ?? '',
-      recordDate: recordData['record_date']?.toString() ?? '',
-      treatmentTime: recordData['treatment_time']?.toString(),
-      treatmentType: recordData['treatment_type']?.toString(),
-      symptoms: recordData['symptoms'] != null ? List<String>.from(recordData['symptoms']) : null,
-      diagnosis: recordData['diagnosis']?.toString(),
-      medicationUsed: recordData['medication_used'] != null
-          ? List<String>.from(recordData['medication_used'])
-          : null,
-      dosageInfo: recordData['dosage_info'] != null
-          ? Map<String, String>.from((recordData['dosage_info'] as Map)
-              .map((key, value) => MapEntry(key.toString(), value.toString())))
-          : null,
-      treatmentMethod: recordData['treatment_method']?.toString(),
-      treatmentDuration: _parseInt(recordData['treatment_duration']),
-      veterinarian: recordData['veterinarian']?.toString(),
-      treatmentResponse: recordData['treatment_response']?.toString(),
-      sideEffects: recordData['side_effects']?.toString(),
-      followUpRequired: recordData['follow_up_required'],
-      followUpDate: recordData['follow_up_date']?.toString(),
-      treatmentCost: _parseInt(recordData['treatment_cost']),
-      withdrawalPeriod: _parseInt(recordData['withdrawal_period']),
-      notes: recordData['notes']?.toString() ?? recordData['description']?.toString(),
+      id: safeJson['id']?.toString(),
+      cowId: data['cow_id']?.toString() ?? '',
+      recordDate: data['record_date']?.toString() ?? '',
+      treatmentTime: data['treatment_time']?.toString(),
+      treatmentType: data['treatment_type']?.toString(),
+      symptoms: _parseStringList(data['symptoms']),
+      diagnosis: data['diagnosis']?.toString(),
+      medicationUsed: data['medication_used'] != null
+          ? List<String>.from(data['medication_used'])
+          : [],
+      dosageInfo: data['dosage_info'] != null && data['dosage_info'] is Map
+          ? Map<String, String>.from((data['dosage_info'] as Map)
+              .map((k, v) => MapEntry(k.toString(), v.toString())))
+          : {},
+      treatmentMethod: data['treatment_method']?.toString(),
+      treatmentDuration: _parseInt(data['treatment_duration']),
+      veterinarian: data['veterinarian']?.toString(),
+      treatmentResponse: data['treatment_response']?.toString(),
+      sideEffects: data['side_effects']?.toString(),
+      followUpRequired: data['follow_up_required'] == true ||
+          data['follow_up_required']?.toString().toLowerCase() == 'true',
+      followUpDate: data['follow_up_date']?.toString(),
+      treatmentCost: _parseInt(data['treatment_cost']),
+      withdrawalPeriod: _parseInt(data['withdrawal_period']),
+      notes: data['notes']?.toString(),
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      if (id != null) 'id': id,
-      'cow_id': cowId,
-      'record_date': recordDate,
-      if (treatmentTime != null) 'treatment_time': treatmentTime,
-      if (treatmentType != null) 'treatment_type': treatmentType,
-      if (symptoms != null) 'symptoms': symptoms,
-      if (diagnosis != null) 'diagnosis': diagnosis,
-      if (medicationUsed != null) 'medication_used': medicationUsed,
-      if (dosageInfo != null) 'dosage_info': dosageInfo,
-      if (treatmentMethod != null) 'treatment_method': treatmentMethod,
-      if (treatmentDuration != null) 'treatment_duration': treatmentDuration,
-      if (veterinarian != null) 'veterinarian': veterinarian,
-      if (treatmentResponse != null) 'treatment_response': treatmentResponse,
-      if (sideEffects != null) 'side_effects': sideEffects,
-      if (followUpRequired != null) 'follow_up_required': followUpRequired,
-      if (followUpDate != null) 'follow_up_date': followUpDate,
-      if (treatmentCost != null) 'treatment_cost': treatmentCost,
-      if (withdrawalPeriod != null) 'withdrawal_period': withdrawalPeriod,
-      if (notes != null) 'notes': notes,
-    };
-  }
+  Map<String, dynamic> toJson() => {
+        'cow_id': cowId,
+        'record_date': recordDate,
+        'record_type': 'treatment',
+        'title': '치료 기록',
+        'description': notes?.isNotEmpty == true ? notes : '치료 기록 등록',
+        'treatment_time': treatmentTime,
+        'treatment_type': treatmentType,
+        'symptoms': symptoms,
+        'diagnosis': diagnosis,
+        'medication_used': medicationUsed,
+        'dosage_info': dosageInfo,
+        'treatment_method': treatmentMethod,
+        'treatment_duration': treatmentDuration,
+        'veterinarian': veterinarian,
+        'treatment_response': treatmentResponse,
+        'side_effects': sideEffects,
+        'follow_up_required': followUpRequired,
+        'follow_up_date': followUpDate,
+        'treatment_cost': treatmentCost,
+        'withdrawal_period': withdrawalPeriod,
+        'notes': notes,
+      };
 }

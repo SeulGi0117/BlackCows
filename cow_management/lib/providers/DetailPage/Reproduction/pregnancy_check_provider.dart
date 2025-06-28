@@ -8,7 +8,8 @@ class PregnancyCheckProvider with ChangeNotifier {
 
   List<PregnancyCheckRecord> get records => _records;
 
-  Future<List<PregnancyCheckRecord>> fetchRecords(String cowId, String token) async {
+  Future<List<PregnancyCheckRecord>> fetchRecords(
+      String cowId, String token) async {
     final dio = Dio();
     final baseUrl = dotenv.env['API_BASE_URL'];
 
@@ -28,11 +29,12 @@ class PregnancyCheckProvider with ChangeNotifier {
                 record['record_type'] == 'pregnancy-check' &&
                 record['record_data'] != null)
             .map((json) {
-          final recordData = Map<String, dynamic>.from(json['record_data']);
-          recordData['cow_id'] = json['cow_id'];
-          recordData['record_date'] = json['record_date'];
-          recordData['id'] = json['id'];
-          return PregnancyCheckRecord.fromJson(recordData);
+          return PregnancyCheckRecord.fromRecordDataJson(
+            json,
+            cowId: json['cow_id'],
+            recordDate: json['record_date'],
+            id: json['id'],
+          );
         }).toList();
 
         _records = pregnancyCheckRecords;
@@ -50,12 +52,8 @@ class PregnancyCheckProvider with ChangeNotifier {
     }
   }
 
-  void clearRecords() {
-    _records = [];
-    notifyListeners();
-  }
-
-  Future<bool> addPregnancyCheckRecord(PregnancyCheckRecord record, String token) async {
+  Future<bool> addPregnancyCheckRecord(
+      PregnancyCheckRecord record, String token) async {
     final dio = Dio();
     final baseUrl = dotenv.env['API_BASE_URL'];
 
@@ -75,7 +73,8 @@ class PregnancyCheckProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> updateRecord(String recordId, PregnancyCheckRecord record, String token) async {
+  Future<bool> updateRecord(
+      String recordId, PregnancyCheckRecord record, String token) async {
     final dio = Dio();
     final baseUrl = dotenv.env['API_BASE_URL'];
 
@@ -113,4 +112,4 @@ class PregnancyCheckProvider with ChangeNotifier {
       return false;
     }
   }
-} 
+}

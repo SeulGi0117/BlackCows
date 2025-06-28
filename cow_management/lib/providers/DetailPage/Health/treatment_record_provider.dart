@@ -19,7 +19,7 @@ class TreatmentRecordProvider with ChangeNotifier {
 
     try {
       print('🔄 치료 기록 조회 시작: $baseUrl/records/cow/$cowId/health-records');
-      
+
       final response = await dio.get(
         '$baseUrl/records/cow/$cowId/health-records',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
@@ -30,7 +30,7 @@ class TreatmentRecordProvider with ChangeNotifier {
 
       if (response.statusCode == 200) {
         _records.clear();
-        
+
         if (response.data == null) {
           print('⚠️ 응답 데이터가 null입니다.');
           notifyListeners();
@@ -48,21 +48,20 @@ class TreatmentRecordProvider with ChangeNotifier {
 
         int treatmentCount = 0;
         for (var item in dataList) {
-          if (item is Map<String, dynamic>) {
+          if (item is Map<String, dynamic> &&
+              item['record_type'] == 'treatment') {
             try {
-              // 서버 응답 전체를 모델에 전달
-              final record = TreatmentRecord.fromJson(Map<String, dynamic>.from(item));
-              
+              final record =
+                  TreatmentRecord.fromJson(Map<String, dynamic>.from(item));
               _records.add(record);
               treatmentCount++;
             } catch (e) {
-              // 개별 파싱 실패해도 계속 진행
               print('! 치료 기록 파싱 오류: $e');
               print('📄 문제가 된 데이터: $item');
             }
           }
         }
-        
+
         print('✅ 치료 기록 필터링 완료: $treatmentCount개');
         notifyListeners();
       } else {
@@ -74,24 +73,24 @@ class TreatmentRecordProvider with ChangeNotifier {
       print('   - 오류 타입: ${e.type}');
       print('   - 상태 코드: ${e.response?.statusCode}');
       print('   - 오류 메시지: ${e.message}');
-      
+
       if (e.response?.statusCode == 500) {
         print('🚨 서버 내부 오류 (500): 백엔드 서버에 문제가 있습니다.');
         print('서버 응답: ${e.response?.data}');
-        
+
         // 500 오류 시에도 빈 목록으로 처리하여 앱이 크래시되지 않도록 함
         _records.clear();
         notifyListeners();
         return;
       }
-      
+
       if (e.response?.statusCode == 404) {
         print('📭 치료 기록이 없습니다 (404)');
         _records.clear();
         notifyListeners();
         return;
       }
-      
+
       throw Exception('치료 기록 불러오기 실패: $e');
     } catch (e) {
       print('❌ 일반 오류: $e');

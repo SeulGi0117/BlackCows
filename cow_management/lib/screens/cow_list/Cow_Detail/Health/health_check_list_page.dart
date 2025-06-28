@@ -38,7 +38,8 @@ class _HealthCheckListPageState extends State<HealthCheckListPage> {
     });
 
     try {
-      final token = Provider.of<UserProvider>(context, listen: false).accessToken;
+      final token =
+          Provider.of<UserProvider>(context, listen: false).accessToken;
       await Provider.of<HealthCheckProvider>(context, listen: false)
           .fetchRecords(widget.cowId, token!);
     } catch (e) {
@@ -127,22 +128,22 @@ class _HealthCheckListPageState extends State<HealthCheckListPage> {
     final records = Provider.of<HealthCheckProvider>(context).records;
 
     if (records.isEmpty) {
-      return Center(
+      return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.inbox_outlined,
               size: 64,
               color: Colors.grey,
             ),
-            const SizedBox(height: 16),
-            const Text(
+            SizedBox(height: 16),
+            Text(
               '건강검진 기록이 없습니다.',
               style: TextStyle(fontSize: 16, color: Colors.grey),
             ),
-            const SizedBox(height: 8),
-            const Text(
+            SizedBox(height: 8),
+            Text(
               '아래 + 버튼을 눌러 첫 기록을 추가해보세요!',
               style: TextStyle(fontSize: 14, color: Colors.grey),
             ),
@@ -150,7 +151,6 @@ class _HealthCheckListPageState extends State<HealthCheckListPage> {
         ),
       );
     }
-
     return RefreshIndicator(
       onRefresh: _loadRecords,
       child: ListView.builder(
@@ -158,34 +158,19 @@ class _HealthCheckListPageState extends State<HealthCheckListPage> {
         itemCount: records.length,
         itemBuilder: (context, index) {
           final record = records[index];
-          
-          // 표시할 정보들 준비
-          List<String> displayInfo = [];
-          
-          if (record.bodyTemperature > 0) {
-            displayInfo.add('체온: ${record.bodyTemperature.toStringAsFixed(1)}℃');
-          }
-          
-          if (record.bodyConditionScore > 0) {
-            displayInfo.add('BCS: ${record.bodyConditionScore.toStringAsFixed(1)}');
-          }
-          
-          if (record.examiner.isNotEmpty) {
-            displayInfo.add('검진자: ${record.examiner}');
-          }
-          
-          if (record.notes.isNotEmpty) {
-            displayInfo.add('메모: ${record.notes.length > 20 ? '${record.notes.substring(0, 20)}...' : record.notes}');
-          }
-          
-          if (displayInfo.isEmpty) {
-            displayInfo.add('건강검진 기록');
-          }
-          
+
+          // 메모가 없으면 기본 텍스트 표시
+          final String notesText = record.notes.isNotEmpty == true
+              ? (record.notes.length > 20
+                  ? '${record.notes.substring(0, 20)}...'
+                  : record.notes)
+              : '메모 없음';
+
           return Card(
             margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
             elevation: 2,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             child: ListTile(
               leading: const CircleAvatar(
                 backgroundColor: Colors.blue,
@@ -193,16 +178,14 @@ class _HealthCheckListPageState extends State<HealthCheckListPage> {
               ),
               title: Text(
                 record.recordDate,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               subtitle: Padding(
                 padding: const EdgeInsets.only(top: 4),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: displayInfo.map((info) => Text(
-                    info,
-                    style: const TextStyle(fontSize: 14, color: Colors.grey),
-                  )).toList(),
+                child: Text(
+                  notesText,
+                  style: const TextStyle(fontSize: 14, color: Colors.grey),
                 ),
               ),
               trailing: const Icon(Icons.arrow_forward_ios, color: Colors.blue),

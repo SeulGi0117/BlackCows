@@ -11,6 +11,7 @@ class HealthCheckDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('[DEBUG] HealthCheckRecord: ${record.toJson()}');
     return Scaffold(
       appBar: AppBar(
         title: Text('건강검진 상세: ${record.recordDate}'),
@@ -29,14 +30,15 @@ class HealthCheckDetailPage extends StatelessWidget {
                 children: [
                   const Text(
                     '🏥 기본 정보',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blue),
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue),
                   ),
                   const SizedBox(height: 16),
                   _buildInfoRow('📅 검진 날짜', record.recordDate),
-                  if (record.checkTime != null)
-                    _buildInfoRow('⏰ 검진 시간', record.checkTime!),
-                  if (record.examiner != null)
-                    _buildInfoRow('👨‍⚕️ 검진자', record.examiner!),
+                  _buildInfoRow('⏰ 검진 시간', record.checkTime),
+                  _buildInfoRow('👨‍⚕️ 검진자', record.examiner),
                 ],
               ),
             ),
@@ -53,17 +55,17 @@ class HealthCheckDetailPage extends StatelessWidget {
                 children: [
                   const Text(
                     '🌡️ 생체 신호',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.red),
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red),
                   ),
                   const SizedBox(height: 16),
-                  if (record.bodyTemperature != null)
-                    _buildInfoRow('🌡️ 체온', '${record.bodyTemperature}°C'),
-                  if (record.heartRate != null)
-                    _buildInfoRow('❤️ 심박수', '${record.heartRate}회/분'),
-                  if (record.respiratoryRate != null)
-                    _buildInfoRow('💨 호흡수', '${record.respiratoryRate}회/분'),
-                  if (record.bodyConditionScore != null)
-                    _buildInfoRow('📊 체형점수(BCS)', record.bodyConditionScore.toString()),
+                  _buildInfoRow('🌡️ 체온', '${record.bodyTemperature}°C'),
+                  _buildInfoRow('❤️ 심박수', '${record.heartRate}회/분'),
+                  _buildInfoRow('💨 호흡수', '${record.respiratoryRate}회/분'),
+                  _buildInfoRow(
+                      '📊 체형점수(BCS)', record.bodyConditionScore.toString()),
                 ],
               ),
             ),
@@ -80,7 +82,10 @@ class HealthCheckDetailPage extends StatelessWidget {
                 children: [
                   const Text(
                     '🔍 신체 검사',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green),
                   ),
                   const SizedBox(height: 16),
                   if (record.udderCondition.isNotEmpty)
@@ -110,7 +115,10 @@ class HealthCheckDetailPage extends StatelessWidget {
                   children: [
                     const Text(
                       '🎭 행동 평가',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.orange),
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.orange),
                     ),
                     const SizedBox(height: 16),
                     if (record.activityLevel.isNotEmpty)
@@ -125,7 +133,7 @@ class HealthCheckDetailPage extends StatelessWidget {
           const SizedBox(height: 12),
 
           // 이상 증상 카드
-          if (record.abnormalSymptoms != null && record.abnormalSymptoms!.isNotEmpty)
+          if (record.abnormalSymptoms.isNotEmpty)
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -134,10 +142,13 @@ class HealthCheckDetailPage extends StatelessWidget {
                   children: [
                     const Text(
                       '⚠️ 이상 증상',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.red),
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red),
                     ),
                     const SizedBox(height: 16),
-                    _buildInfoRow('🚨 증상', record.abnormalSymptoms!.join(', ')),
+                    _buildInfoRow('🚨 증상', record.abnormalSymptoms.join(', ')),
                   ],
                 ),
               ),
@@ -154,7 +165,10 @@ class HealthCheckDetailPage extends StatelessWidget {
                 children: [
                   const Text(
                     '📝 추가 정보',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.purple),
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.purple),
                   ),
                   const SizedBox(height: 16),
                   if (record.nextCheckDate.isNotEmpty)

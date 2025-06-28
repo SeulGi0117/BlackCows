@@ -19,7 +19,7 @@ class VaccinationRecordProvider with ChangeNotifier {
 
     try {
       print('🔄 백신접종 기록 조회 시작: $baseUrl/records/cow/$cowId/health-records');
-      
+
       final response = await dio.get(
         '$baseUrl/records/cow/$cowId/health-records',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
@@ -30,7 +30,7 @@ class VaccinationRecordProvider with ChangeNotifier {
 
       if (response.statusCode == 200) {
         _records.clear();
-        
+
         if (response.data == null) {
           print('⚠️ 응답 데이터가 null입니다.');
           notifyListeners();
@@ -48,10 +48,12 @@ class VaccinationRecordProvider with ChangeNotifier {
 
         int vaccinationCount = 0;
         for (var item in dataList) {
-          if (item is Map<String, dynamic> && item['record_type'] == 'vaccination') {
+          if (item is Map<String, dynamic> &&
+              item['record_type'] == 'vaccination') {
             try {
               // 전체 JSON을 그대로 전달 (key_values 포함)
-              _records.add(VaccinationRecord.fromJson(Map<String, dynamic>.from(item)));
+              _records.add(
+                  VaccinationRecord.fromJson(Map<String, dynamic>.from(item)));
               vaccinationCount++;
             } catch (e) {
               print('! 백신접종 기록 파싱 오류: $e');
@@ -59,7 +61,7 @@ class VaccinationRecordProvider with ChangeNotifier {
             }
           }
         }
-        
+
         print('✅ 백신접종 기록 필터링 완료: $vaccinationCount개');
         notifyListeners();
       } else {
@@ -71,24 +73,24 @@ class VaccinationRecordProvider with ChangeNotifier {
       print('   - 오류 타입: ${e.type}');
       print('   - 상태 코드: ${e.response?.statusCode}');
       print('   - 오류 메시지: ${e.message}');
-      
+
       if (e.response?.statusCode == 500) {
         print('🚨 서버 내부 오류 (500): 백엔드 서버에 문제가 있습니다.');
         print('서버 응답: ${e.response?.data}');
-        
+
         // 500 오류 시에도 빈 목록으로 처리하여 앱이 크래시되지 않도록 함
         _records.clear();
         notifyListeners();
         return;
       }
-      
+
       if (e.response?.statusCode == 404) {
         print('📭 백신접종 기록이 없습니다 (404)');
         _records.clear();
         notifyListeners();
         return;
       }
-      
+
       throw Exception('백신접종 기록 불러오기 실패: $e');
     } catch (e) {
       print('❌ 일반 오류: $e');
@@ -96,36 +98,32 @@ class VaccinationRecordProvider with ChangeNotifier {
     }
   }
 
-  Future<void> addRecord(VaccinationRecord record, String token) async {
+  Future<bool> addRecord(VaccinationRecord record, String token) async {
     final dio = Dio();
     final baseUrl = dotenv.env['API_BASE_URL'];
 
+    if (baseUrl == null) return false;
+
     try {
-      final requestData = {
-        'cow_id': record.cowId,
-        'record_date': record.recordDate,
-        'title': '백신접종 (${record.vaccineName ?? '백신'})',
-        'description': record.notes?.isNotEmpty == true ? record.notes : '백신접종 실시',
-        'record_data': record.toRecordDataJson(),
-      };
-
-      print('🔄 백신접종 기록 저장 요청: $requestData');
-
       final response = await dio.post(
         '$baseUrl/records/vaccination',
-        data: requestData,
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
+        data: record.toJson(), // ✅ 통일된 방식으로 전송
+        options: Options(headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        }),
       );
 
-      print('✅ 백신접종 기록 저장 응답: ${response.statusCode}');
+      print('✅ 백신접종 기록 추가 성공: ${response.data}');
 
       if (response.statusCode == 201) {
         _records.add(VaccinationRecord.fromJson(response.data));
         notifyListeners();
+        return true;
       }
     } catch (e) {
       print('❌ 백신접종 기록 추가 실패: $e');
-      throw Exception('백신접종 기록 추가 실패: $e');
     }
+    return false;
   }
 }
