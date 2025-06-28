@@ -75,14 +75,6 @@ class _CowDetailPageState extends State<CowDetailPage> {
             const SizedBox(height: 20),
             if (currentCow.hasLivestockTraceData)
               _buildLivestockTraceInfoCard(),
-            const SizedBox(height: 20),
-            _buildHealthInfoCard(context, currentCow.id, currentCow.name),
-            const SizedBox(height: 20),
-            _buildMilkingInfoCard(),
-            const SizedBox(height: 20),
-            _buildBreedingInfoCard(),
-            const SizedBox(height: 20),
-            _buildFeedingInfoCard(),
           ],
         ),
       ),
@@ -211,95 +203,7 @@ class _CowDetailPageState extends State<CowDetailPage> {
     );
   }
 
-  Widget _infoCardBase({
-    required IconData icon,
-    required String title,
-    required List<Widget> children,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF5F5F5),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, size: 20),
-              const SizedBox(width: 6),
-              Text(title,
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold)),
-            ],
-          ),
-          const SizedBox(height: 12),
-          ...children,
-        ],
-      ),
-    );
-  }
 
-  Widget _buildHealthInfoCard(
-      BuildContext context, String cowId, String cowName) {
-    return _infoCardBase(
-      icon: Icons.healing,
-      title: '건강 정보',
-      children: [
-        // 카드 내용 제거 - 상세 기록 버튼에서 확인 가능
-      ],
-    );
-  }
-
-  Widget _buildBreedingInfoCard() {
-    return _infoCardBase(
-      icon: Icons.pregnant_woman,
-      title: '번식 정보',
-      children: [
-        // 카드 내용 제거 - 상세 기록 버튼에서 확인 가능
-      ],
-    );
-  }
-
-  Widget _buildFeedingInfoCard() {
-    return _infoCardBase(
-      icon: Icons.rice_bowl,
-      title: '사료 정보',
-      children: [
-        // 카드 내용 제거 - 상세 기록 버튼에서 확인 가능
-      ],
-    );
-  }
-
-  Widget _buildMilkingInfoCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF5F5F5),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
-            children: [
-              Icon(Icons.local_drink, size: 20),
-              SizedBox(width: 6),
-              Text('우유 착유 정보',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            ],
-          ),
-          const SizedBox(height: 12),
-          // 카드 내용 제거 - 상세 기록 버튼에서 확인 가능
-        ],
-      ),
-    );
-  }
 
   Widget _infoRow(String label, String value) {
     return Padding(

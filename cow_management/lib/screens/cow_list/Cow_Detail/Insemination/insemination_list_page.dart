@@ -45,11 +45,11 @@ class _InseminationRecordListPageState
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.cowName} 인공수정 기록'),
-        backgroundColor: Colors.blue,
+        backgroundColor: const Color(0xFF4CAF50),
         foregroundColor: Colors.white,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF4CAF50)))
           : records.isEmpty
               ? const Center(
                   child: Column(
@@ -74,7 +74,7 @@ class _InseminationRecordListPageState
                         leading: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: Colors.blue.withOpacity(0.1),
+                            color: Color(0xFF4CAF50).withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child:
@@ -120,7 +120,7 @@ class _InseminationRecordListPageState
             },
           ).then((_) => _loadRecords());
         },
-        backgroundColor: Colors.blue,
+        backgroundColor: const Color(0xFF4CAF50),
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );

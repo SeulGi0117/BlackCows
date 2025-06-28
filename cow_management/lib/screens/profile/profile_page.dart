@@ -24,8 +24,8 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('내 정보'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: const Color(0xFF4CAF50),
+        foregroundColor: Colors.white,
         elevation: 0,
       ),
       backgroundColor: Color(0xFFF5F5F5),

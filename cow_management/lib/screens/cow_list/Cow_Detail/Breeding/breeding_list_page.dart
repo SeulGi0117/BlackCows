@@ -39,9 +39,13 @@ class _BreedingRecordListPageState extends State<BreedingRecordListPage> {
     final records = Provider.of<BreedingRecordProvider>(context).records;
 
     return Scaffold(
-      appBar: AppBar(title: Text('${widget.cowName} - 번식 기록 목록')),
+      appBar: AppBar(
+        title: Text('${widget.cowName} - 번식 기록 목록'),
+        backgroundColor: const Color(0xFF4CAF50),
+        foregroundColor: Colors.white,
+      ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF4CAF50)))
           : records.isEmpty
               ? const Center(child: Text('등록된 기록이 없습니다.'))
               : ListView.builder(

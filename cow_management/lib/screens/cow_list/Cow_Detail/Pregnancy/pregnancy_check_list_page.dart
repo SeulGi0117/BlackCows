@@ -40,11 +40,11 @@ class _PregnancyCheckListPageState extends State<PregnancyCheckListPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.cowName} 임신감정 기록'),
-        backgroundColor: Colors.purple,
+        backgroundColor: const Color(0xFF4CAF50),
         foregroundColor: Colors.white,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF4CAF50)))
           : records.isEmpty
               ? const Center(
                   child: Column(
@@ -67,7 +67,7 @@ class _PregnancyCheckListPageState extends State<PregnancyCheckListPage> {
                         leading: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: Colors.purple.withOpacity(0.1),
+                            color: Color(0xFF4CAF50).withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Text('🤱', style: TextStyle(fontSize: 20)),
@@ -100,7 +100,7 @@ class _PregnancyCheckListPageState extends State<PregnancyCheckListPage> {
             },
           ).then((_) => _loadRecords());
         },
-        backgroundColor: Colors.purple,
+        backgroundColor: const Color(0xFF4CAF50),
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );

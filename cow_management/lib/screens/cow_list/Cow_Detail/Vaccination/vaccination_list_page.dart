@@ -63,7 +63,7 @@ class _VaccinationListPageState extends State<VaccinationListPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.cowName} 백신접종 기록'),
-        backgroundColor: Colors.pink,
+        backgroundColor: const Color(0xFF4CAF50),
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -88,7 +88,7 @@ class _VaccinationListPageState extends State<VaccinationListPage> {
             },
           ).then((_) => _loadRecords());
         },
-        backgroundColor: Colors.pink,
+        backgroundColor: const Color(0xFF4CAF50),
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
@@ -100,7 +100,7 @@ class _VaccinationListPageState extends State<VaccinationListPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(color: Colors.pink),
+            CircularProgressIndicator(color: Color(0xFF4CAF50)),
             SizedBox(height: 16),
             Text('백신접종 기록을 불러오는 중...'),
           ],
@@ -133,7 +133,7 @@ class _VaccinationListPageState extends State<VaccinationListPage> {
               icon: const Icon(Icons.refresh),
               label: const Text('다시 시도'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.pink,
+                backgroundColor: const Color(0xFF4CAF50),
                 foregroundColor: Colors.white,
               ),
             ),
@@ -184,10 +184,10 @@ class _VaccinationListPageState extends State<VaccinationListPage> {
           elevation: 2,
           child: ListTile(
             leading: CircleAvatar(
-              backgroundColor: Colors.pink.shade100,
+              backgroundColor: Color(0xFF4CAF50).withOpacity(0.1),
               child: const Icon(
                 Icons.vaccines,
-                color: Colors.pink,
+                color: Color(0xFF4CAF50),
               ),
             ),
             title: Text(

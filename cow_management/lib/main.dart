@@ -476,7 +476,7 @@ class _MainScaffoldState extends State<MainScaffold> {
           unselectedItemColor: Colors.grey,
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: '홈'),
-            BottomNavigationBarItem(icon: Icon(Icons.list), label: '소 관리'),
+            BottomNavigationBarItem(icon: Icon(Icons.list), label: '젖소 관리'),
             BottomNavigationBarItem(icon: Icon(Icons.analytics), label: 'AI예측'),
             BottomNavigationBarItem(
                 icon: Icon(Icons.chat_bubble_outline), label: '챗봇'),

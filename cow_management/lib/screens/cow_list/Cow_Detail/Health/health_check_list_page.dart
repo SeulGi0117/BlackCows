@@ -59,7 +59,7 @@ class _HealthCheckListPageState extends State<HealthCheckListPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.cowName} - 건강검진 목록'),
-        backgroundColor: Colors.blue,
+        backgroundColor: const Color(0xFF4CAF50),
         foregroundColor: Colors.white,
       ),
       body: _buildBody(),
@@ -116,7 +116,7 @@ class _HealthCheckListPageState extends State<HealthCheckListPage> {
               icon: const Icon(Icons.refresh),
               label: const Text('다시 시도'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
+                backgroundColor: const Color(0xFF4CAF50),
                 foregroundColor: Colors.white,
               ),
             ),
@@ -173,7 +173,7 @@ class _HealthCheckListPageState extends State<HealthCheckListPage> {
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             child: ListTile(
               leading: const CircleAvatar(
-                backgroundColor: Colors.blue,
+                backgroundColor: Color(0xFF4CAF50),
                 child: Icon(Icons.monitor_heart, color: Colors.white),
               ),
               title: Text(
@@ -188,7 +188,7 @@ class _HealthCheckListPageState extends State<HealthCheckListPage> {
                   style: const TextStyle(fontSize: 14, color: Colors.grey),
                 ),
               ),
-              trailing: const Icon(Icons.arrow_forward_ios, color: Colors.blue),
+              trailing: const Icon(Icons.arrow_forward_ios, color: Color(0xFF4CAF50)),
               onTap: () {
                 Navigator.push(
                   context,

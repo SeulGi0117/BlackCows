@@ -48,9 +48,13 @@ class _MilkingRecordListPageState extends State<MilkingRecordListPage> {
     final records = Provider.of<MilkingRecordProvider>(context).records;
 
     return Scaffold(
-      appBar: AppBar(title: Text('${widget.cowName} - 착유 기록')),
+      appBar: AppBar(
+        title: Text('${widget.cowName} - 착유 기록'),
+        backgroundColor: const Color(0xFF4CAF50),
+        foregroundColor: Colors.white,
+      ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF4CAF50)))
           : records.isEmpty
               ? const Center(child: Text('착유 기록이 없습니다'))
               : ListView.builder(
@@ -81,7 +85,8 @@ class _MilkingRecordListPageState extends State<MilkingRecordListPage> {
             },
           );
         },
-        child: const Icon(Icons.add),
+        backgroundColor: const Color(0xFF4CAF50),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }

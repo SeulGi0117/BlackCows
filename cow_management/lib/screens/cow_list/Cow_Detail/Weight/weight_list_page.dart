@@ -63,7 +63,7 @@ class _WeightListPageState extends State<WeightListPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.cowName} 체중측정 기록'),
-        backgroundColor: Colors.pink,
+        backgroundColor: const Color(0xFF4CAF50),
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -88,7 +88,7 @@ class _WeightListPageState extends State<WeightListPage> {
             },
           ).then((_) => _loadRecords());
         },
-        backgroundColor: Colors.pink,
+        backgroundColor: const Color(0xFF4CAF50),
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
@@ -100,7 +100,7 @@ class _WeightListPageState extends State<WeightListPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(color: Colors.pink),
+            CircularProgressIndicator(color: Color(0xFF4CAF50)),
             SizedBox(height: 16),
             Text('체중측정 기록을 불러오는 중...'),
           ],
@@ -133,7 +133,7 @@ class _WeightListPageState extends State<WeightListPage> {
               icon: const Icon(Icons.refresh),
               label: const Text('다시 시도'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.pink,
+                backgroundColor: const Color(0xFF4CAF50),
                 foregroundColor: Colors.white,
               ),
             ),
@@ -184,10 +184,10 @@ class _WeightListPageState extends State<WeightListPage> {
           elevation: 2,
           child: ListTile(
             leading: CircleAvatar(
-              backgroundColor: Colors.blue.shade100,
+              backgroundColor: Color(0xFF4CAF50).withOpacity(0.1),
               child: const Icon(
                 Icons.monitor_weight,
-                color: Colors.blue,
+                color: Color(0xFF4CAF50),
               ),
             ),
             title: Text(

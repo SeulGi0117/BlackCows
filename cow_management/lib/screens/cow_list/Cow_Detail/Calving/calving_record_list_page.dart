@@ -15,7 +15,7 @@ class CalvingRecordListPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('$cowName 분만 기록'),
-        backgroundColor: Colors.teal,
+        backgroundColor: const Color(0xFF4CAF50),
         foregroundColor: Colors.white,
       ),
       body: const Center(
@@ -32,7 +32,7 @@ class CalvingRecordListPage extends StatelessWidget {
             },
           );
         },
-        backgroundColor: Colors.teal,
+        backgroundColor: const Color(0xFF4CAF50),
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );

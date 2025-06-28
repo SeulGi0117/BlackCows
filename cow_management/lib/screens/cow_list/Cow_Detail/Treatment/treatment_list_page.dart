@@ -65,7 +65,7 @@ class _TreatmentListPageState extends State<TreatmentListPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.cowName} 치료 기록'),
-        backgroundColor: Colors.pink,
+        backgroundColor: const Color(0xFF4CAF50),
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -90,7 +90,7 @@ class _TreatmentListPageState extends State<TreatmentListPage> {
             },
           ).then((_) => _loadRecords());
         },
-        backgroundColor: Colors.pink,
+        backgroundColor: const Color(0xFF4CAF50),
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
@@ -102,7 +102,7 @@ class _TreatmentListPageState extends State<TreatmentListPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(color: Colors.pink),
+            CircularProgressIndicator(color: Color(0xFF4CAF50)),
             SizedBox(height: 16),
             Text('치료 기록을 불러오는 중...'),
           ],
@@ -135,7 +135,7 @@ class _TreatmentListPageState extends State<TreatmentListPage> {
               icon: const Icon(Icons.refresh),
               label: const Text('다시 시도'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.pink,
+                backgroundColor: const Color(0xFF4CAF50),
                 foregroundColor: Colors.white,
               ),
             ),

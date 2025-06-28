@@ -208,9 +208,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final int danger = countByStatus(cows, '위험');
 
     final statusSummary = [
-      {'label': '양호', 'count': normal, 'color': Color(0xFF4CAF50)},
-      {'label': '경고', 'count': warning, 'color': Color(0xFF81C784)},
-      {'label': '위험', 'count': danger, 'color': Color(0xFF388E3C)},
+      {'label': '양호', 'count': normal, 'color': Color(0xFF4CAF50)}, // 초록색
+      {'label': '경고', 'count': warning, 'color': Color(0xFFFF9800)}, // 주황색
+      {'label': '위험', 'count': danger, 'color': Color(0xFFF44336)}, // 빨간색
     ];
 
     return Padding(
