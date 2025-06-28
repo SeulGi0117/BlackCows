@@ -66,68 +66,55 @@ class HealthCheckRecord {
     return 0;
   }
 
+  static List<String>? _parseStringList(dynamic value) {
+    if (value == null) return null;
+    if (value is List) return value.map((e) => e.toString()).toList();
+    if (value is String) return value.split(',').map((e) => e.trim()).toList();
+    return null;
+  }
+
   factory HealthCheckRecord.fromJson(Map<String, dynamic> json) {
-    // 안전한 타입 캐스팅
     final Map<String, dynamic> safeJson = Map<String, dynamic>.from(json);
-    
-    // 데이터 소스 우선순위: key_values > record_data > 기본 json
     Map<String, dynamic> data = {};
-    
-    // 기본 json 데이터 추가
-    data.addAll(safeJson);
-    
-    // record_data가 있으면 추가
+
+    // ✅ record_data, key_values 병합
     if (safeJson['record_data'] != null) {
-      final recordData = Map<String, dynamic>.from(safeJson['record_data']);
-      data.addAll(recordData);
+      data.addAll(Map<String, dynamic>.from(safeJson['record_data']));
     }
-    
-    // key_values가 있으면 우선적으로 사용 (서버 응답 형태)
     if (safeJson['key_values'] != null) {
-      final keyValues = Map<String, dynamic>.from(safeJson['key_values']);
-      
-      // key_values에서 필드 매핑
-      if (keyValues.containsKey('temperature')) {
-        data['body_temperature'] = keyValues['temperature'];
-      }
-      if (keyValues.containsKey('bcs')) {
-        data['body_condition_score'] = keyValues['bcs'];
-      }
+      data.addAll(Map<String, dynamic>.from(safeJson['key_values']));
     }
 
-    String recordDateStr;
-    final recordDateRaw = safeJson['record_date'] ?? data['record_date'];
-    if (recordDateRaw is int) {
-      recordDateStr = DateTime.fromMillisecondsSinceEpoch(recordDateRaw * 1000)
-          .toIso8601String()
-          .split('T')[0];
-    } else {
-      recordDateStr = recordDateRaw?.toString() ?? '';
-    }
+    // 🧷 cow_id, record_date 등도 병합
+    data['cow_id'] = safeJson['cow_id'];
+    data['record_date'] = safeJson['record_date'];
 
     return HealthCheckRecord(
       id: safeJson['id']?.toString(),
-      cowId: safeJson['cow_id']?.toString() ?? data['cow_id']?.toString() ?? '',
-      recordDate: recordDateStr,
+      cowId: data['cow_id'] ?? '',
+      recordDate: data['record_date'] ?? '',
       checkTime: data['check_time']?.toString() ?? '',
-      bodyTemperature: _parseDouble(data['body_temperature']),
-      heartRate: _parseInt(data['heart_rate']),
-      respiratoryRate: _parseInt(data['respiratory_rate']),
-      bodyConditionScore: _parseDouble(data['body_condition_score']),
+      bodyTemperature:
+          _parseDouble(data['body_temperature'] ?? data['temperature']),
+      heartRate: _parseInt(data['heart_rate']) ?? 0,
+      respiratoryRate: _parseInt(data['respiratory_rate']) ?? 0,
+      bodyConditionScore:
+          _parseDouble(data['body_condition_score'] ?? data['bcs']),
       udderCondition: data['udder_condition']?.toString() ?? '',
       hoofCondition: data['hoof_condition']?.toString() ?? '',
       coatCondition: data['coat_condition']?.toString() ?? '',
       eyeCondition: data['eye_condition']?.toString() ?? '',
       noseCondition: data['nose_condition']?.toString() ?? '',
       appetite: data['appetite']?.toString() ?? '',
-      activityLevel: data['activity_level']?.toString() ?? '',
-      abnormalSymptoms: (data['abnormal_symptoms'] as List<dynamic>?)
-              ?.map((e) => e.toString())
-              .toList() ??
-          [],
+      activityLevel: data['activity_level']?.toString() ??
+          data['activity']?.toString() ??
+          '',
+      abnormalSymptoms: _parseStringList(data['abnormal_symptoms']) ?? [],
       examiner: data['examiner']?.toString() ?? '',
       nextCheckDate: data['next_check_date']?.toString() ?? '',
-      notes: data['notes']?.toString() ?? safeJson['description']?.toString() ?? '',
+      notes: data['notes']?.toString() ??
+          safeJson['description']?.toString() ??
+          '',
     );
   }
 
@@ -136,23 +123,21 @@ class HealthCheckRecord {
         'record_date': recordDate,
         'title': '건강검진 기록',
         'description': notes.isNotEmpty ? notes : '건강검진 실시',
-        'record_data': {
-          'check_time': checkTime,
-          'body_temperature': bodyTemperature,
-          'heart_rate': heartRate,
-          'respiratory_rate': respiratoryRate,
-          'body_condition_score': bodyConditionScore,
-          'udder_condition': udderCondition,
-          'hoof_condition': hoofCondition,
-          'coat_condition': coatCondition,
-          'eye_condition': eyeCondition,
-          'nose_condition': noseCondition,
-          'appetite': appetite,
-          'activity_level': activityLevel,
-          'abnormal_symptoms': abnormalSymptoms,
-          'examiner': examiner,
-          'next_check_date': nextCheckDate,
-          'notes': notes,
-        },
+        'check_time': checkTime,
+        'body_temperature': bodyTemperature,
+        'heart_rate': heartRate,
+        'respiratory_rate': respiratoryRate,
+        'body_condition_score': bodyConditionScore,
+        'udder_condition': udderCondition,
+        'hoof_condition': hoofCondition,
+        'coat_condition': coatCondition,
+        'eye_condition': eyeCondition,
+        'nose_condition': noseCondition,
+        'appetite': appetite,
+        'activity_level': activityLevel,
+        'abnormal_symptoms': abnormalSymptoms,
+        'examiner': examiner,
+        'next_check_date': nextCheckDate,
+        'notes': notes,
       };
 }

@@ -11,6 +11,8 @@ class TreatmentDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('[DEBUG] 치료 상세 record: ${record.toJson()}');
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('치료 기록 상세'),
@@ -68,7 +70,8 @@ class TreatmentDetailPage extends StatelessWidget {
             _buildInfoCard(
               '💊 치료 정보',
               [
-                if (record.medicationUsed != null && record.medicationUsed!.isNotEmpty)
+                if (record.medicationUsed != null &&
+                    record.medicationUsed!.isNotEmpty)
                   _buildInfoRow('사용 약물', record.medicationUsed!.join(', ')),
                 if (record.dosageInfo != null && record.dosageInfo!.isNotEmpty)
                   ...record.dosageInfo!.entries.map(
@@ -91,7 +94,8 @@ class TreatmentDetailPage extends StatelessWidget {
                 if (record.veterinarian != null)
                   _buildInfoRow('담당 수의사', record.veterinarian!),
                 if (record.treatmentCost != null)
-                  _buildInfoRow('치료 비용', '${record.treatmentCost?.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}원'),
+                  _buildInfoRow('치료 비용',
+                      '${record.treatmentCost?.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}원'),
               ],
             ),
             const SizedBox(height: 16),
@@ -105,7 +109,8 @@ class TreatmentDetailPage extends StatelessWidget {
                 if (record.sideEffects != null)
                   _buildInfoRow('부작용', record.sideEffects!),
                 if (record.followUpRequired != null)
-                  _buildInfoRow('추가 치료 필요', record.followUpRequired! ? '예' : '아니오'),
+                  _buildInfoRow(
+                      '추가 치료 필요', record.followUpRequired! ? '예' : '아니오'),
                 if (record.followUpDate != null)
                   _buildInfoRow('추가 치료일', record.followUpDate!),
               ],
