@@ -25,19 +25,26 @@ class _HomeScreenState extends State<HomeScreen> {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final cowProvider = Provider.of<CowProvider>(context, listen: false);
 
-    // 소 전체 목록이 비어있고, 아직 한 번도 불러오지 않았다면 서버에서 한 번만 불러오기
-    if (userProvider.isLoggedIn && userProvider.accessToken != null && cowProvider.cows.isEmpty && !_cowsLoadedOnce) {
-      _cowsLoadedOnce = true;
-      cowProvider.fetchCowsFromBackend(userProvider.accessToken!).then((_) {
-        // 소 목록을 불러온 뒤 즐겨찾기 동기화
-        if (!_favoritesLoaded && userProvider.isLoggedIn && userProvider.accessToken != null) {
-          cowProvider.syncFavoritesFromServer(userProvider.accessToken!);
-          _favoritesLoaded = true;
-        }
-      });
-    } else {
-      // 소 목록이 이미 있으면 즐겨찾기만 동기화
-      if (!_favoritesLoaded && userProvider.isLoggedIn && userProvider.accessToken != null) {
+    // 로그인 상태이고 토큰이 있을 때
+    if (userProvider.isLoggedIn && userProvider.accessToken != null) {
+      // 소 목록이 비어있고 아직 한 번도 로드하지 않았을 때 강제로 새로고침
+      if (cowProvider.cows.isEmpty && !_cowsLoadedOnce) {
+        _cowsLoadedOnce = true;
+        
+        cowProvider.fetchCowsFromBackend(userProvider.accessToken!, forceRefresh: true, userProvider: userProvider).then((_) {
+          // 소 목록을 불러온 뒤 즐겨찾기 동기화
+          if (!_favoritesLoaded && userProvider.isLoggedIn && userProvider.accessToken != null) {
+            cowProvider.syncFavoritesFromServer(userProvider.accessToken!);
+            _favoritesLoaded = true;
+          }
+        }).catchError((error) {
+          // 에러가 발생하면 다시 시도할 수 있도록 플래그 리셋
+          _cowsLoadedOnce = false;
+          print('홈 화면에서 소 목록 로딩 실패: $error');
+        });
+      } 
+      // 소 목록이 있지만 즐겨찾기가 로드되지 않았을 때
+      else if (!_favoritesLoaded) {
         cowProvider.syncFavoritesFromServer(userProvider.accessToken!);
         _favoritesLoaded = true;
       }

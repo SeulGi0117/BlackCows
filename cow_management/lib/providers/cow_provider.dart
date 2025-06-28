@@ -3,6 +3,7 @@ import 'package:cow_management/models/cow.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:dio/dio.dart';
 import 'package:logging/logging.dart';
+import 'package:cow_management/providers/user_provider.dart';
 
 class CowProvider with ChangeNotifier {
   final List<Cow> _cows = [];
@@ -253,10 +254,15 @@ class CowProvider with ChangeNotifier {
   }
 
   // 서버에서 소 전체 목록을 불러와 setCows까지 처리하는 메서드 추가
-  Future<void> fetchCowsFromBackend(String token) async {
-    if (_cowsLoadedOnce) return;
+  Future<void> fetchCowsFromBackend(String token, {bool forceRefresh = false, UserProvider? userProvider}) async {
+    // forceRefresh가 true이거나 아직 로드한 적이 없을 때만 실행
+    if (!forceRefresh && _cowsLoadedOnce) return;
+    
     final dio = Dio();
     final apiUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
+    
+    _logger.info('소 목록 로딩 시작 - API URL: $apiUrl');
+    
     try {
       final response = await dio.get(
         '$apiUrl/cows/?sortDirection=DESCENDING',
@@ -267,15 +273,61 @@ class CowProvider with ChangeNotifier {
           },
         ),
       );
+      
       if (response.statusCode == 200) {
         final List<dynamic> jsonList = response.data;
         final List<Cow> cows = jsonList.map((json) => Cow.fromJson(json)).toList();
         setCows(cows);
+        _logger.info('소 목록 로딩 성공: ${cows.length}마리');
       } else {
-        _logger.severe('소 목록 불러오기 실패: \\${response.statusCode}');
+        _logger.severe('소 목록 불러오기 실패: ${response.statusCode}');
+        // 실패 시 _cowsLoadedOnce를 false로 리셋하여 재시도 가능하게 함
+        _cowsLoadedOnce = false;
+        throw Exception('서버 응답 오류: ${response.statusCode}');
       }
     } catch (e) {
+      if (e is DioException && e.response?.statusCode == 401 && userProvider != null) {
+        _logger.warning('토큰 만료로 인한 401 에러 - 토큰 갱신 시도');
+        
+        try {
+          // 토큰 갱신 시도
+          final refreshSuccess = await userProvider.refreshAccessToken();
+          
+          if (refreshSuccess && userProvider.accessToken != null) {
+            _logger.info('토큰 갱신 성공 - API 재시도');
+            
+            // 새로운 토큰으로 재시도
+            final retryResponse = await dio.get(
+              '$apiUrl/cows/?sortDirection=DESCENDING',
+              options: Options(
+                headers: {
+                  'Authorization': 'Bearer ${userProvider.accessToken}',
+                  'Content-Type': 'application/json',
+                },
+              ),
+            );
+            
+            if (retryResponse.statusCode == 200) {
+              final List<dynamic> jsonList = retryResponse.data;
+              final List<Cow> cows = jsonList.map((json) => Cow.fromJson(json)).toList();
+              setCows(cows);
+              _logger.info('토큰 갱신 후 소 목록 로딩 성공: ${cows.length}마리');
+              return;
+            }
+          } else {
+            _logger.severe('토큰 갱신 실패 - 로그아웃 필요');
+            throw Exception('토큰 갱신 실패');
+          }
+        } catch (refreshError) {
+          _logger.severe('토큰 갱신 중 오류: $refreshError');
+          throw Exception('토큰 갱신 실패: $refreshError');
+        }
+      }
+      
       _logger.severe('소 목록 불러오기 오류: $e');
+      // 실패 시 _cowsLoadedOnce를 false로 리셋하여 재시도 가능하게 함
+      _cowsLoadedOnce = false;
+      throw e; // 에러를 다시 던져서 호출하는 곳에서 처리할 수 있게 함
     }
   }
 }

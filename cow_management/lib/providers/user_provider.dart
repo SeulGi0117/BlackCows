@@ -335,7 +335,12 @@ class UserProvider with ChangeNotifier {
     }
   }
 
-  // 토큰 갱신
+  // 토큰 갱신 (public wrapper)
+  Future<bool> refreshAccessToken() async {
+    return await _refreshAccessToken();
+  }
+
+  // 토큰 갱신 (private method)
   Future<bool> _refreshAccessToken() async {
     if (_refreshToken == null) {
       _logger.warning('리프레시 토큰이 없습니다');

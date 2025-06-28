@@ -30,10 +30,14 @@ class _CowListPageState extends State<CowListPage> {
     super.initState();
     final cowProvider = Provider.of<CowProvider>(context, listen: false);
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    // 소 목록이 비어있고, 아직 한 번도 불러오지 않았다면 서버에서 한 번만 불러오기
+    // 소 목록이 비어있고, 아직 한 번도 불러오지 않았다면 서버에서 강제로 불러오기
     if (!_cowsLoadedOnce && cowProvider.cows.isEmpty && userProvider.isLoggedIn && userProvider.accessToken != null) {
       _cowsLoadedOnce = true;
-      cowProvider.fetchCowsFromBackend(userProvider.accessToken!);
+      cowProvider.fetchCowsFromBackend(userProvider.accessToken!, forceRefresh: true, userProvider: userProvider).catchError((error) {
+        // 에러 발생 시 다시 시도할 수 있도록 플래그 리셋
+        _cowsLoadedOnce = false;
+        print('소 목록 페이지에서 초기 로딩 실패: $error');
+      });
     }
   }
 

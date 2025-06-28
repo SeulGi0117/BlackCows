@@ -93,9 +93,6 @@ Future<void> main() async {
         '${record.time}: ${record.level.name}: ${record.loggerName}: ${record.message}');
   });
 
-  // 테스트 모드 설정
-  const bool isTestMode = false;
-
   runApp(
     MultiProvider(
       providers: [

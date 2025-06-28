@@ -46,11 +46,11 @@ class _SplashScreenState extends State<SplashScreen> {
           try {
             // CowProvider 초기화 및 데이터 로드
             cowProvider.clearAll();
-            await cowProvider.fetchCowsFromBackend(userProvider.accessToken!);
+            await cowProvider.fetchCowsFromBackend(userProvider.accessToken!, forceRefresh: true, userProvider: userProvider);
             _logger.info('소 목록 데이터 로딩 완료');
           } catch (e) {
             _logger.warning('소 목록 로딩 실패 (자동 로그인 시): $e');
-            // 소 목록 로딩 실패해도 메인 화면으로 이동
+            // 소 목록 로딩 실패해도 메인 화면으로 이동 (홈 화면에서 재시도 가능)
           }
         }
         
