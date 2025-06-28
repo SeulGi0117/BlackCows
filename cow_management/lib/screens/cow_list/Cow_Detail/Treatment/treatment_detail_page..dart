@@ -16,7 +16,7 @@ class TreatmentDetailPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('치료 기록 상세'),
-        backgroundColor: Colors.red,
+        backgroundColor: Color(0xFF4CAF50),
         foregroundColor: Colors.white,
         actions: [
           IconButton(

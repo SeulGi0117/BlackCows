@@ -14,7 +14,7 @@ class EstrusDetailPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('발정 기록 상세: ${record.recordDate}'),
-        backgroundColor: Colors.pink.shade300,
+        backgroundColor: Color(0xFF4CAF50),
         foregroundColor: Colors.white,
       ),
       body: ListView(
@@ -130,7 +130,7 @@ class EstrusDetailPage extends StatelessWidget {
                   icon: const Icon(Icons.edit),
                   label: const Text('수정'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.pink.shade300,
+                    backgroundColor: Color(0xFF4CAF50),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),

@@ -80,7 +80,6 @@ class _ChatbotHistoryPageState extends State<ChatbotHistoryPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("소담이 채팅 기록"),
-        backgroundColor: Colors.white,
         actions: [
           IconButton(
             icon: const Icon(Icons.add_comment_outlined),

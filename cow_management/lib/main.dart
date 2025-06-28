@@ -33,6 +33,8 @@ import 'package:cow_management/screens/ai_chatbot/chatbot_history_page.dart';
 
 import 'package:cow_management/screens/accounts/login.dart';
 import 'package:cow_management/screens/accounts/signup.dart';
+import 'package:cow_management/screens/onboarding/onboarding_page.dart';
+import 'package:cow_management/screens/onboarding/auth_selection_page.dart';
 
 import 'package:cow_management/screens/home/home_page.dart';
 
@@ -123,6 +125,73 @@ class SoDamApp extends StatelessWidget {
     return MaterialApp(
         debugShowCheckedModeBanner: false,
         locale: const Locale('ko', 'KR'),
+        theme: ThemeData(
+          primaryColor: const Color(0xFF4CAF50),
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color(0xFF4CAF50),
+            primary: const Color(0xFF4CAF50),
+            secondary: const Color(0xFF81C784),
+            background: Colors.white,
+            onPrimary: Colors.white,
+            onSecondary: Colors.white,
+            surface: Colors.white,
+            onSurface: Colors.black87,
+            error: Colors.red,
+            onError: Colors.white,
+            brightness: Brightness.light,
+          ),
+          scaffoldBackgroundColor: Colors.white,
+          appBarTheme: const AppBarTheme(
+            backgroundColor: Color(0xFF4CAF50),
+            foregroundColor: Colors.white,
+            elevation: 0,
+            iconTheme: IconThemeData(color: Colors.white),
+            titleTextStyle: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF4CAF50),
+              foregroundColor: Colors.white,
+              textStyle: const TextStyle(fontWeight: FontWeight.bold),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+          outlinedButtonTheme: OutlinedButtonThemeData(
+            style: OutlinedButton.styleFrom(
+              foregroundColor: const Color(0xFF4CAF50),
+              side: const BorderSide(color: Color(0xFF4CAF50)),
+              textStyle: const TextStyle(fontWeight: FontWeight.bold),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+          textButtonTheme: TextButtonThemeData(
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF388E3C),
+              textStyle: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          floatingActionButtonTheme: const FloatingActionButtonThemeData(
+            backgroundColor: Color(0xFF4CAF50),
+            foregroundColor: Colors.white,
+          ),
+          checkboxTheme: const CheckboxThemeData(),
+          inputDecorationTheme: const InputDecorationTheme(),
+          bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+            selectedItemColor: Color(0xFF4CAF50),
+            unselectedItemColor: Colors.grey,
+            backgroundColor: Colors.white,
+            type: BottomNavigationBarType.fixed,
+            selectedLabelStyle: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
         localizationsDelegates: const [
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
@@ -134,6 +203,8 @@ class SoDamApp extends StatelessWidget {
         initialRoute: '/', // 시작 루트를 스플래시로 변경
         routes: {
           '/': (context) => const SplashScreen(), // 스플래시 화면
+          '/onboarding': (context) => const OnboardingPage(), // 온보딩
+          '/auth_selection': (context) => const AuthSelectionPage(), // 회원가입/로그인 선택
           '/main': (context) => const MainScaffold(), // 메인 홈
           '/login': (context) => const LoginPage(), // 로그인
           '/signup': (context) => const SignupPage(), // 회원가입
@@ -401,7 +472,7 @@ class _MainScaffoldState extends State<MainScaffold> {
           type: BottomNavigationBarType.fixed,
           currentIndex: _selectedIndex,
           onTap: _onItemTapped,
-          selectedItemColor: Colors.pink,
+          selectedItemColor: Color(0xFF4CAF50),
           unselectedItemColor: Colors.grey,
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: '홈'),

@@ -15,7 +15,7 @@ class HealthCheckDetailPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('건강검진 상세: ${record.recordDate}'),
-        backgroundColor: Colors.blue,
+        backgroundColor: Color(0xFF4CAF50),
         foregroundColor: Colors.white,
       ),
       body: ListView(
@@ -195,7 +195,7 @@ class HealthCheckDetailPage extends StatelessWidget {
                   icon: const Icon(Icons.edit),
                   label: const Text('수정'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
+                    backgroundColor: Color(0xFF4CAF50),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),

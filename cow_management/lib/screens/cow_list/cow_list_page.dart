@@ -265,8 +265,6 @@ class _CowListPageState extends State<CowListPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('젖소 관리'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
         elevation: 0,
         actions: [
           IconButton(
@@ -340,7 +338,7 @@ class _CowListPageState extends State<CowListPage> {
                                 icon: const Icon(Icons.add),
                                 label: const Text('젖소 등록하기'),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.pink,
+                                  backgroundColor: const Color(0xFF4CAF50),
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 24,
@@ -389,7 +387,7 @@ class _CowListPageState extends State<CowListPage> {
         ElevatedButton.icon(
           onPressed: () => _showAddCowOptions(context),
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.pink,
+            backgroundColor: const Color(0xFF4CAF50),
             foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(30),
@@ -426,11 +424,11 @@ class _CowListPageState extends State<CowListPage> {
               _selectedStatus = value ? status : null;
             });
           },
-          selectedColor: Colors.pink.shade100,
-          checkmarkColor: Colors.pink,
+          selectedColor: Color(0xFFC8E6C9),
+          checkmarkColor: Color(0xFF388E3C),
           backgroundColor: Colors.grey.shade200,
           shape: StadiumBorder(
-            side: BorderSide(color: Colors.pink.shade200),
+            side: BorderSide(color: Color(0xFF81C784)),
           ),
           labelStyle: const TextStyle(fontWeight: FontWeight.w500),
         );

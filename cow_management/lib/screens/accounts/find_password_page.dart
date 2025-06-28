@@ -399,8 +399,6 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('비밀번호 찾기'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
         elevation: 0,
       ),
       resizeToAvoidBottomInset: true,
@@ -426,7 +424,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
           const Icon(
             Icons.lock_reset,
             size: 80,
-            color: Colors.pink,
+            color: Color(0xFF4CAF50),
           ),
           const SizedBox(height: 24),
           const Text(
@@ -494,7 +492,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
             child: ElevatedButton(
               onPressed: _isLoading ? null : _requestPasswordReset,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.pink,
+                backgroundColor: Color(0xFF4CAF50),
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -527,7 +525,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
           const Icon(
             Icons.security,
             size: 80,
-            color: Colors.orange,
+            color: Color(0xFF4CAF50),
           ),
           const SizedBox(height: 24),
           Text(
@@ -591,7 +589,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
             child: ElevatedButton(
               onPressed: _isLoading ? null : _verifyResetToken,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
+                backgroundColor: Color(0xFF4CAF50),
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -653,7 +651,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
           const Icon(
             Icons.lock_outline,
             size: 80,
-            color: Colors.green,
+            color: Color(0xFF4CAF50),
           ),
           const SizedBox(height: 24),
           Text(
@@ -734,7 +732,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
             child: ElevatedButton(
               onPressed: _isLoading ? null : _resetPassword,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
+                backgroundColor: Color(0xFF4CAF50),
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),

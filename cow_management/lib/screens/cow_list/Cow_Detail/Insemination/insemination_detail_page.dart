@@ -29,7 +29,7 @@ class _InseminationDetailPageState extends State<InseminationDetailPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('인공수정 상세: ${widget.record.recordDate}'),
-        backgroundColor: Colors.pink,
+        backgroundColor: Color(0xFF4CAF50),
         foregroundColor: Colors.white,
       ),
       body: ListView(
@@ -167,7 +167,7 @@ class _InseminationDetailPageState extends State<InseminationDetailPage> {
                   icon: const Icon(Icons.edit),
                   label: const Text('수정'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.pink,
+                    backgroundColor: Color(0xFF4CAF50),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),

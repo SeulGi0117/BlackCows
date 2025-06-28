@@ -144,8 +144,6 @@ class _CowAddPageState extends State<CowAddPage> {
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: const Text('젖소 등록'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),

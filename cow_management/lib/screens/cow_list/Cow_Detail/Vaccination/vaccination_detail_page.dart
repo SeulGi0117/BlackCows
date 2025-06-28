@@ -14,7 +14,7 @@ class VaccinationDetailPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('백신접종 상세: ${record.recordDate}'),
-        backgroundColor: Colors.green,
+        backgroundColor: Color(0xFF4CAF50),
         foregroundColor: Colors.white,
       ),
       body: ListView(
@@ -160,7 +160,7 @@ class VaccinationDetailPage extends StatelessWidget {
                   icon: const Icon(Icons.edit),
                   label: const Text('수정'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
+                    backgroundColor: Color(0xFF4CAF50),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),

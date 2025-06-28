@@ -172,8 +172,6 @@ class _FindUserIdPageState extends State<FindUserIdPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('아이디 찾기'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
         elevation: 0,
       ),
       resizeToAvoidBottomInset: true,
@@ -187,7 +185,7 @@ class _FindUserIdPageState extends State<FindUserIdPage> {
               const Icon(
                 Icons.search,
                 size: 80,
-                color: Colors.pink,
+                color: Color(0xFF4CAF50),
               ),
               const SizedBox(height: 24),
               const Text(
@@ -237,7 +235,7 @@ class _FindUserIdPageState extends State<FindUserIdPage> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _findUserId,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.pink,
+                    backgroundColor: Color(0xFF4CAF50),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -260,7 +258,7 @@ class _FindUserIdPageState extends State<FindUserIdPage> {
               const Icon(
                 Icons.check_circle,
                 size: 80,
-                color: Colors.green,
+                color: Color(0xFF4CAF50),
               ),
               const SizedBox(height: 24),
               const Text(
@@ -268,7 +266,7 @@ class _FindUserIdPageState extends State<FindUserIdPage> {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.green,
+                  color: Color(0xFF4CAF50),
                 ),
               ),
               const SizedBox(height: 32),
@@ -328,7 +326,7 @@ class _FindUserIdPageState extends State<FindUserIdPage> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.pink[50],
+                            color: Color(0xFFC8E6C9),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
@@ -336,7 +334,7 @@ class _FindUserIdPageState extends State<FindUserIdPage> {
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: Colors.pink,
+                              color: Color(0xFF388E3C),
                             ),
                           ),
                         ),
@@ -378,7 +376,7 @@ class _FindUserIdPageState extends State<FindUserIdPage> {
                         Navigator.pop(context); // 로그인 페이지로 돌아가기
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.pink,
+                        backgroundColor: Color(0xFF4CAF50),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -404,14 +402,14 @@ class _FindUserIdPageState extends State<FindUserIdPage> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        side: const BorderSide(color: Colors.pink),
+                        side: const BorderSide(color: Color(0xFF4CAF50)),
                       ),
                       child: const Text(
                         '다시 찾기',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Colors.pink,
+                          color: Color(0xFF4CAF50),
                         ),
                       ),
                     ),

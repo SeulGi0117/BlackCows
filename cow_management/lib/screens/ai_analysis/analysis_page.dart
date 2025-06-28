@@ -54,7 +54,6 @@ class _AnalysisPageState extends State<AnalysisPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('분석 서비스'),
-        backgroundColor: Colors.white,
       ),
       resizeToAvoidBottomInset: true,
       body: SingleChildScrollView(
@@ -74,15 +73,15 @@ class _AnalysisPageState extends State<AnalysisPage> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 20, vertical: 14),
                     decoration: BoxDecoration(
-                      color: isSelected ? Colors.grey[200] : Colors.white,
+                      color: isSelected ? Color(0xFFC8E6C9) : Colors.white,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.grey),
+                      border: Border.all(color: isSelected ? Color(0xFF4CAF50) : Colors.grey),
                     ),
                     child: Text(
                       service.label,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                        color: isSelected ? Color(0xFF388E3C) : Colors.black87,
                       ),
                     ),
                   ),

@@ -56,7 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
           SnackBar(
             content: Text(
                 '${userProvider.currentUser!.username}님 환영합니다!'), // 사용자 이름/실명으로 환영
-            backgroundColor: Colors.pink,
+            backgroundColor: Color(0xFF4CAF50), // 메인 초록
             duration: const Duration(seconds: 3),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -107,7 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Row(
                     children: [
                       Image.asset(
-                        'assets/images/cow.png',
+                        'assets/images/app_icon.png', // cow.png → app_icon.png 변경
                         width: 36,
                         height: 36,
                         errorBuilder: (context, error, stackTrace) {
@@ -152,21 +152,21 @@ class _HomeScreenState extends State<HomeScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: Colors.pink.shade50,
+                    color: Color(0xFFC8E6C9), // 연한 초록
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.pink.shade100),
+                    border: Border.all(color: Color(0xFF81C784)), // 포인트 초록
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.person, size: 16, color: Colors.pink.shade600),
+                      Icon(Icons.person, size: 16, color: Color(0xFF388E3C)), // 진한 초록
                       const SizedBox(width: 6),
                       Text(
                         '${user.username}님', // 사용자 이름/실명
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: Colors.pink.shade600,
+                          color: Color(0xFF388E3C), // 진한 초록
                         ),
                       ),
                       if (user.farmNickname != null &&
@@ -175,16 +175,16 @@ class _HomeScreenState extends State<HomeScreen> {
                         Container(
                           width: 1,
                           height: 12,
-                          color: Colors.pink.shade300,
+                          color: Color(0xFF81C784), // 포인트 초록
                         ),
                         const SizedBox(width: 8),
-                        Icon(Icons.home, size: 16, color: Colors.pink.shade600),
+                        Icon(Icons.home, size: 16, color: Color(0xFF388E3C)), // 진한 초록
                         const SizedBox(width: 4),
                         Text(
                           user.farmNickname!, // 목장 별명
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.pink.shade600,
+                            color: Color(0xFF388E3C), // 진한 초록
                           ),
                         ),
                       ],
@@ -208,9 +208,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final int danger = countByStatus(cows, '위험');
 
     final statusSummary = [
-      {'label': '양호', 'count': normal, 'color': Colors.green},
-      {'label': '경고', 'count': warning, 'color': Colors.orange},
-      {'label': '위험', 'count': danger, 'color': Colors.red},
+      {'label': '양호', 'count': normal, 'color': Color(0xFF4CAF50)},
+      {'label': '경고', 'count': warning, 'color': Color(0xFF81C784)},
+      {'label': '위험', 'count': danger, 'color': Color(0xFF388E3C)},
     ];
 
     return Padding(

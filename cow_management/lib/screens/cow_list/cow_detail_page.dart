@@ -34,8 +34,8 @@ class _CowDetailPageState extends State<CowDetailPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('${currentCow.name} 상세 정보'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: Color(0xFF4CAF50),
+        foregroundColor: Colors.white,
         elevation: 1,
         actions: [
           TextButton.icon(
@@ -54,13 +54,13 @@ class _CowDetailPageState extends State<CowDetailPage> {
                 // 실패 시에는 deleteCow 함수에서 이미 ErrorUtils로 처리됨
               });
             },
-            icon: const Icon(Icons.delete, color: Colors.red),
+            icon: const Icon(Icons.delete, color: Colors.white),
             label: const Text(
               '삭제하기',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.red,
+                color: Colors.white,
               ),
             ),
           ),
@@ -168,7 +168,7 @@ class _CowDetailPageState extends State<CowDetailPage> {
                     icon: const Icon(Icons.edit, size: 18),
                     label: const Text('정보 수정'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
+                      backgroundColor: Color(0xFF4CAF50),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -193,7 +193,7 @@ class _CowDetailPageState extends State<CowDetailPage> {
                     icon: const Icon(Icons.assignment, size: 18),
                     label: const Text('상세 기록'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.pink,
+                      backgroundColor: Color(0xFF81C784),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -249,95 +249,7 @@ class _CowDetailPageState extends State<CowDetailPage> {
       icon: Icons.healing,
       title: '건강 정보',
       children: [
-        _healthRecordButton(
-          context: context,
-          title: '건강검진 기록',
-          icon: Icons.monitor_heart,
-          listRoute: '/health-check/list',
-          addRoute: '/health-check/add',
-          cowId: cowId,
-          cowName: cowName,
-          recordType: 'health_check',
-        ),
-        const SizedBox(height: 8),
-        _healthRecordButton(
-          context: context,
-          title: '백신접종 기록',
-          icon: Icons.vaccines,
-          listRoute: '/vaccination/list',
-          addRoute: '/vaccination/add',
-          cowId: cowId,
-          cowName: cowName,
-          recordType: 'vaccination',
-        ),
-        const SizedBox(height: 8),
-        _healthRecordButton(
-          context: context,
-          title: '체중 측정 기록',
-          icon: Icons.monitor_weight,
-          listRoute: '/weight/list',
-          addRoute: '/weight/add',
-          cowId: cowId,
-          cowName: cowName,
-          recordType: 'weight',
-        ),
-        const SizedBox(height: 8),
-        _healthRecordButton(
-          context: context,
-          title: '치료 기록',
-          icon: Icons.medical_services,
-          listRoute: '/treatment/list',
-          addRoute: '/treatment/add',
-          cowId: cowId,
-          cowName: cowName,
-          recordType: 'treatment',
-        ),
-      ],
-    );
-  }
-
-  Widget _healthRecordButton({
-    required BuildContext context,
-    required String title,
-    required IconData icon,
-    required String listRoute,
-    required String addRoute,
-    required String cowId,
-    required String cowName,
-    required String recordType,
-  }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        ElevatedButton.icon(
-          icon: Icon(icon),
-          label: Text('$title 보기'),
-          onPressed: () {
-            Navigator.pushNamed(
-              context,
-              listRoute,
-              arguments: {
-                'cowId': cowId,
-                'cowName': cowName,
-                'recordType': recordType,
-              },
-            );
-          },
-        ),
-        OutlinedButton.icon(
-          icon: const Icon(Icons.add),
-          label: const Text('추가'),
-          onPressed: () {
-            Navigator.pushNamed(
-              context,
-              addRoute,
-              arguments: {
-                'cowId': cowId,
-                'cowName': cowName,
-              },
-            );
-          },
-        ),
+        // 카드 내용 제거 - 상세 기록 버튼에서 확인 가능
       ],
     );
   }
@@ -347,133 +259,17 @@ class _CowDetailPageState extends State<CowDetailPage> {
       icon: Icons.pregnant_woman,
       title: '번식 정보',
       children: [
-        _breedingRecordButton(
-          title: '발정 기록',
-          icon: Icons.waves,
-          route: '/estrus-record/list',
-          addRoute: '/estrus-record/add',
-        ),
-        const SizedBox(height: 8),
-        _breedingRecordButton(
-          title: '인공수정 기록',
-          icon: Icons.medical_services_outlined,
-          route: '/insemination-record/list',
-          addRoute: '/insemination-record/add',
-        ),
-        const SizedBox(height: 8),
-        _breedingRecordButton(
-          title: '임신감정 기록',
-          icon: Icons.search,
-          route: '/pregnancy-check-record/list',
-          addRoute: '/pregnancy-check-record/add',
-        ),
-        const SizedBox(height: 8),
-        _breedingRecordButton(
-          title: '분만 기록',
-          icon: Icons.child_care,
-          route: '/calving-record/list',
-          addRoute: '/calving-record/add',
-        ),
-      ],
-    );
-  }
-
-  Widget _breedingRecordButton({
-    required String title,
-    required IconData icon,
-    required String route,
-    required String addRoute,
-  }) {
-    return Row(
-      children: [
-        Expanded(
-          child: OutlinedButton.icon(
-            onPressed: () {
-              Navigator.pushNamed(
-                context,
-                route,
-                arguments: {
-                  'cowId': currentCow.id,
-                  'cowName': currentCow.name,
-                },
-              );
-            },
-            icon: Icon(icon),
-            label: Text(title),
-          ),
-        ),
-        const SizedBox(width: 10),
-        OutlinedButton(
-          onPressed: () {
-            Navigator.pushNamed(
-              context,
-              addRoute,
-              arguments: {
-                'cowId': currentCow.id,
-                'cowName': currentCow.name,
-              },
-            );
-          },
-          child: const Text('기록 추가'),
-        ),
+        // 카드 내용 제거 - 상세 기록 버튼에서 확인 가능
       ],
     );
   }
 
   Widget _buildFeedingInfoCard() {
-    final feedingRecords = currentCow.feedingRecords;
-    final hasRecords = feedingRecords.isNotEmpty;
-
     return _infoCardBase(
       icon: Icons.rice_bowl,
       title: '사료 정보',
       children: [
-        if (hasRecords)
-          ...feedingRecords.map((record) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Text(
-                    '📅 ${record.feedingDate} - ${record.feedType} ${record.amount}kg'),
-              ))
-        else
-          const Text('사료 섭취 기록이 없습니다.'),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  Navigator.pushNamed(
-                    context,
-                    '/feeding-record/list',
-                    arguments: {
-                      'cowId': currentCow.id,
-                      'cowName': currentCow.name,
-                    },
-                  );
-                },
-                icon: const Icon(Icons.list),
-                label: const Text('기록 보기'),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  Navigator.pushNamed(
-                    context,
-                    '/feeding-record/add',
-                    arguments: {
-                      'cowId': currentCow.id,
-                      'cowName': currentCow.name,
-                    },
-                  );
-                },
-                icon: const Icon(Icons.add),
-                label: const Text('기록 추가'),
-              ),
-            ),
-          ],
-        ),
+        // 카드 내용 제거 - 상세 기록 버튼에서 확인 가능
       ],
     );
   }
@@ -499,46 +295,7 @@ class _CowDetailPageState extends State<CowDetailPage> {
             ],
           ),
           const SizedBox(height: 12),
-          Text(
-              '최근 착유량: ${currentCow.milk.isNotEmpty ? currentCow.milk : '정보 없음'}'),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () {
-                    Navigator.pushNamed(
-                      context,
-                      '/milking-records',
-                      arguments: {
-                        'cowId': currentCow.id,
-                        'cowName': currentCow.name,
-                      },
-                    );
-                  },
-                  icon: const Icon(Icons.list),
-                  label: const Text('착유 기록 보기'),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () {
-                    Navigator.pushNamed(
-                      context,
-                      '/milking-record',
-                      arguments: {
-                        'cowId': currentCow.id,
-                        'cowName': currentCow.name,
-                      },
-                    );
-                  },
-                  icon: const Icon(Icons.add),
-                  label: const Text('착유 기록 추가'),
-                ),
-              ),
-            ],
-          )
+          // 카드 내용 제거 - 상세 기록 버튼에서 확인 가능
         ],
       ),
     );

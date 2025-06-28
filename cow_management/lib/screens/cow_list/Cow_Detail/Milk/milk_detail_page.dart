@@ -64,14 +64,22 @@ class _MilkingRecordDetailPageState extends State<MilkingRecordDetailPage> {
   Widget build(BuildContext context) {
     if (isLoading) {
       return Scaffold(
-        appBar: AppBar(title: const Text('착유 상세')),
+        appBar: AppBar(
+          title: const Text('착유 상세'),
+          backgroundColor: Color(0xFF4CAF50),
+          foregroundColor: Colors.white,
+        ),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     if (errorMessage != null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('착유 상세')),
+        appBar: AppBar(
+          title: const Text('착유 상세'),
+          backgroundColor: Color(0xFF4CAF50),
+          foregroundColor: Colors.white,
+        ),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -94,7 +102,11 @@ class _MilkingRecordDetailPageState extends State<MilkingRecordDetailPage> {
     final recordDate = recordDetail?['record_date'] ?? '알 수 없음';
 
     return Scaffold(
-      appBar: AppBar(title: Text('착유 상세: $recordDate')),
+      appBar: AppBar(
+        title: Text('착유 상세: $recordDate'),
+        backgroundColor: Color(0xFF4CAF50),
+        foregroundColor: Colors.white,
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -164,6 +176,10 @@ class _MilkingRecordDetailPageState extends State<MilkingRecordDetailPage> {
                       const SnackBar(content: Text('수정 기능은 준비 중입니다')),
                     );
                   },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF4CAF50),
+                    foregroundColor: Colors.white,
+                  ),
                   child: const Text('수정'),
                 ),
               ),

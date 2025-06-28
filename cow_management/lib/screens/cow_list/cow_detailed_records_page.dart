@@ -34,13 +34,17 @@ class _CowDetailedRecordsPageState extends State<CowDetailedRecordsPage>
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.cow.name} 상세 기록'),
-        backgroundColor: Colors.pink,
+        backgroundColor: Color(0xFF4CAF50),
         foregroundColor: Colors.white,
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: Colors.white,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
+          indicatorColor: Color(0xFF4CAF50),
+          labelColor: Colors.black,
+          unselectedLabelColor: Colors.grey,
+          indicator: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+          ),
           tabs: const [
             Tab(icon: Icon(Icons.health_and_safety), text: '건강 정보'),
             Tab(icon: Icon(Icons.pregnant_woman), text: '번식 정보'),

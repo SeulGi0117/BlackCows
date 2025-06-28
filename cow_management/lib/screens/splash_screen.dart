@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cow_management/providers/user_provider.dart';
 import 'package:cow_management/providers/cow_provider.dart';
 import 'package:cow_management/main.dart';
@@ -24,17 +25,32 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _checkAutoLogin() async {
     try {
-      _logger.info('스플래시 화면 시작 - 자동 로그인 확인');
+      _logger.info('스플래시 화면 시작 - 첫 설치 여부 및 자동 로그인 확인');
       
       // 최소 1초는 스플래시 화면을 보여줌
+      final delayFuture = Future.delayed(const Duration(seconds: 1));
+      
+      // SharedPreferences에서 온보딩 완료 여부 확인
+      final prefs = await SharedPreferences.getInstance();
+      final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
+      
+      await delayFuture;
+      
+      if (!mounted) return;
+      
+      // 온보딩을 완료하지 않은 첫 설치 사용자인 경우
+      if (!onboardingCompleted) {
+        _logger.info('첫 설치 사용자 - 온보딩 화면으로 이동');
+        Navigator.pushReplacementNamed(context, '/onboarding');
+        return;
+      }
+      
+      // 온보딩을 완료한 기존 사용자인 경우 - 자동 로그인 확인
+      _logger.info('기존 사용자 - 자동 로그인 확인');
       final userProvider = Provider.of<UserProvider>(context, listen: false);
       final cowProvider = Provider.of<CowProvider>(context, listen: false);
       
-      final autoLoginFuture = userProvider.checkAutoLogin();
-      final delayFuture = Future.delayed(const Duration(seconds: 1));
-      
-      final results = await Future.wait([autoLoginFuture, delayFuture]);
-      final isLoggedIn = results[0] as bool;
+      final isLoggedIn = await userProvider.checkAutoLogin();
 
       if (!mounted) return;
 
@@ -57,14 +73,14 @@ class _SplashScreenState extends State<SplashScreen> {
         // 메인 화면으로 이동
         Navigator.pushReplacementNamed(context, '/main');
       } else {
-        _logger.info('자동 로그인 실패 - 로그인 화면으로 이동');
-        // 자동 로그인 실패 시 로그인 화면으로
-        Navigator.pushReplacementNamed(context, '/login');
+        _logger.info('자동 로그인 실패 - 회원가입/로그인 선택 화면으로 이동');
+        // 자동 로그인 실패 시 회원가입/로그인 선택 화면으로
+        Navigator.pushReplacementNamed(context, '/auth_selection');
       }
     } catch (e) {
       _logger.severe('스플래시 화면 에러: $e');
       if (mounted) {
-        Navigator.pushReplacementNamed(context, '/login');
+        Navigator.pushReplacementNamed(context, '/auth_selection');
       }
     }
   }
