@@ -29,7 +29,7 @@ class _CowListPageState extends State<CowListPage> with TickerProviderStateMixin
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   
-  final List<String> _statusFilters = ['전체', '건강', '치료중', '임신', '건유'];
+  final List<String> _statusFilters = ['전체', '정상', '주의', '이상'];
 
   @override
   void initState() {
@@ -447,23 +447,26 @@ class _CowListPageState extends State<CowListPage> with TickerProviderStateMixin
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
+                  color: const Color(0xFF4CAF50).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: const Color(0xFF4CAF50).withOpacity(0.3),
+                  ),
                 ),
                 child: Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.tag,
                       size: 16,
-                      color: Colors.grey.shade600,
+                      color: Color(0xFF4CAF50),
                     ),
                     const SizedBox(width: 4),
                     Text(
                       cow.earTagNumber,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade700,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF4CAF50),
                       ),
                     ),
                   ],
@@ -489,7 +492,7 @@ class _CowListPageState extends State<CowListPage> with TickerProviderStateMixin
       final query = _searchController.text.toLowerCase();
       filtered = filtered.where((cow) =>
           cow.name.toLowerCase().contains(query) ||
-          cow.breed.toLowerCase().contains(query) ||
+          (cow.breed?.toLowerCase() ?? '').contains(query) ||
           cow.earTagNumber.toLowerCase().contains(query)).toList();
     }
 
@@ -498,10 +501,14 @@ class _CowListPageState extends State<CowListPage> with TickerProviderStateMixin
 
   Color _getStatusColor(String status) {
     switch (status) {
+      case '정상':
       case '건강':
-        return const Color(0xFF4CAF50);
+        return const Color(0xFF4CAF50); // 초록
+      case '주의':
       case '치료중':
-        return const Color(0xFFFF5722);
+        return const Color(0xFFFF9800); // 주황
+      case '이상':
+        return const Color(0xFFE53935); // 빨강
       case '임신':
         return const Color(0xFF2196F3);
       case '건유':
@@ -702,7 +709,7 @@ class _CowListPageState extends State<CowListPage> with TickerProviderStateMixin
             Wrap(
               spacing: 12,
               runSpacing: 12,
-              children: _statusFilters.map((status) {
+              children: ['전체', '건강', '치료중', '임신', '건유'].map((status) {
                 final isSelected = _selectedStatus == status || (_selectedStatus == null && status == '전체');
                 return FilterChip(
                   label: Text(status),
@@ -827,7 +834,7 @@ class _CowListPageState extends State<CowListPage> with TickerProviderStateMixin
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const CowRegistrationPage(),
+                      builder: (context) => const CowRegistrationFlowPage(),
                     ),
                   );
                 },

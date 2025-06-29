@@ -239,34 +239,37 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   ],
                 ),
               ),
-              Stack(
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: const Icon(
-                      Icons.notifications_none_rounded,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                  ),
-                  Positioned(
-                    right: 8,
-                    top: 8,
-                    child: Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
+              GestureDetector(
+                onTap: () => Navigator.pushNamed(context, '/notifications'),
+                child: Stack(
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Icon(
+                        Icons.notifications_none_rounded,
+                        color: Colors.white,
+                        size: 24,
                       ),
                     ),
-                  ),
-                ],
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

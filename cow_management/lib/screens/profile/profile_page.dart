@@ -657,7 +657,7 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                 Icon(Icons.email, size: 16, color: Color(0xFF4CAF50)),
                 SizedBox(width: 8),
                 Text(
-                  'team@blackcowsdairy.com',
+                  'support@blackcowsdairy.com',
                   style: TextStyle(
                     color: Color(0xFF4CAF50),
                     fontWeight: FontWeight.w500,
@@ -675,7 +675,7 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
           ElevatedButton(
             onPressed: () {
               Clipboard.setData(
-                const ClipboardData(text: 'team@blackcowsdairy.com'),
+                                  const ClipboardData(text: 'support@blackcowsdairy.com'),
               );
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
@@ -720,7 +720,7 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
             ),
             SizedBox(height: 8),
             Text('버전: 1.0.0'),
-            Text('빌드: 2024.01.01'),
+                            Text('빌드: 2025.06.29'),
             SizedBox(height: 16),
             Text(
               '스마트한 농장 관리의 시작\n소담소담과 함께하세요!',
@@ -783,7 +783,7 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
-              '계정을 삭제하면 모든 데이터가 영구적으로 삭제됩니다.\n이 작업은 되돌릴 수 없습니다.',
+              '계정을 삭제하면 이 계정에 등록된 모든 정보가 즉시 파기되고 복구할 수 없습니다:\n\n• 젖소 목록 및 상세 기록\n• 할일 관리 데이터\n• 챗봇 대화 내용\n• AI 분석 서비스 내용\n• 기타 모든 개인정보\n\n이 작업은 되돌릴 수 없습니다.',
               style: TextStyle(color: Colors.red),
             ),
             const SizedBox(height: 16),

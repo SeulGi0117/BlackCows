@@ -522,7 +522,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
 
   Future<void> _copyEmailToClipboard() async {
     try {
-      await Clipboard.setData(const ClipboardData(text: 'team@blackcowsdairy.com'));
+                      await Clipboard.setData(const ClipboardData(text: 'support@blackcowsdairy.com'));
       if (mounted) {
         _showErrorSnackBar('개발자 이메일이 클립보드에 복사되었습니다.');
       }

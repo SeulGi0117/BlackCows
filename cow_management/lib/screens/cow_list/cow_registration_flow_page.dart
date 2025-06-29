@@ -528,7 +528,7 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
           child: ElevatedButton(
             onPressed: _isLoading ? null : _searchQuickInfo,
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.pink,
+              backgroundColor: const Color(0xFF4CAF50),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
@@ -998,19 +998,7 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
         ),
         const SizedBox(height: 16),
 
-        // 센서 번호
-        const Text('센서 번호', style: TextStyle(fontWeight: FontWeight.w600)),
-        const SizedBox(height: 8),
-        TextField(
-          controller: _sensorController,
-          decoration: const InputDecoration(
-            hintText: '센서 번호를 입력하세요',
-            border: OutlineInputBorder(),
-            filled: true,
-            fillColor: Colors.white,
-          ),
-        ),
-        const SizedBox(height: 16),
+
 
         // 건강 상태
         const Text('건강 상태', style: TextStyle(fontWeight: FontWeight.w600)),
