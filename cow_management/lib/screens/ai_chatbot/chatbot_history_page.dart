@@ -24,7 +24,8 @@ class _ChatbotHistoryPageState extends State<ChatbotHistoryPage> {
   }
 
   Future<void> _fetchChatRooms() async {
-    final userId = Provider.of<UserProvider>(context, listen: false).currentUser?.userId;
+    final userId =
+        Provider.of<UserProvider>(context, listen: false).currentUser?.userId;
     print("🔥 userId: $userId");
     if (userId == null) return;
 
@@ -36,7 +37,8 @@ class _ChatbotHistoryPageState extends State<ChatbotHistoryPage> {
   }
 
   Future<void> _createNewChatRoom() async {
-    final userId = Provider.of<UserProvider>(context, listen: false).currentUser?.userId;
+    final userId =
+        Provider.of<UserProvider>(context, listen: false).currentUser?.userId;
     if (userId == null) return;
 
     final newChatId = await createChatRoom(userId);
@@ -55,8 +57,12 @@ class _ChatbotHistoryPageState extends State<ChatbotHistoryPage> {
         title: const Text("삭제 확인"),
         content: const Text("이 채팅방을 삭제할까요?"),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("취소")),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("삭제")),
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text("취소")),
+          TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text("삭제")),
         ],
       ),
     );
@@ -98,7 +104,9 @@ class _ChatbotHistoryPageState extends State<ChatbotHistoryPage> {
               children: [
                 const Padding(
                   padding: EdgeInsets.all(12),
-                  child: Text('채팅 기록', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  child: Text('채팅 기록',
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
                 Expanded(
                   child: _isLoading
@@ -110,12 +118,15 @@ class _ChatbotHistoryPageState extends State<ChatbotHistoryPage> {
                               itemBuilder: (context, index) {
                                 final chat = _chatRooms[index];
                                 final chatId = chat['chat_id'];
-                                final createdAt = _formatDate(chat['created_at']);
+                                final createdAt =
+                                    _formatDate(chat['created_at']);
                                 return ListTile(
-                                  title: Text("채팅 ${_chatRooms.length - index}"),
+                                  title:
+                                      Text("채팅 ${_chatRooms.length - index}"),
                                   subtitle: Text("생성일: $createdAt"),
                                   selected: _selectedChatId == chatId,
-                                  onTap: () => setState(() => _selectedChatId = chatId),
+                                  onTap: () =>
+                                      setState(() => _selectedChatId = chatId),
                                   trailing: IconButton(
                                     icon: const Icon(Icons.delete),
                                     onPressed: () => _deleteChatRoom(chatId),
