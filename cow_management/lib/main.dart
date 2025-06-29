@@ -282,6 +282,8 @@ class SoDamApp extends StatelessWidget {
               final cow = ModalRoute.of(context)!.settings.arguments as Cow;
               return CowEditPage(cow: cow);
             },
+            '/notifications': (context) => const NotificationPage(),
+            '/todo': (context) => const TodoPage(),
           },
         );
       },

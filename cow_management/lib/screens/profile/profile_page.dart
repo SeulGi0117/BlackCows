@@ -95,83 +95,7 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                   ),
                 ]),
                 const SizedBox(height: 24),
-                _buildMenuSection('앱 설정', [
-                  Consumer<ThemeProvider>(
-                    builder: (context, themeProvider, child) {
-                      final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
-                      return ModernCard(
-                        padding: const EdgeInsets.all(16),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 48,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF673AB7).withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Icon(
-                                isDarkMode ? Icons.light_mode : Icons.dark_mode,
-                                color: const Color(0xFF673AB7),
-                                size: 24,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    isDarkMode ? '라이트 모드' : '다크 모드',
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFF2E3A59),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    isDarkMode ? '밝은 테마로 변경하세요' : '어두운 테마로 변경하세요',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.grey.shade600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            ElevatedButton(
-                              onPressed: () => _toggleDarkMode(),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF673AB7),
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              ),
-                              child: Text(
-                                isDarkMode ? '라이트' : '다크',
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                  _buildMenuItem(
-                    icon: Icons.notifications,
-                    title: '알림 설정',
-                    subtitle: '알림을 관리하세요',
-                    color: const Color(0xFFFF5722),
-                    onTap: () => _showComingSoonSnackBar('알림 설정'),
-                  ),
-                ]),
+                _buildAppSettingsMenu(),
                 const SizedBox(height: 24),
                 _buildMenuSection('지원', [
                   _buildMenuItem(
@@ -950,6 +874,103 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
         content: Text(message),
         backgroundColor: const Color(0xFF4CAF50),
         duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  Widget _buildAppSettingsMenu() {
+    return Column(
+      children: [
+        ModernCard(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF673AB7).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.dark_mode, color: Color(0xFF673AB7), size: 24),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text('다크 모드', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF2E3A59))),
+                    SizedBox(height: 4),
+                    Text('어두운 테마로 변경하세요', style: TextStyle(fontSize: 14, color: Colors.grey)),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              ElevatedButton(
+                onPressed: _toggleDarkMode,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF673AB7),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                ),
+                child: const Text('토글'),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        ModernCard(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF4CAF50).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.notifications, color: Color(0xFF4CAF50), size: 24),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text('알림 설정', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF2E3A59))),
+                    SizedBox(height: 4),
+                    Text('알림을 켜거나 끌 수 있습니다', style: TextStyle(fontSize: 14, color: Colors.grey)),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              ElevatedButton(
+                onPressed: _toggleNotification,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF4CAF50),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                ),
+                child: const Text('토글'),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _toggleNotification() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('알림 설정이 토글되었습니다.'),
+        backgroundColor: Color(0xFF4CAF50),
       ),
     );
   }

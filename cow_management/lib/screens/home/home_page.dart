@@ -4,6 +4,8 @@ import 'package:cow_management/providers/user_provider.dart';
 import 'package:cow_management/providers/cow_provider.dart';
 import 'package:cow_management/widgets/modern_card.dart';
 import 'package:cow_management/widgets/loading_widget.dart';
+import 'package:cow_management/screens/notifications/notification_page.dart';
+import 'package:cow_management/screens/todo/todo_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
