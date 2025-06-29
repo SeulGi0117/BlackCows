@@ -129,6 +129,49 @@ class _CowDetailedRecordsPageState extends State<CowDetailedRecordsPage>
     }
   }
 
+  Future<void> _deleteRecord(String recordId) async {
+    try {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final token = userProvider.accessToken;
+      
+      if (token == null) {
+        throw Exception('로그인이 필요합니다.');
+      }
+
+      final response = await http.delete(
+        Uri.parse('$_baseUrl/records/$recordId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // 성공적으로 삭제된 경우 목록 새로고침
+        await _fetchDetailedRecords();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('기록이 성공적으로 삭제되었습니다.'),
+              backgroundColor: Color(0xFF4CAF50),
+            ),
+          );
+        }
+      } else {
+        throw Exception('기록 삭제에 실패했습니다.');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('오류: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -648,43 +691,107 @@ class _CowDetailedRecordsPageState extends State<CowDetailedRecordsPage>
   }
 
   void _showEditRecordDialog(Map<String, dynamic> record) {
-    final titleController = TextEditingController(text: record['title']);
-    final descriptionController = TextEditingController(text: record['description']);
+    final titleController = TextEditingController(text: record['title'] ?? '');
+    final descriptionController = TextEditingController(text: record['description'] ?? '');
+    final dateController = TextEditingController(text: record['record_date'] ?? '');
     
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('기록 수정'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
+        title: Row(
           children: [
-            ModernTextField(
-              label: '제목',
-              controller: titleController,
-            ),
-            const SizedBox(height: 16),
-            ModernTextField(
-              label: '설명',
-              controller: descriptionController,
-              maxLines: 3,
-            ),
+            Icon(Icons.edit, color: const Color(0xFF4CAF50)),
+            const SizedBox(width: 8),
+            const Text('기록 수정'),
           ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ModernTextField(
+                label: '제목',
+                controller: titleController,
+                hint: '기록 제목을 입력하세요',
+              ),
+              const SizedBox(height: 16),
+              ModernTextField(
+                label: '날짜',
+                controller: dateController,
+                hint: 'YYYY-MM-DD',
+                keyboardType: TextInputType.datetime,
+              ),
+              const SizedBox(height: 16),
+              ModernTextField(
+                label: '설명',
+                controller: descriptionController,
+                hint: '기록에 대한 설명을 입력하세요',
+                maxLines: 3,
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '기록 유형: ${_getRecordTypeDisplayName(record['record_type'])}',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF2E3A59),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '생성일: ${record['created_at'] ?? '알 수 없음'}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('취소'),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () async {
+              if (titleController.text.trim().isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('제목을 입력해주세요.'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                return;
+              }
+              
               final updateData = {
-                'title': titleController.text,
-                'description': descriptionController.text,
+                'title': titleController.text.trim(),
+                'description': descriptionController.text.trim(),
+                if (dateController.text.trim().isNotEmpty)
+                  'record_date': dateController.text.trim(),
               };
               
               Navigator.pop(context);
               await _updateRecord(record['id'], updateData);
             },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF4CAF50),
+              foregroundColor: Colors.white,
+            ),
             child: const Text('수정'),
           ),
         ],
@@ -696,19 +803,98 @@ class _CowDetailedRecordsPageState extends State<CowDetailedRecordsPage>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('기록 삭제'),
-        content: Text('${record['title']} 기록을 삭제하시겠습니까?'),
+        title: Row(
+          children: [
+            Icon(Icons.delete, color: Colors.red.shade400),
+            const SizedBox(width: 8),
+            const Text('기록 삭제'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '다음 기록을 삭제하시겠습니까?',
+              style: const TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.red.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.red.shade200),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    record['title'] ?? '제목 없음',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '유형: ${_getRecordTypeDisplayName(record['record_type'])}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                  Text(
+                    '날짜: ${record['record_date'] ?? '알 수 없음'}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.orange.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.orange.shade200),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.warning, color: Colors.orange.shade600, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '삭제된 기록은 복구할 수 없습니다.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.orange.shade700,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('취소'),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () async {
               Navigator.pop(context);
-              // TODO: 삭제 API 호출
+              await _deleteRecord(record['id']);
             },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red.shade400,
+              foregroundColor: Colors.white,
+            ),
             child: const Text('삭제'),
           ),
         ],

@@ -5,6 +5,7 @@ import 'package:cow_management/screens/onboarding/auth_selection_page.dart';
 import 'package:cow_management/widgets/modern_card.dart';
 import 'package:cow_management/widgets/loading_widget.dart';
 import 'package:flutter/services.dart';
+import 'package:cow_management/providers/theme_provider.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -91,6 +92,23 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                     subtitle: '나의 농장 활동을 확인하세요',
                     color: const Color(0xFF2196F3),
                     onTap: () => _showComingSoonSnackBar('활동 통계'),
+                  ),
+                ]),
+                const SizedBox(height: 24),
+                _buildMenuSection('앱 설정', [
+                  _buildMenuItem(
+                    icon: Icons.dark_mode,
+                    title: '다크모드',
+                    subtitle: '어두운 테마로 변경하세요',
+                    color: const Color(0xFF673AB7),
+                    onTap: () => _showDarkModeDialog(),
+                  ),
+                  _buildMenuItem(
+                    icon: Icons.notifications,
+                    title: '알림 설정',
+                    subtitle: '알림을 관리하세요',
+                    color: const Color(0xFFFF5722),
+                    onTap: () => _showComingSoonSnackBar('알림 설정'),
                   ),
                 ]),
                 const SizedBox(height: 24),
@@ -840,6 +858,144 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.all(16),
       ),
+    );
+  }
+
+  void _showDarkModeDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(Icons.dark_mode, color: const Color(0xFF673AB7)),
+            const SizedBox(width: 8),
+            const Text('테마 설정'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('원하는 테마를 선택하세요'),
+            const SizedBox(height: 16),
+            _buildThemeOption(
+              context,
+              '라이트 모드',
+              '밝은 테마',
+              Icons.light_mode,
+              ThemeMode.light,
+            ),
+            const SizedBox(height: 8),
+            _buildThemeOption(
+              context,
+              '다크 모드',
+              '어두운 테마',
+              Icons.dark_mode,
+              ThemeMode.dark,
+            ),
+            const SizedBox(height: 8),
+            _buildThemeOption(
+              context,
+              '시스템 설정',
+              '시스템 설정에 따라 자동 변경',
+              Icons.settings_system_daydream,
+              ThemeMode.system,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('취소'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildThemeOption(
+    BuildContext context,
+    String title,
+    String subtitle,
+    IconData icon,
+    ThemeMode themeMode,
+  ) {
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        final isSelected = themeProvider.themeMode == themeMode;
+        
+        return InkWell(
+          onTap: () {
+            themeProvider.setThemeMode(themeMode);
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('$title로 변경되었습니다.'),
+                backgroundColor: const Color(0xFF4CAF50),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: isSelected 
+                ? const Color(0xFF673AB7).withOpacity(0.1)
+                : Colors.transparent,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isSelected 
+                  ? const Color(0xFF673AB7)
+                  : Colors.grey.shade300,
+                width: isSelected ? 2 : 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  icon,
+                  color: isSelected 
+                    ? const Color(0xFF673AB7)
+                    : Colors.grey.shade600,
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: isSelected 
+                            ? const Color(0xFF673AB7)
+                            : const Color(0xFF2E3A59),
+                        ),
+                      ),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (isSelected)
+                  Icon(
+                    Icons.check_circle,
+                    color: const Color(0xFF673AB7),
+                    size: 20,
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

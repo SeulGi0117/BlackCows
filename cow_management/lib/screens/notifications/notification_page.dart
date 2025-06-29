@@ -263,7 +263,7 @@ class _NotificationPageState extends State<NotificationPage> with SingleTickerPr
       return const Center(
         child: ModernEmptyWidget(
           title: '알림이 없습니다',
-          message: '선택한 필터에 해당하는 알림이 없습니다.',
+          description: '선택한 필터에 해당하는 알림이 없습니다.',
           icon: Icons.notifications_off,
         ),
       );
