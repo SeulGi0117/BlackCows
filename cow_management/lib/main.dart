@@ -150,65 +150,128 @@ class SoDamApp extends StatelessWidget {
             seedColor: const Color(0xFF4CAF50),
             primary: const Color(0xFF4CAF50),
             secondary: const Color(0xFF81C784),
-            background: Colors.white,
+            background: const Color(0xFFF8F9FA),
             onPrimary: Colors.white,
             onSecondary: Colors.white,
             surface: Colors.white,
-            onSurface: Colors.black87,
-            error: Colors.red,
+            onSurface: const Color(0xFF2E3A59),
+            error: const Color(0xFFE53E3E),
             onError: Colors.white,
             brightness: Brightness.light,
           ),
-          scaffoldBackgroundColor: Colors.white,
+          scaffoldBackgroundColor: const Color(0xFFF8F9FA),
           appBarTheme: const AppBarTheme(
             backgroundColor: Color(0xFF4CAF50),
             foregroundColor: Colors.white,
             elevation: 0,
+            centerTitle: true,
             iconTheme: IconThemeData(color: Colors.white),
             titleTextStyle: TextStyle(
               color: Colors.white,
-              fontSize: 20,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
+              ),
             ),
           ),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF4CAF50),
               foregroundColor: Colors.white,
-              textStyle: const TextStyle(fontWeight: FontWeight.bold),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+              elevation: 2,
+              shadowColor: Colors.black.withOpacity(0.15),
+              textStyle: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
               ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             ),
           ),
           outlinedButtonTheme: OutlinedButtonThemeData(
             style: OutlinedButton.styleFrom(
               foregroundColor: const Color(0xFF4CAF50),
-              side: const BorderSide(color: Color(0xFF4CAF50)),
-              textStyle: const TextStyle(fontWeight: FontWeight.bold),
+              side: const BorderSide(color: Color(0xFF4CAF50), width: 1.5),
+              textStyle: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            ),
+          ),
+          textButtonTheme: TextButtonThemeData(
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF4CAF50),
+              textStyle: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+              ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
           ),
-          textButtonTheme: TextButtonThemeData(
-            style: TextButton.styleFrom(
-              foregroundColor: const Color(0xFF388E3C),
-              textStyle: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
           floatingActionButtonTheme: const FloatingActionButtonThemeData(
             backgroundColor: Color(0xFF4CAF50),
             foregroundColor: Colors.white,
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(16)),
+            ),
           ),
-          checkboxTheme: const CheckboxThemeData(),
-          inputDecorationTheme: const InputDecorationTheme(),
+          cardTheme: CardTheme(
+            color: Colors.white,
+            elevation: 0,
+            shadowColor: Colors.black.withOpacity(0.08),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          ),
+          inputDecorationTheme: InputDecorationTheme(
+            filled: true,
+            fillColor: Colors.grey.shade50,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
+            focusedBorder: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(12)),
+              borderSide: BorderSide(color: Color(0xFF4CAF50), width: 2),
+            ),
+            errorBorder: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(12)),
+              borderSide: BorderSide(color: Color(0xFFE53E3E)),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          ),
           bottomNavigationBarTheme: const BottomNavigationBarThemeData(
             selectedItemColor: Color(0xFF4CAF50),
-            unselectedItemColor: Colors.grey,
+            unselectedItemColor: Color(0xFF9E9E9E),
             backgroundColor: Colors.white,
             type: BottomNavigationBarType.fixed,
-            selectedLabelStyle: TextStyle(fontWeight: FontWeight.bold),
+            selectedLabelStyle: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
+            ),
+            unselectedLabelStyle: TextStyle(
+              fontWeight: FontWeight.w500,
+              fontSize: 12,
+            ),
+            elevation: 8,
           ),
         ),
         localizationsDelegates: const [

@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:cow_management/providers/user_provider.dart';
 import 'package:cow_management/providers/cow_provider.dart';
+import 'package:cow_management/widgets/modern_card.dart';
+import 'package:cow_management/widgets/loading_widget.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:logging/logging.dart';
 import 'dart:math';
@@ -18,16 +20,21 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
-  final TextEditingController _userIdController = TextEditingController(); // 아이디 컨트롤러로 변경
+class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMixin {
+  final TextEditingController _userIdController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final FocusNode _passwordFocusNode = FocusNode();
+  final _formKey = GlobalKey<FormState>();
+  
   bool _isLoading = false;
   bool _isPasswordVisible = false;
   late String baseUrl;
   final _logger = Logger('LoginPage');
   
-  // 깜찍한 로딩 메시지들
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+  
   final List<String> _loadingMessages = [
     '로그인 중이에요! 🐄',
     '젖소들이 기다리고 있어요! 🥛',
@@ -50,128 +57,360 @@ class _LoginPageState extends State<LoginPage> {
     if (baseUrl.isEmpty) {
       _logger.warning('경고: API_BASE_URL이 설정되지 않았습니다. .env 파일을 확인해주세요.');
     }
+    
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    );
+    
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+    
+    _slideAnimation = Tween<Offset>(begin: const Offset(0, 0.5), end: Offset.zero).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOutBack),
+    );
+    
+    _animationController.forward();
   }
 
+  @override
+  void dispose() {
+    _animationController.dispose();
+    _userIdController.dispose();
+    _passwordController.dispose();
+    _passwordFocusNode.dispose();
+    super.dispose();
+  }
 
-
-  // 개발자 문의 다이얼로그 표시
-  void _showDeveloperContactDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Row(
-            children: [
-              Icon(Icons.error_outline, color: Colors.red, size: 28),
-              SizedBox(width: 8),
-              Text('서버 연결 오류'),
-            ],
-          ),
-          content: const Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '서버에 이상이 생긴 것 같습니다.',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 12),
-              Text(
-                '다음과 같은 문제일 수 있습니다:',
-                style: TextStyle(fontSize: 14),
-              ),
-              SizedBox(height: 8),
-              Text('• 서버가 일시적으로 중단됨'),
-              Text('• 네트워크 연결 문제'),
-              Text('• 서버 점검 중'),
-              SizedBox(height: 16),
-              Text(
-                '문제가 지속되면 개발자에게 문의해주세요.',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-              ),
-              SizedBox(height: 8),
-              Row(
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FA),
+      body: SafeArea(
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: SlideTransition(
+            position: _slideAnimation,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
                 children: [
-                  Icon(Icons.email, size: 16, color: Colors.blue),
-                  SizedBox(width: 4),
-                  Text(
-                    '개발자 문의: team@blackcowsdairy.com',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.blue,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+                  const SizedBox(height: 40),
+                  _buildHeader(),
+                  const SizedBox(height: 60),
+                  _buildLoginForm(),
+                  const SizedBox(height: 24),
+                  _buildForgotPassword(),
+                  const SizedBox(height: 40),
+                  _buildSocialLogin(),
+                  const SizedBox(height: 30),
+                  _buildSignUpPrompt(),
                 ],
               ),
-            ],
+            ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('확인'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                Navigator.of(context).pop();
-                await _copyEmailToClipboard();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('이메일 복사'),
-            ),
-          ],
-        );
-      },
+        ),
+      ),
     );
   }
 
-  // 이메일 주소 클립보드 복사
-  Future<void> _copyEmailToClipboard() async {
-    try {
-      await Clipboard.setData(const ClipboardData(text: 'team@blackcowsdairy.com'));
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('개발자 이메일 주소가 클립보드에 복사되었습니다.\n이메일 앱에서 붙여넣기 하세요.'),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 3),
+  Widget _buildHeader() {
+    return Column(
+      children: [
+        Container(
+          width: 120,
+          height: 120,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF4CAF50), Color(0xFF66BB6A)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF4CAF50).withOpacity(0.3),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
           ),
-        );
-      }
-    } catch (e) {
-      _logger.warning('클립보드 복사 실패: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('복사에 실패했습니다. 수동으로 입력해주세요: team@blackcowsdairy.com'),
-            backgroundColor: Colors.orange,
-            duration: Duration(seconds: 4),
+          child: Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Image.asset(
+              'assets/images/app_icon.png',
+              fit: BoxFit.contain,
+            ),
           ),
-        );
-      }
-    }
+        ),
+        const SizedBox(height: 24),
+        const Text(
+          '소담소담',
+          style: TextStyle(
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF2E3A59),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          '농장 관리의 새로운 시작',
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLoginForm() {
+    return ModernCard(
+      padding: const EdgeInsets.all(24),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              '로그인',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF2E3A59),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '계정에 로그인하여 농장을 관리하세요',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 32),
+            ModernTextField(
+              label: '아이디',
+              hint: '아이디를 입력하세요',
+              controller: _userIdController,
+              prefixIcon: const Icon(Icons.person_outline, color: Color(0xFF4CAF50)),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return '아이디를 입력해주세요';
+                }
+                if (value.length < 3) {
+                  return '아이디는 최소 3글자 이상이어야 합니다';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 20),
+            ModernTextField(
+              label: '비밀번호',
+              hint: '비밀번호를 입력하세요',
+              controller: _passwordController,
+              obscureText: !_isPasswordVisible,
+              prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF4CAF50)),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                  color: Colors.grey.shade600,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _isPasswordVisible = !_isPasswordVisible;
+                  });
+                },
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return '비밀번호를 입력해주세요';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 32),
+            ModernButton(
+              text: _isLoading ? _randomLoadingMessage : '로그인',
+              onPressed: _login,
+              isLoading: _isLoading,
+              isFullWidth: true,
+              icon: _isLoading ? null : const Icon(Icons.login, size: 20),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildForgotPassword() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        TextButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const FindUserIdPage()),
+            );
+          },
+          child: Text(
+            '아이디 찾기',
+            style: TextStyle(
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+        Container(
+          width: 1,
+          height: 16,
+          color: Colors.grey.shade300,
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const FindPasswordPage()),
+            );
+          },
+          child: Text(
+            '비밀번호 찾기',
+            style: TextStyle(
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSocialLogin() {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(child: Divider(color: Colors.grey.shade300)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                '또는',
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            Expanded(child: Divider(color: Colors.grey.shade300)),
+          ],
+        ),
+        const SizedBox(height: 24),
+        Row(
+          children: [
+            Expanded(
+              child: _buildSocialButton(
+                icon: Icons.g_mobiledata,
+                label: 'Google',
+                color: const Color(0xFFDB4437),
+                onPressed: _loginWithGoogle,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildSocialButton(
+                icon: Icons.chat_bubble,
+                label: 'Kakao',
+                color: const Color(0xFFFFE812),
+                textColor: Colors.black,
+                onPressed: _loginWithKakao,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSocialButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    Color? textColor,
+    required VoidCallback onPressed,
+  }) {
+    return Container(
+      height: 52,
+      child: OutlinedButton(
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: textColor ?? Colors.white,
+          backgroundColor: color,
+          side: BorderSide.none,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: textColor ?? Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSignUpPrompt() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          '계정이 없으신가요? ',
+          style: TextStyle(
+            color: Colors.grey.shade600,
+            fontSize: 14,
+          ),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.pushNamed(context, '/signup');
+          },
+          child: const Text(
+            '회원가입',
+            style: TextStyle(
+              color: Color(0xFF4CAF50),
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   Future<void> _login() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
     final userId = _userIdController.text.trim();
     final password = _passwordController.text.trim();
-
-    if (userId.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('아이디와 비밀번호를 모두 입력해주세요!')),
-      );
-      return;
-    }
-
-    if (userId.length < 3) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('아이디는 최소 3글자 이상이어야 합니다!')),
-      );
-      return;
-    }
 
     setState(() => _isLoading = true);
 
@@ -182,330 +421,144 @@ class _LoginPageState extends State<LoginPage> {
       setState(() => _isLoading = false);
 
       if (result.success && mounted) {
-        // 로그인 성공 시 CowProvider 데이터 초기화 및 새로 불러오기
         final cowProvider = Provider.of<CowProvider>(context, listen: false);
         cowProvider.clearAll();
         if (userProvider.accessToken != null) {
           await cowProvider.fetchCowsFromBackend(userProvider.accessToken!);
         }
-        // 로그인 성공 시 즉시 화면 전환
         Navigator.pushReplacementNamed(context, '/main');
       } else if (mounted) {
-        // 로그인 실패 시 비밀번호 필드 초기화
         _passwordController.clear();
-        
-        // 에러 타입에 따른 처리
-        if (result.errorType == LoginErrorType.serverError || 
-            result.errorType == LoginErrorType.timeout ||
-            result.errorType == LoginErrorType.unknown) {
-          // 서버 문제 시 개발자 문의 다이얼로그 표시
-          _showDeveloperContactDialog();
-        } else {
-          // 일반적인 에러 메시지 표시
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(result.message),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
+        _showErrorDialog(result);
       }
     } catch (e) {
       setState(() => _isLoading = false);
-      
       if (mounted) {
-        _passwordController.clear();
-        _logger.severe('로그인 예외 발생: $e');
-        
-        // 예외 발생 시에도 개발자 문의 다이얼로그 표시
-        _showDeveloperContactDialog();
+        _showErrorSnackBar('로그인 중 오류가 발생했습니다. 다시 시도해주세요.');
       }
     }
   }
 
-  // 구글 로그인 처리
-  Future<void> _handleGoogleLogin() async {
-    setState(() => _isLoading = true);
+  void _showErrorDialog(LoginResult result) {
+    String title = '로그인 실패';
+    String message = result.message;
+    List<Widget> actions = [];
 
-    try {
-      final result = await GoogleAuthService.signInWithGoogle();
-
-      setState(() => _isLoading = false);
-
-      if (result.success && mounted) {
-        // 구글 로그인 성공 시 토큰 저장
-        if (result.accessToken != null && result.refreshToken != null) {
-          await TokenManager.saveTokens(
-            accessToken: result.accessToken!,
-            refreshToken: result.refreshToken!,
-          );
-        }
-
-        // CowProvider 데이터 초기화 및 새로 불러오기
-        final cowProvider = Provider.of<CowProvider>(context, listen: false);
-        cowProvider.clearAll();
-        
-        if (result.accessToken != null) {
-          await cowProvider.fetchCowsFromBackend(result.accessToken!);
-        }
-        
-        Navigator.pushReplacementNamed(context, '/main');
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(result.message),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } catch (e) {
-      setState(() => _isLoading = false);
-      
-      if (mounted) {
-        _logger.severe('구글 로그인 예외 발생: $e');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('구글 로그인 중 오류가 발생했습니다. 다시 시도해주세요.'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _userIdController.dispose();
-    _passwordController.dispose();
-    _passwordFocusNode.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      resizeToAvoidBottomInset: true,
-      body: Stack(
-        children: [
-          // 메인 로그인 폼
-          Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 32.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-              const Text(
-                '소담소담 로그인',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 40),
-              
-              // 아이디 입력 필드 (username → user_id로 변경)
-              TextField(
-                controller: _userIdController,
-                textInputAction: TextInputAction.next,
-                onSubmitted: (_) => _passwordFocusNode.requestFocus(),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(
-                    RegExp(r'[a-zA-Z0-9_]'), // 영문, 숫자, 언더스코어만 허용
-                  ),
-                  LengthLimitingTextInputFormatter(20),
-                ],
-                decoration: const InputDecoration(
-                  labelText: '아이디',
-                  border: OutlineInputBorder(),
-                  hintText: 'farmer123',
-                ),
-              ),
-              const SizedBox(height: 16),
-              
-              // 비밀번호 입력 필드
-              TextField(
-                controller: _passwordController,
-                focusNode: _passwordFocusNode,
-                obscureText: !_isPasswordVisible,
-                textInputAction: TextInputAction.done,
-                onSubmitted: (_) => _isLoading ? null : _login(),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(
-                    RegExp(r'[a-zA-Z0-9!"#$%&()*+,./:;<=>?@^_`{|}~\-\[\]\\]'),
-                  ),
-                ],
-                decoration: InputDecoration(
-                  labelText: '비밀번호',
-                  border: const OutlineInputBorder(),
-                  helperText: '영어, 숫자, 허용된 특수문자만 사용 가능',
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _isPasswordVisible
-                          ? Icons.visibility_off
-                          : Icons.visibility,
-                      color: Colors.grey,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _isPasswordVisible = !_isPasswordVisible;
-                      });
-                    },
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              
-              // 로그인 버튼
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _login,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF4CAF50),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: _isLoading
-                      ? Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Text(
-                              _randomLoadingMessage,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        )
-                      : const Text(
-                          '로그인',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              
-              // 아이디/비밀번호 찾기 버튼들
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const FindUserIdPage()),
-                      );
-                    },
-                    child: const Text("아이디 찾기"),
-                  ),
-                  Container(
-                    width: 1,
-                    height: 16,
-                    color: Colors.grey,
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const FindPasswordPage()),
-                      );
-                    },
-                    child: const Text("비밀번호 찾기"),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              
-              // 구글 로그인 구분선
-              Row(
-                children: [
-                  Expanded(child: Divider(color: Colors.grey[400])),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      '또는 구글로 로그인하세요',
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                  Expanded(child: Divider(color: Colors.grey[400])),
-                ],
-              ),
-              const SizedBox(height: 24),
-              
-              // 구글 로그인 버튼
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: _isLoading ? null : _handleGoogleLogin,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black87,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    side: const BorderSide(color: Colors.grey),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  icon: Image.asset(
-                    'assets/images/google_logo.png',
-                    height: 24,
-                    width: 24,
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Icon(
-                        Icons.login,
-                        color: Color(0xFF4285F4),
-                        size: 24,
-                      );
-                    },
-                  ),
-                  label: const Text(
-                    '구글로 로그인',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              
-              // 회원가입 버튼
-              TextButton(
-                onPressed: () async {
-                  final result = await Navigator.pushNamed(context, '/signup');
-                  if (result == true) {
-                    // 회원가입 성공 시 텍스트 필드 초기화
-                    _userIdController.clear();
-                    _passwordController.clear();
-                  }
-                },
-                child: const Text("아직 회원이 아니신가요? 회원가입"),
-              ),
-            ],
-          ),
+    if (result.errorType == LoginErrorType.serverError || 
+        result.errorType == LoginErrorType.timeout ||
+        result.errorType == LoginErrorType.unknown) {
+      title = '서버 연결 오류';
+      message = '서버에 연결할 수 없습니다.\n잠시 후 다시 시도해주세요.';
+      actions = [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('확인'),
         ),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+            _copyEmailToClipboard();
+          },
+          child: const Text('개발자 문의'),
+        ),
+      ];
+    } else {
+      actions = [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('확인'),
+        ),
+      ];
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            const Icon(Icons.error_outline, color: Colors.red),
+            const SizedBox(width: 8),
+            Expanded(child: Text(title)),
+          ],
+        ),
+        content: Text(message),
+        actions: actions,
       ),
-    ],
-  ),
-);
+    );
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(
+              Icons.error_outline,
+              color: Colors.white,
+              size: 20,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        margin: const EdgeInsets.all(16),
+      ),
+    );
+  }
+
+  Future<void> _copyEmailToClipboard() async {
+    try {
+      await Clipboard.setData(const ClipboardData(text: 'team@blackcowsdairy.com'));
+      if (mounted) {
+        _showErrorSnackBar('개발자 이메일이 클립보드에 복사되었습니다.');
+      }
+    } catch (e) {
+      _logger.warning('클립보드 복사 실패: $e');
+    }
+  }
+
+     Future<void> _loginWithGoogle() async {
+     try {
+       setState(() => _isLoading = true);
+       
+       final token = await GoogleAuthService.signInWithGoogle();
+      
+      if (token != null && mounted) {
+        final userProvider = Provider.of<UserProvider>(context, listen: false);
+        // Google 로그인 처리 로직 구현
+        _showErrorSnackBar('Google 로그인 기능은 준비 중입니다.');
+      }
+    } catch (e) {
+      _showErrorSnackBar('Google 로그인에 실패했습니다.');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _loginWithKakao() async {
+    try {
+      setState(() => _isLoading = true);
+      
+      // Kakao 로그인 처리 로직 구현
+      _showErrorSnackBar('Kakao 로그인 기능은 준비 중입니다.');
+    } catch (e) {
+      _showErrorSnackBar('Kakao 로그인에 실패했습니다.');
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 }
