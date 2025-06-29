@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:logging/logging.dart';
+import 'package:flutter/foundation.dart';
 
 class FindPasswordPage extends StatefulWidget {
   const FindPasswordPage({super.key});
@@ -52,9 +53,10 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
 
   // 1단계: 사용자 정보 확인 및 재설정 토큰 요청
   Future<void> _requestPasswordReset() async {
-    final username = _usernameController.text.trim(); // 사용자 이름/실명
-    final userId = _userIdController.text.trim(); // 로그인용 아이디
-    final email = _emailController.text.trim(); // 이메일
+    final username = _usernameController.text.trim();
+    final userId = _userIdController.text.trim();
+    final email = _emailController.text.trim();
+    final url = Uri.parse('$baseUrl/auth/request-password-reset');
 
     // 입력 검증
     if (username.isEmpty || userId.isEmpty || email.isEmpty) {
@@ -92,7 +94,6 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
     setState(() => _isLoading = true);
 
     try {
-      final url = Uri.parse('$baseUrl/auth/request-password-reset');
       _logger.info('비밀번호 재설정 요청 URL: $url');
       _logger.info('요청 데이터: username=$username, user_id=$userId, email=$email');
 

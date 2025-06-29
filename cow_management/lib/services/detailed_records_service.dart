@@ -41,6 +41,7 @@ class DetailedRecordsService {
     required String token,
   }) async {
     try {
+      print('요청 데이터: { cow_id: $cowId, record_date: $recordDate, milk_yield: $milkYield, milking_start_time: $milkingStartTime, milking_end_time: $milkingEndTime, temperature: $temperature, fat_percentage: $fatPercentage, protein_percentage: $proteinPercentage, somatic_cell_count: $somaticCellCount, conductivity: $conductivity, blood_flow_detected: $bloodFlowDetected, color_value: $colorValue, air_flow_value: $airFlowValue, lactation_number: $lactationNumber, rumination_time: $ruminationTime, collection_code: $collectionCode, collection_count: $collectionCount, notes: $notes }');
       final response = await dio.post(
         '/records/milking',
         data: {
@@ -68,12 +69,14 @@ class DetailedRecordsService {
         ),
       );
 
+      print('응답: $response');
       if (response.statusCode == 201 || response.statusCode == 200) {
         return response.data;
       } else {
         throw Exception('착유 기록 생성 실패: ${response.statusCode}');
       }
     } on DioError catch (e) {
+      print('에러: $e');
       _logger.severe('착유 기록 생성 오류: ${e.message}');
       throw Exception('착유 기록 생성 실패: ${e.response?.data['detail'] ?? e.message}');
     }
@@ -91,6 +94,7 @@ class DetailedRecordsService {
     required String token,
   }) async {
     try {
+      print('요청 데이터: { cow_id: $cowId, record_date: $recordDate, estrus_intensity: $estrusIntensity, duration_hours: $durationHours, behavior_signs: $behaviorSigns, observed_by: $observedBy, notes: $notes }');
       final response = await dio.post(
         '/records/estrus',
         data: {
@@ -107,12 +111,14 @@ class DetailedRecordsService {
         ),
       );
 
+      print('응답: $response');
       if (response.statusCode == 201 || response.statusCode == 200) {
         return response.data;
       } else {
         throw Exception('발정 기록 생성 실패: ${response.statusCode}');
       }
     } on DioError catch (e) {
+      print('에러: $e');
       _logger.severe('발정 기록 생성 오류: ${e.message}');
       throw Exception('발정 기록 생성 실패: ${e.response?.data['detail'] ?? e.message}');
     }
@@ -133,6 +139,7 @@ class DetailedRecordsService {
     required String token,
   }) async {
     try {
+      print('요청 데이터: { cow_id: $cowId, record_date: $recordDate, bull_info: $bullInfo, semen_quality: $semenQuality, insemination_method: $inseminationMethod, veterinarian: $veterinarian, success_probability: $successProbability, expected_calving_date: $expectedCalvingDate, cost: $cost, notes: $notes }');
       final response = await dio.post(
         '/records/insemination',
         data: {
@@ -152,12 +159,14 @@ class DetailedRecordsService {
         ),
       );
 
+      print('응답: $response');
       if (response.statusCode == 201 || response.statusCode == 200) {
         return response.data;
       } else {
         throw Exception('인공수정 기록 생성 실패: ${response.statusCode}');
       }
     } on DioError catch (e) {
+      print('에러: $e');
       _logger.severe('인공수정 기록 생성 오류: ${e.message}');
       throw Exception('인공수정 기록 생성 실패: ${e.response?.data['detail'] ?? e.message}');
     }
@@ -177,6 +186,7 @@ class DetailedRecordsService {
     required String token,
   }) async {
     try {
+      print('요청 데이터: { cow_id: $cowId, record_date: $recordDate, check_method: $checkMethod, result: $result, expected_calving_date: $expectedCalvingDate, gestation_days: $gestationDays, veterinarian: $veterinarian, cost: $cost, notes: $notes }');
       final response = await dio.post(
         '/records/pregnancy-check',
         data: {
@@ -195,12 +205,14 @@ class DetailedRecordsService {
         ),
       );
 
+      print('응답: $response');
       if (response.statusCode == 201 || response.statusCode == 200) {
         return response.data;
       } else {
         throw Exception('임신감정 기록 생성 실패: ${response.statusCode}');
       }
     } on DioError catch (e) {
+      print('에러: $e');
       _logger.severe('임신감정 기록 생성 오류: ${e.message}');
       throw Exception('임신감정 기록 생성 실패: ${e.response?.data['detail'] ?? e.message}');
     }
@@ -224,6 +236,7 @@ class DetailedRecordsService {
     required String token,
   }) async {
     try {
+      print('요청 데이터: { cow_id: $cowId, record_date: $recordDate, calving_difficulty: $calvingDifficulty, calving_season: $calvingSeason, calf_gender: $calfGender, calf_weight: $calfWeight, calf_health: $calfHealth, placenta_expulsion: $placentaExpulsion, complications: $complications, assistance_provided: $assistanceProvided, veterinarian: $veterinarian, cost: $cost, notes: $notes }');
       final response = await dio.post(
         '/records/calving',
         data: {
@@ -246,12 +259,14 @@ class DetailedRecordsService {
         ),
       );
 
+      print('응답: $response');
       if (response.statusCode == 201 || response.statusCode == 200) {
         return response.data;
       } else {
         throw Exception('분만 기록 생성 실패: ${response.statusCode}');
       }
     } on DioError catch (e) {
+      print('에러: $e');
       _logger.severe('분만 기록 생성 오류: ${e.message}');
       throw Exception('분만 기록 생성 실패: ${e.response?.data['detail'] ?? e.message}');
     }
@@ -273,6 +288,7 @@ class DetailedRecordsService {
     required String token,
   }) async {
     try {
+      print('요청 데이터: { cow_id: $cowId, record_date: $recordDate, feed_type: $feedType, feed_amount: $feedAmount, feed_quality: $feedQuality, supplements: $supplements, supplement_amount: $supplementAmount, feeding_method: $feedingMethod, feeding_time: $feedingTime, cost: $cost, notes: $notes }');
       final response = await dio.post(
         '/records/feed',
         data: {
@@ -293,12 +309,14 @@ class DetailedRecordsService {
         ),
       );
 
+      print('응답: $response');
       if (response.statusCode == 201 || response.statusCode == 200) {
         return response.data;
       } else {
         throw Exception('사료급여 기록 생성 실패: ${response.statusCode}');
       }
     } on DioError catch (e) {
+      print('에러: $e');
       _logger.severe('사료급여 기록 생성 오류: ${e.message}');
       throw Exception('사료급여 기록 생성 실패: ${e.response?.data['detail'] ?? e.message}');
     }
@@ -324,6 +342,7 @@ class DetailedRecordsService {
     required String token,
   }) async {
     try {
+      print('요청 데이터: { cow_id: $cowId, record_date: $recordDate, body_temperature: $bodyTemperature, heart_rate: $heartRate, respiration_rate: $respirationRate, body_condition_score: $bodyConditionScore, general_health: $generalHealth, eye_condition: $eyeCondition, nose_condition: $noseCondition, mouth_condition: $mouthCondition, skin_condition: $skinCondition, hoof_condition: $hoofCondition, veterinarian: $veterinarian, cost: $cost, notes: $notes }');
       final response = await dio.post(
         '/records/health-check',
         data: {
@@ -348,12 +367,14 @@ class DetailedRecordsService {
         ),
       );
 
+      print('응답: $response');
       if (response.statusCode == 201 || response.statusCode == 200) {
         return response.data;
       } else {
         throw Exception('건강검진 기록 생성 실패: ${response.statusCode}');
       }
     } on DioError catch (e) {
+      print('에러: $e');
       _logger.severe('건강검진 기록 생성 오류: ${e.message}');
       throw Exception('건강검진 기록 생성 실패: ${e.response?.data['detail'] ?? e.message}');
     }
@@ -377,6 +398,7 @@ class DetailedRecordsService {
     required String token,
   }) async {
     try {
+      print('요청 데이터: { cow_id: $cowId, record_date: $recordDate, vaccine_name: $vaccineName, vaccine_type: $vaccineType, dosage: $dosage, administration_route: $administrationRoute, batch_number: $batchNumber, expiration_date: $expirationDate, veterinarian: $veterinarian, side_effects: $sideEffects, next_vaccination_date: $nextVaccinationDate, cost: $cost, notes: $notes }');
       final response = await dio.post(
         '/records/vaccination',
         data: {
@@ -399,12 +421,14 @@ class DetailedRecordsService {
         ),
       );
 
+      print('응답: $response');
       if (response.statusCode == 201 || response.statusCode == 200) {
         return response.data;
       } else {
         throw Exception('백신접종 기록 생성 실패: ${response.statusCode}');
       }
     } on DioError catch (e) {
+      print('에러: $e');
       _logger.severe('백신접종 기록 생성 오류: ${e.message}');
       throw Exception('백신접종 기록 생성 실패: ${e.response?.data['detail'] ?? e.message}');
     }
@@ -425,6 +449,7 @@ class DetailedRecordsService {
     required String token,
   }) async {
     try {
+      print('요청 데이터: { cow_id: $cowId, record_date: $recordDate, weight: $weight, measurement_method: $measurementMethod, chest_girth: $chestGirth, body_length: $bodyLength, hip_height: $hipHeight, body_condition_score: $bodyConditionScore, growth_rate: $growthRate, notes: $notes }');
       final response = await dio.post(
         '/records/weight',
         data: {
@@ -444,12 +469,14 @@ class DetailedRecordsService {
         ),
       );
 
+      print('응답: $response');
       if (response.statusCode == 201 || response.statusCode == 200) {
         return response.data;
       } else {
         throw Exception('체중측정 기록 생성 실패: ${response.statusCode}');
       }
     } on DioError catch (e) {
+      print('에러: $e');
       _logger.severe('체중측정 기록 생성 오류: ${e.message}');
       throw Exception('체중측정 기록 생성 실패: ${e.response?.data['detail'] ?? e.message}');
     }
@@ -473,6 +500,7 @@ class DetailedRecordsService {
     required String token,
   }) async {
     try {
+      print('요청 데이터: { cow_id: $cowId, record_date: $recordDate, diagnosis: $diagnosis, symptoms: $symptoms, treatment_type: $treatmentType, medication_used: $medicationUsed, dosage: $dosage, administration_route: $administrationRoute, treatment_duration: $treatmentDuration, veterinarian: $veterinarian, treatment_result: $treatmentResult, cost: $cost, notes: $notes }');
       final response = await dio.post(
         '/records/treatment',
         data: {
@@ -495,12 +523,14 @@ class DetailedRecordsService {
         ),
       );
 
+      print('응답: $response');
       if (response.statusCode == 201 || response.statusCode == 200) {
         return response.data;
       } else {
         throw Exception('치료 기록 생성 실패: ${response.statusCode}');
       }
     } on DioError catch (e) {
+      print('에러: $e');
       _logger.severe('치료 기록 생성 오류: ${e.message}');
       throw Exception('치료 기록 생성 실패: ${e.response?.data['detail'] ?? e.message}');
     }
@@ -509,6 +539,7 @@ class DetailedRecordsService {
   // 젖소별 전체 기록 조회
   Future<List<Map<String, dynamic>>> getCowRecords(String cowId, String token) async {
     try {
+      print('요청 데이터: { cow_id: $cowId, Authorization: Bearer $token }');
       final response = await dio.get(
         '/records/cow/$cowId',
         options: Options(
@@ -516,12 +547,14 @@ class DetailedRecordsService {
         ),
       );
 
+      print('응답: $response');
       if (response.statusCode == 200) {
         return List<Map<String, dynamic>>.from(response.data);
       } else {
         throw Exception('기록 조회 실패: ${response.statusCode}');
       }
     } on DioError catch (e) {
+      print('에러: $e');
       _logger.severe('기록 조회 오류: ${e.message}');
       throw Exception('기록 조회 실패: ${e.response?.data['detail'] ?? e.message}');
     }
@@ -530,6 +563,7 @@ class DetailedRecordsService {
   // 젖소별 착유 기록 조회
   Future<List<Map<String, dynamic>>> getCowMilkingRecords(String cowId, String token) async {
     try {
+      print('요청 데이터: { cow_id: $cowId, Authorization: Bearer $token }');
       final response = await dio.get(
         '/records/cow/$cowId/milking',
         options: Options(
@@ -537,12 +571,14 @@ class DetailedRecordsService {
         ),
       );
 
+      print('응답: $response');
       if (response.statusCode == 200) {
         return List<Map<String, dynamic>>.from(response.data);
       } else {
         throw Exception('착유 기록 조회 실패: ${response.statusCode}');
       }
     } on DioError catch (e) {
+      print('에러: $e');
       _logger.severe('착유 기록 조회 오류: ${e.message}');
       throw Exception('착유 기록 조회 실패: ${e.response?.data['detail'] ?? e.message}');
     }
@@ -551,6 +587,7 @@ class DetailedRecordsService {
   // 젖소별 건강 기록 조회
   Future<List<Map<String, dynamic>>> getCowHealthRecords(String cowId, String token) async {
     try {
+      print('요청 데이터: { cow_id: $cowId, Authorization: Bearer $token }');
       final response = await dio.get(
         '/records/cow/$cowId/health-records',
         options: Options(
@@ -558,12 +595,14 @@ class DetailedRecordsService {
         ),
       );
 
+      print('응답: $response');
       if (response.statusCode == 200) {
         return List<Map<String, dynamic>>.from(response.data);
       } else {
         throw Exception('건강 기록 조회 실패: ${response.statusCode}');
       }
     } on DioError catch (e) {
+      print('에러: $e');
       _logger.severe('건강 기록 조회 오류: ${e.message}');
       throw Exception('건강 기록 조회 실패: ${e.response?.data['detail'] ?? e.message}');
     }
@@ -572,6 +611,7 @@ class DetailedRecordsService {
   // 젖소별 번식 기록 조회
   Future<List<Map<String, dynamic>>> getCowBreedingRecords(String cowId, String token) async {
     try {
+      print('요청 데이터: { cow_id: $cowId, Authorization: Bearer $token }');
       final response = await dio.get(
         '/records/cow/$cowId/breeding-records',
         options: Options(
@@ -579,12 +619,14 @@ class DetailedRecordsService {
         ),
       );
 
+      print('응답: $response');
       if (response.statusCode == 200) {
         return List<Map<String, dynamic>>.from(response.data);
       } else {
         throw Exception('번식 기록 조회 실패: ${response.statusCode}');
       }
     } on DioError catch (e) {
+      print('에러: $e');
       _logger.severe('번식 기록 조회 오류: ${e.message}');
       throw Exception('번식 기록 조회 실패: ${e.response?.data['detail'] ?? e.message}');
     }
@@ -593,6 +635,7 @@ class DetailedRecordsService {
   // 기록 삭제
   Future<bool> deleteRecord(String recordId, String token) async {
     try {
+      print('요청 데이터: { record_id: $recordId, Authorization: Bearer $token }');
       final response = await dio.delete(
         '/records/$recordId',
         options: Options(
@@ -600,8 +643,10 @@ class DetailedRecordsService {
         ),
       );
 
+      print('응답: $response');
       return response.statusCode == 200 || response.statusCode == 204;
     } on DioError catch (e) {
+      print('에러: $e');
       _logger.severe('기록 삭제 오류: ${e.message}');
       throw Exception('기록 삭제 실패: ${e.response?.data['detail'] ?? e.message}');
     }
@@ -610,6 +655,7 @@ class DetailedRecordsService {
   // 착유 통계 조회
   Future<Map<String, dynamic>?> getMilkingStatistics(String cowId, String token) async {
     try {
+      print('요청 데이터: { cow_id: $cowId, Authorization: Bearer $token }');
       final response = await dio.get(
         '/records/cow/$cowId/milking/statistics',
         options: Options(
@@ -617,12 +663,14 @@ class DetailedRecordsService {
         ),
       );
 
+      print('응답: $response');
       if (response.statusCode == 200) {
         return response.data;
       } else {
         return null;
       }
     } on DioError catch (e) {
+      print('에러: $e');
       _logger.warning('착유 통계 조회 실패: ${e.message}');
       return null;
     }
@@ -631,6 +679,7 @@ class DetailedRecordsService {
   // 체중 변화 추이 조회
   Future<Map<String, dynamic>?> getWeightTrend(String cowId, String token) async {
     try {
+      print('요청 데이터: { cow_id: $cowId, Authorization: Bearer $token }');
       final response = await dio.get(
         '/records/cow/$cowId/weight/trend',
         options: Options(
@@ -638,12 +687,14 @@ class DetailedRecordsService {
         ),
       );
 
+      print('응답: $response');
       if (response.statusCode == 200) {
         return response.data;
       } else {
         return null;
       }
     } on DioError catch (e) {
+      print('에러: $e');
       _logger.warning('체중 변화 추이 조회 실패: ${e.message}');
       return null;
     }
@@ -652,6 +703,7 @@ class DetailedRecordsService {
   // 번식 타임라인 조회
   Future<Map<String, dynamic>?> getReproductionTimeline(String cowId, String token) async {
     try {
+      print('요청 데이터: { cow_id: $cowId, Authorization: Bearer $token }');
       final response = await dio.get(
         '/records/cow/$cowId/reproduction/timeline',
         options: Options(
@@ -659,12 +711,14 @@ class DetailedRecordsService {
         ),
       );
 
+      print('응답: $response');
       if (response.statusCode == 200) {
         return response.data;
       } else {
         return null;
       }
     } on DioError catch (e) {
+      print('에러: $e');
       _logger.warning('번식 타임라인 조회 실패: ${e.message}');
       return null;
     }

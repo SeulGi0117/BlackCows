@@ -284,7 +284,7 @@ class AuthSelectionPage extends StatelessWidget {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('링크가 클립보드에 복사되었습니다. 브라우저에서 붙여넣기 하세요.'),
-                        backgroundColor: Colors.blue,
+                        backgroundColor: Color(0xFF4CAF50),
                         duration: Duration(seconds: 3),
                       ),
                     );
@@ -292,7 +292,7 @@ class AuthSelectionPage extends StatelessWidget {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
+                backgroundColor: const Color(0xFF4CAF50),
                 foregroundColor: Colors.white,
               ),
               child: const Text('자세히 보기'),
@@ -352,7 +352,9 @@ blackcowsdairy(이하 "회사")는 개인정보보호법에 따라 이용자의 
 
 개인정보 관련 문의: support@blackcowsdairy.com
 
-본 방침은 2025년 6월 29일부터 적용됩니다.''',
+본 방침은 2025년 6월 29일부터 적용됩니다.
+
+자세한 내용은 https://blackcows-team.github.io/blackcows-privacy/privacy-policy.html 에서 확인하실 수 있습니다.''',
               style: TextStyle(fontSize: 14),
             ),
           ),
@@ -380,7 +382,7 @@ blackcowsdairy(이하 "회사")는 개인정보보호법에 따라 이용자의 
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('링크가 클립보드에 복사되었습니다. 브라우저에서 붙여넣기 하세요.'),
-                        backgroundColor: Colors.blue,
+                        backgroundColor: Color(0xFF4CAF50),
                         duration: Duration(seconds: 3),
                       ),
                     );
@@ -388,7 +390,7 @@ blackcowsdairy(이하 "회사")는 개인정보보호법에 따라 이용자의 
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.pink,
+                backgroundColor: const Color(0xFF4CAF50),
                 foregroundColor: Colors.white,
               ),
               child: const Text('자세히 보기'),

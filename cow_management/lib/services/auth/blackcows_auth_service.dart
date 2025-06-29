@@ -6,11 +6,10 @@ import 'package:flutter/foundation.dart';
 
 class BlackCowsAuthService {
   static String get baseUrl {
-    // 웹에서는 실제 EC2 서버 URL 사용
     if (kIsWeb) {
-      return 'http://52.78.212.96:8000';  // 실제 EC2 서버 주소
+      return 'http://52.78.212.96:8000';
     } else {
-      return dotenv.env['BASE_URL'] ?? 'http://localhost:8000';
+      return dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
     }
   }
 

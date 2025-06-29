@@ -113,6 +113,15 @@ class _CowDetailPageState extends State<CowDetailPage> {
             ),
             Row(
               children: [
+                const Text('출생일: ',
+                    style: TextStyle(fontWeight: FontWeight.w500)),
+                Text((currentCow.birthdate != null)
+                    ? currentCow.birthdate!.toString().split(' ')[0]
+                    : '미등록'),
+              ],
+            ),
+            Row(
+              children: [
                 const Text('품종: ',
                     style: TextStyle(fontWeight: FontWeight.w500)),
                 Text((currentCow.breed != null && currentCow.breed!.isNotEmpty)
@@ -132,14 +141,40 @@ class _CowDetailPageState extends State<CowDetailPage> {
             ),
             Row(
               children: [
-                const Text('상태: ',
+                const Text('건강상태: ',
                     style: TextStyle(fontWeight: FontWeight.w500)),
-                Text((currentCow.status.isNotEmpty &&
-                        currentCow.status != '알 수 없음')
-                    ? currentCow.status
+                Text((currentCow.healthStatus != null)
+                    ? _getHealthStatusText(currentCow.healthStatus!)
                     : '미등록'),
               ],
             ),
+            Row(
+              children: [
+                const Text('번식상태: ',
+                    style: TextStyle(fontWeight: FontWeight.w500)),
+                Text((currentCow.breedingStatus != null)
+                    ? _getBreedingStatusText(currentCow.breedingStatus!)
+                    : '미등록'),
+              ],
+            ),
+            if (currentCow.notes != null && currentCow.notes!.isNotEmpty)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('메모: ',
+                      style: TextStyle(fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 4),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(currentCow.notes!),
+                  ),
+                ],
+              ),
             const SizedBox(height: 16),
             Row(
               children: [
@@ -452,5 +487,51 @@ class _CowDetailPageState extends State<CowDetailPage> {
         ),
       ),
     );
+  }
+
+  String _getHealthStatusText(dynamic healthStatus) {
+    if (healthStatus == null) return '미등록';
+    
+    // healthStatus가 HealthStatus enum인 경우
+    if (healthStatus.toString().contains('HealthStatus.')) {
+      switch (healthStatus.toString()) {
+        case 'HealthStatus.normal':
+          return '정상';
+        case 'HealthStatus.warning':
+          return '주의';
+        case 'HealthStatus.danger':
+          return '이상';
+        default:
+          return healthStatus.toString().split('.').last;
+      }
+    }
+    
+    // healthStatus가 문자열인 경우
+    return healthStatus.toString();
+  }
+
+  String _getBreedingStatusText(dynamic breedingStatus) {
+    if (breedingStatus == null) return '미등록';
+    
+    // breedingStatus가 BreedingStatus enum인 경우
+    if (breedingStatus.toString().contains('BreedingStatus.')) {
+      switch (breedingStatus.toString()) {
+        case 'BreedingStatus.open':
+          return '미임신';
+        case 'BreedingStatus.bred':
+          return '교배';
+        case 'BreedingStatus.pregnant':
+          return '임신';
+        case 'BreedingStatus.calved':
+          return '분만';
+        case 'BreedingStatus.dry':
+          return '건유';
+        default:
+          return breedingStatus.toString().split('.').last;
+      }
+    }
+    
+    // breedingStatus가 문자열인 경우
+    return breedingStatus.toString();
   }
 }

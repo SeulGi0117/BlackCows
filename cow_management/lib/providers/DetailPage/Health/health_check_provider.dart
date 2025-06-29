@@ -19,6 +19,7 @@ class HealthCheckProvider with ChangeNotifier {
     }
 
     try {
+      print('요청 데이터: $baseUrl/records/cow/$cowId/health-records');
       final response = await dio.get(
         '$baseUrl/records/cow/$cowId/health-records',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
@@ -78,6 +79,7 @@ class HealthCheckProvider with ChangeNotifier {
       dio.options.headers['Authorization'] = 'Bearer $token';
       final apiUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
 
+      print('요청 데이터: $apiUrl/records/cow/$cowId');
       final response = await dio.get(
         '$apiUrl/records/cow/$cowId',
         queryParameters: {'record_type': recordType},
@@ -107,6 +109,7 @@ class HealthCheckProvider with ChangeNotifier {
     if (baseUrl == null) return false;
 
     try {
+      print('요청 데이터: $baseUrl/records/health-check');
       final response = await dio.post(
         '$baseUrl/records/health-check',
         data: record.toJson(), // 여기로 수정!

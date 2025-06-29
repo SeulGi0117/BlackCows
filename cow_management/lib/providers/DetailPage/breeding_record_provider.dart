@@ -13,6 +13,7 @@ class BreedingRecordProvider with ChangeNotifier {
 
   Future<void> fetchRecords(String cowId, String token) async {
     try {
+      print('요청 데이터: $baseUrl/records/cow/$cowId/breeding-records');
       final response = await _dio.get(
         '$baseUrl/records/cow/$cowId/breeding-records',
         options: Options(headers: {
@@ -52,6 +53,7 @@ class BreedingRecordProvider with ChangeNotifier {
 
   Future<void> addRecord(BreedingRecord record, String token) async {
     try {
+      print('요청 데이터: $baseUrl/records/breeding');
       final response = await _dio.post(
         '$baseUrl/records/breeding',
         data: record.toJson(),

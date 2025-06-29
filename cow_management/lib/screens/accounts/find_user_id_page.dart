@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:logging/logging.dart';
+import 'package:flutter/foundation.dart';
 
 class FindUserIdPage extends StatefulWidget {
   const FindUserIdPage({super.key});
@@ -21,21 +22,17 @@ class _FindUserIdPageState extends State<FindUserIdPage> {
   String? _foundUserId;
   String? _foundFarmNickname;
   
-  late String baseUrl;
   final _logger = Logger('FindUserIdPage');
 
   @override
   void initState() {
     super.initState();
-    baseUrl = dotenv.env['API_BASE_URL'] ?? '';
-    if (baseUrl.isEmpty) {
-      _logger.warning('경고: API_BASE_URL이 설정되지 않았습니다. .env 파일을 확인해주세요.');
-    }
   }
 
   Future<void> _findUserId() async {
     final username = _usernameController.text.trim(); // 사용자 이름/실명
     final email = _emailController.text.trim();
+    final baseUrl = dotenv.env['API_BASE_URL'] ?? '';
 
     // 입력 검증
     if (username.isEmpty || email.isEmpty) {

@@ -16,6 +16,7 @@ class PregnancyCheckProvider with ChangeNotifier {
     if (baseUrl == null) return [];
 
     try {
+      print('요청 데이터: $baseUrl/records/cow/$cowId/breeding-records');
       final response = await dio.get(
         '$baseUrl/records/cow/$cowId/breeding-records',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
@@ -40,14 +41,14 @@ class PregnancyCheckProvider with ChangeNotifier {
         _records = pregnancyCheckRecords;
         notifyListeners();
 
-        debugPrint('📦 불러온 임신감정 기록 수: ${_records.length}');
+        print('응답: 불러온 임신감정 기록 수: ${_records.length}');
         return _records;
       } else {
-        debugPrint('임신감정 기록 조회 실패: 상태코드 ${response.statusCode}');
+        print('임신감정 기록 조회 실패: 상태코드 ${response.statusCode}');
         return [];
       }
     } catch (e) {
-      debugPrint('임신감정 기록 조회 오류: $e');
+      print('임신감정 기록 조회 오류: $e');
       return [];
     }
   }
@@ -60,6 +61,7 @@ class PregnancyCheckProvider with ChangeNotifier {
     if (baseUrl == null) return false;
 
     try {
+      print('요청 데이터: $baseUrl/records/pregnancy-check');
       final response = await dio.post(
         '$baseUrl/records/pregnancy-check',
         data: record.toJson(),
@@ -68,7 +70,7 @@ class PregnancyCheckProvider with ChangeNotifier {
 
       return response.statusCode == 201;
     } catch (e) {
-      debugPrint('임신감정 기록 생성 실패: $e');
+      print('임신감정 기록 생성 실패: $e');
       return false;
     }
   }
@@ -89,7 +91,7 @@ class PregnancyCheckProvider with ChangeNotifier {
 
       return response.statusCode == 200;
     } catch (e) {
-      debugPrint('임신감정 기록 수정 실패: $e');
+      print('임신감정 기록 수정 실패: $e');
       return false;
     }
   }
@@ -108,7 +110,7 @@ class PregnancyCheckProvider with ChangeNotifier {
 
       return response.statusCode == 200;
     } catch (e) {
-      debugPrint('임신감정 기록 삭제 실패: $e');
+      print('임신감정 기록 삭제 실패: $e');
       return false;
     }
   }
