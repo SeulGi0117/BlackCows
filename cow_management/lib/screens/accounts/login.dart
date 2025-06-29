@@ -89,7 +89,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: FadeTransition(
           opacity: _fadeAnimation,
@@ -153,12 +153,12 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
           ),
         ),
         const SizedBox(height: 24),
-        const Text(
+        Text(
           '소담소담',
           style: TextStyle(
             fontSize: 32,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF2E3A59),
+            color: Theme.of(context).textTheme.titleLarge?.color,
           ),
         ),
         const SizedBox(height: 8),
@@ -166,7 +166,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
           '농장 관리의 새로운 시작',
           style: TextStyle(
             fontSize: 16,
-            color: Colors.grey.shade600,
+            color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -182,12 +182,12 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               '로그인',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF2E3A59),
+                color: Theme.of(context).textTheme.titleLarge?.color,
               ),
             ),
             const SizedBox(height: 8),
@@ -195,7 +195,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
               '계정에 로그인하여 농장을 관리하세요',
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey.shade600,
+                color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
               ),
             ),
             const SizedBox(height: 32),
@@ -267,7 +267,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
           child: Text(
             '아이디 찾기',
             style: TextStyle(
-              color: Colors.grey.shade600,
+              color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -275,7 +275,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
         Container(
           width: 1,
           height: 16,
-          color: Colors.grey.shade300,
+          color: Theme.of(context).dividerColor,
         ),
         TextButton(
           onPressed: () {
@@ -287,7 +287,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
           child: Text(
             '비밀번호 찾기',
             style: TextStyle(
-              color: Colors.grey.shade600,
+              color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -307,12 +307,12 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
               child: Text(
                 '또는',
                 style: TextStyle(
-                  color: Colors.grey.shade600,
+                  color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
                   fontWeight: FontWeight.w500,
                 ),
               ),
             ),
-            Expanded(child: Divider(color: Colors.grey.shade300)),
+            Expanded(child: Divider(color: Theme.of(context).dividerColor)),
           ],
         ),
         const SizedBox(height: 24),
@@ -386,7 +386,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
         Text(
           '계정이 없으신가요? ',
           style: TextStyle(
-            color: Colors.grey.shade600,
+            color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
             fontSize: 14,
           ),
         ),

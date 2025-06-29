@@ -132,10 +132,32 @@ class ErrorUtils {
               ),
               child: const Text('이메일 복사'),
             ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await _launchContactPage();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('문의하기'),
+            ),
           ],
         );
       },
     );
+  }
+
+  static Future<void> _launchContactPage() async {
+    const url = 'https://blackcows-team.github.io/blackcows-privacy/contact.html';
+    try {
+      // url_launcher 패키지 사용
+      // ignore: deprecated_member_use
+      await MethodChannel('plugins.flutter.io/url_launcher').invokeMethod('launch', <String, dynamic>{'url': url, 'useSafariVC': true, 'useWebView': false, 'enableJavaScript': true});
+    } catch (e) {
+      _logger.warning('문의 페이지 열기 실패: $e');
+    }
   }
 
   /// 일반적인 오류를 처리하고 필요시 서버 오류 다이얼로그 표시

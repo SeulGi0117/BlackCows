@@ -16,6 +16,18 @@ import 'models/cow.dart';
 import 'providers/cow_provider.dart';
 import 'providers/user_provider.dart';
 import 'providers/theme_provider.dart';
+// 상세기록 Providers
+import 'providers/DetailPage/Health/health_check_provider.dart';
+import 'providers/DetailPage/Health/treatment_record_provider.dart';
+import 'providers/DetailPage/Health/vaccination_record_provider.dart';
+import 'providers/DetailPage/Health/weight_record_provider.dart';
+import 'providers/DetailPage/breeding_record_provider.dart';
+import 'providers/DetailPage/feeding_record_provider.dart';
+import 'providers/DetailPage/milking_record_provider.dart';
+import 'providers/DetailPage/Reproduction/calving_record_provider.dart';
+import 'providers/DetailPage/Reproduction/estrus_record_provider.dart';
+import 'providers/DetailPage/Reproduction/insemination_record_provider.dart';
+import 'providers/DetailPage/Reproduction/pregnancy_check_provider.dart';
 
 // Screens
 import 'screens/splash_screen.dart';
@@ -76,6 +88,18 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => CowProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        // 상세기록 Providers
+        ChangeNotifierProvider(create: (_) => HealthCheckProvider()),
+        ChangeNotifierProvider(create: (_) => TreatmentRecordProvider()),
+        ChangeNotifierProvider(create: (_) => VaccinationRecordProvider()),
+        ChangeNotifierProvider(create: (_) => WeightRecordProvider()),
+        ChangeNotifierProvider(create: (_) => BreedingRecordProvider()),
+        ChangeNotifierProvider(create: (_) => FeedingRecordProvider()),
+        ChangeNotifierProvider(create: (_) => MilkingRecordProvider()),
+        ChangeNotifierProvider(create: (_) => CalvingRecordProvider()),
+        ChangeNotifierProvider(create: (_) => EstrusRecordProvider()),
+        ChangeNotifierProvider(create: (_) => InseminationRecordProvider()),
+        ChangeNotifierProvider(create: (_) => PregnancyCheckProvider()),
       ],
       child: const SoDamApp(),
     ),

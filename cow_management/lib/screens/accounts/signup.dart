@@ -87,18 +87,18 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF2E3A59)),
+          icon: Icon(Icons.arrow_back_ios, color: Theme.of(context).iconTheme.color),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           '회원가입',
           style: TextStyle(
-            color: const Color(0xFF2E3A59),
+            color: Theme.of(context).textTheme.titleLarge?.color,
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -169,7 +169,7 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
               '소담소담에 오신 것을 환영합니다!\n기본 정보를 입력해주세요.',
               Icons.person_outline,
             ),
-            const SizedBox(height: 40),
+            SizedBox(height: 40),
             ModernTextField(
               label: '이름 *',
               hint: '실제 이름을 입력하세요',

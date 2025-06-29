@@ -24,20 +24,22 @@ class ModernCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final card = Container(
       padding: padding ?? const EdgeInsets.all(16),
       margin: margin ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: color ?? Colors.white,
+        color: color ?? Theme.of(context).cardColor,
         borderRadius: borderRadius ?? BorderRadius.circular(16),
         border: border,
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-            spreadRadius: 0,
-          ),
+          if (!isDark)
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+              spreadRadius: 0,
+            ),
         ],
       ),
       child: child,
@@ -85,20 +87,21 @@ class ModernButton extends StatelessWidget {
     Color backgroundColor;
     Color foregroundColor;
     Border? border;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     switch (type) {
       case ButtonType.primary:
-        backgroundColor = const Color(0xFF4CAF50);
+        backgroundColor = isDark ? Theme.of(context).colorScheme.primary : const Color(0xFF4CAF50);
         foregroundColor = Colors.white;
         break;
       case ButtonType.secondary:
-        backgroundColor = Colors.white;
-        foregroundColor = const Color(0xFF4CAF50);
-        border = Border.all(color: const Color(0xFF4CAF50), width: 1.5);
+        backgroundColor = isDark ? Theme.of(context).colorScheme.surface : Colors.white;
+        foregroundColor = isDark ? Theme.of(context).colorScheme.primary : const Color(0xFF4CAF50);
+        border = Border.all(color: Theme.of(context).colorScheme.primary, width: 1.5);
         break;
       case ButtonType.ghost:
         backgroundColor = Colors.transparent;
-        foregroundColor = const Color(0xFF4CAF50);
+        foregroundColor = isDark ? Theme.of(context).colorScheme.primary : const Color(0xFF4CAF50);
         break;
     }
 
@@ -180,16 +183,17 @@ class ModernTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (label != null) ...[
           Text(
             label!,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF2E3A59),
+              color: Theme.of(context).textTheme.bodyLarge?.color,
             ),
           ),
           const SizedBox(height: 8),
@@ -205,24 +209,26 @@ class ModernTextField extends StatelessWidget {
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(
-              color: Colors.grey.shade500,
+              color: Theme.of(context).hintColor,
               fontSize: 16,
             ),
             prefixIcon: prefixIcon,
             suffixIcon: suffixIcon,
             filled: true,
-            fillColor: enabled ? Colors.grey.shade50 : Colors.grey.shade100,
+            fillColor: enabled
+                ? (isDark ? Theme.of(context).colorScheme.surface : Colors.grey.shade50)
+                : (isDark ? Theme.of(context).colorScheme.background : Colors.grey.shade100),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey.shade300),
+              borderSide: BorderSide(color: isDark ? Colors.grey.shade700 : Colors.grey.shade300),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey.shade300),
+              borderSide: BorderSide(color: isDark ? Colors.grey.shade700 : Colors.grey.shade300),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+              borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
