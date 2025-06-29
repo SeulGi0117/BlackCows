@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:cow_management/models/Detail/Reproduction/insemination_record.dart';
 import 'package:cow_management/providers/DetailPage/Reproduction/insemination_record_provider.dart';
@@ -121,9 +122,30 @@ class _InseminationRecordAddPageState extends State<InseminationRecordAddPage> {
               decoration: const InputDecoration(
                 labelText: '수정 시간',
                 border: OutlineInputBorder(),
-                hintText: '예: 09:30',
+                hintText: '시계를 눌러 시간을 선택하세요',
                 suffixIcon: Icon(Icons.access_time),
               ),
+              readOnly: true,  // 직접 입력을 막고 시계로만 선택
+              onTap: () async {
+                final time = await showTimePicker(
+                  context: context,
+                  initialTime: TimeOfDay.now(),
+                  builder: (context, child) {
+                    return MediaQuery(
+                      data: MediaQuery.of(context).copyWith(
+                        alwaysUse24HourFormat: false,  // 12시간 형식 사용
+                      ),
+                      child: child!,
+                    );
+                  },
+                );
+                if (time != null) {
+                  // 시간을 HH:mm 형식으로 포맷팅
+                  final hour = time.hour.toString().padLeft(2, '0');
+                  final minute = time.minute.toString().padLeft(2, '0');
+                  _inseminationTimeController.text = '$hour:$minute';
+                }
+              },
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
@@ -216,8 +238,13 @@ class _InseminationRecordAddPageState extends State<InseminationRecordAddPage> {
               decoration: const InputDecoration(
                 labelText: '비용 (원)',
                 border: OutlineInputBorder(),
+                hintText: '숫자만 입력하세요',
+                prefixText: '₩ ',
               ),
               keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,  // 숫자만 입력 허용
+              ],
             ),
             const SizedBox(height: 16),
             TextFormField(
@@ -246,8 +273,23 @@ class _InseminationRecordAddPageState extends State<InseminationRecordAddPage> {
               decoration: const InputDecoration(
                 labelText: '성공 확률 (%)',
                 border: OutlineInputBorder(),
+                hintText: '0-100 사이의 숫자를 입력하세요',
+                suffixText: '%',
               ),
               keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,  // 숫자만 입력 허용
+                LengthLimitingTextInputFormatter(3),     // 최대 3자리 (100까지)
+              ],
+              validator: (value) {
+                if (value?.isNotEmpty == true) {
+                  final intValue = int.tryParse(value!);
+                  if (intValue == null || intValue < 0 || intValue > 100) {
+                    return '0-100 사이의 숫자를 입력해주세요';
+                  }
+                }
+                return null;
+              },
             ),
           ],
         ),

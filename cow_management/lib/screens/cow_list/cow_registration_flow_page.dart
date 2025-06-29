@@ -291,8 +291,12 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
           fontSize: 16.0,
         );
         
-        // 소 목록 페이지로 돌아가기
-        Navigator.popUntil(context, (route) => route.isFirst);
+        // 메인 화면의 소 목록 탭으로 이동 (스플래시가 아닌 메인으로)
+        Navigator.pushNamedAndRemoveUntil(
+          context, 
+          '/main', 
+          (route) => false,
+        );
       } else {
         throw Exception(response['message'] ?? '등록에 실패했습니다.');
       }
@@ -381,8 +385,12 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
         fontSize: 16.0,
       );
       
-      // 소 목록 페이지로 돌아가기
-      Navigator.popUntil(context, (route) => route.isFirst);
+      // 메인 화면의 소 목록 탭으로 이동 (스플래시가 아닌 메인으로)
+      Navigator.pushNamedAndRemoveUntil(
+        context, 
+        '/main', 
+        (route) => false,
+      );
     } on DioException catch (e) {
       final detail = e.response?.data['detail'];
       String message;

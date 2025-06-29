@@ -191,7 +191,7 @@ class _FeedingRecordListPageState extends State<FeedingRecordListPage> {
               ),
             ),
             title: Text(
-              record.feedType ?? '사료 종류 없음',
+              (record.feedType.isNotEmpty) ? record.feedType : '사료',
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
               ),
@@ -200,9 +200,48 @@ class _FeedingRecordListPageState extends State<FeedingRecordListPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 4),
-                Text('급여일: ${record.feedingDate}'),
-                if (record.amount != null)
-                  Text('급여량: ${record.amount}kg'),
+                Row(
+                  children: [
+                    const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
+                    const SizedBox(width: 4),
+                    Text('${record.feedingDate}'),
+                    if (record.feedTime.isNotEmpty) ...[
+                      const SizedBox(width: 8),
+                      const Icon(Icons.access_time, size: 14, color: Colors.grey),
+                      const SizedBox(width: 4),
+                      Text('${record.feedTime}'),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    const Icon(Icons.scale, size: 14, color: Colors.green),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${record.amount}kg',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w500,
+                        color: Colors.green,
+                      ),
+                    ),
+                    if (record.notes != null && record.notes!.isNotEmpty) ...[
+                      const SizedBox(width: 8),
+                      const Icon(Icons.note, size: 14, color: Colors.orange),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          record.notes!,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.orange,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ],
             ),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),

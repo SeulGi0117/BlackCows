@@ -2,11 +2,16 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'token_manager.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/foundation.dart';
 
 class BlackCowsAuthService {
   static String get baseUrl {
-    // .env 파일에서 서버 URL을 가져오거나 기본값 사용
-    return dotenv.env['BASE_URL'] ?? 'https://your-blackcows-server.com';
+    // 웹에서는 실제 EC2 서버 URL 사용
+    if (kIsWeb) {
+      return 'http://52.78.212.96:8000';  // 실제 EC2 서버 주소
+    } else {
+      return dotenv.env['BASE_URL'] ?? 'http://localhost:8000';
+    }
   }
 
   static Future<Map<String, dynamic>?> loginToServer({
