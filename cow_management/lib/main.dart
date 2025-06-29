@@ -3,6 +3,9 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:logging/logging.dart';
+import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 
 import 'package:cow_management/models/cow.dart';
 import 'package:cow_management/models/Detail/feeding_record.dart';
@@ -87,6 +90,22 @@ import 'package:cow_management/screens/cow_list/Cow_Detail/Calving/calving_recor
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: "assets/config/.env");
+
+  // Firebase 초기화 (웹에서는 제외)
+  if (!kIsWeb) {
+    try {
+      await Firebase.initializeApp();
+    } catch (e) {
+      print('Firebase 초기화 실패: $e');
+    }
+  }
+
+  // 카카오 SDK 초기화 (웹에서는 제외)
+  if (!kIsWeb) {
+    KakaoSdk.init(
+      nativeAppKey: '40bba826862b5b1107aec5179bdbcb81', // 실제 카카오 네이티브 앱키
+    );
+  }
 
   // 로깅 설정
   Logger.root.level = Level.ALL; // 모든 로그 레벨 허용

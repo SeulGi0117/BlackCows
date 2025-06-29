@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:logging/logging.dart';
+import 'package:flutter/foundation.dart';
 
 class DioClient {
   static final DioClient _instance = DioClient._internal();
@@ -13,7 +14,13 @@ class DioClient {
   final List<RequestOptions> _pendingRequests = [];
 
   DioClient._internal() {
-    final baseUrl = dotenv.env['API_BASE_URL'] ?? '';
+    // 웹에서는 실제 EC2 서버 URL 사용
+    final baseUrl = kIsWeb 
+        ? 'http://52.78.212.96:8000'  // 실제 EC2 서버 주소
+        : (dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000');
+    
+    _logger.info('DioClient 초기화 - Platform: ${kIsWeb ? 'Web' : 'Mobile'}, BaseURL: $baseUrl');
+    
     dio = Dio(BaseOptions(
       baseUrl: baseUrl,
       contentType: 'application/json',
@@ -30,7 +37,8 @@ class DioClient {
       onRequest: (options, handler) async {
         if (!options.path.contains('/auth/login') && 
             !options.path.contains('/auth/register') &&
-            !options.path.contains('/auth/refresh')) {
+            !options.path.contains('/auth/refresh') &&
+            !options.path.contains('/sns/')) {
           final prefs = await SharedPreferences.getInstance();
           final token = prefs.getString('access_token');
 
@@ -45,7 +53,8 @@ class DioClient {
         if (e.response?.statusCode == 401 && 
             !e.requestOptions.path.contains('/auth/login') &&
             !e.requestOptions.path.contains('/auth/register') &&
-            !e.requestOptions.path.contains('/auth/refresh')) {
+            !e.requestOptions.path.contains('/auth/refresh') &&
+            !e.requestOptions.path.contains('/sns/')) {
           
           _logger.info('401 에러 감지 - 토큰 갱신 시도');
           

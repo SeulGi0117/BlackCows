@@ -104,7 +104,7 @@ class ErrorUtils {
                   SizedBox(width: 4),
                   Flexible(
                     child: Text(
-                      '개발팀 문의: team@blackcowsdairy.com',
+                      '개발팀 문의: support@blackcowsdairy.com',
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.blue,
@@ -170,7 +170,7 @@ class ErrorUtils {
   /// 이메일 주소 클립보드 복사
   static Future<void> _copyEmailToClipboard(BuildContext context) async {
     try {
-      await Clipboard.setData(const ClipboardData(text: 'team@blackcowsdairy.com'));
+      await Clipboard.setData(const ClipboardData(text: 'support@blackcowsdairy.com'));
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -185,7 +185,7 @@ class ErrorUtils {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('복사에 실패했습니다. 수동으로 입력해주세요: team@blackcowsdairy.com'),
+            content: Text('복사에 실패했습니다. 수동으로 입력해주세요: support@blackcowsdairy.com'),
             backgroundColor: Colors.orange,
             duration: Duration(seconds: 4),
           ),

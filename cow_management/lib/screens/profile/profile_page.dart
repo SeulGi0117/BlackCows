@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cow_management/providers/user_provider.dart';
-import 'package:cow_management/screens/accounts/login.dart';
-import 'package:cow_management/providers/cow_provider.dart';
+import 'package:cow_management/screens/onboarding/auth_selection_page.dart';
 import 'package:flutter/services.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -604,7 +603,7 @@ class _ProfilePageState extends State<ProfilePage> {
               onPressed: () async {
                 userProvider.logout();
                 Navigator.pop(context);
-                Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+                Navigator.of(context).pushNamedAndRemoveUntil('/auth_selection', (route) => false);
               },
               child: const Text('로그아웃', style: TextStyle(color: Color(0xFF4CAF50))),
             ),
@@ -621,19 +620,48 @@ class _ProfilePageState extends State<ProfilePage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('회원 탈퇴'),
+          title: const Text('회원 탈퇴', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('정말 회원 탈퇴하시겠습니까?\n\n탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다.'),
+              const Text(
+                '⚠️ 회원 탈퇴 시 다음 정보가 즉시 완전 삭제됩니다:',
+                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                '• 사용자 개인정보 (이름, 이메일, 목장정보 등)\n'
+                '• 등록된 젖소 목록 및 모든 젖소 정보\n'
+                '• 건강검진, 치료, 백신접종 등 모든 기록\n'
+                '• 사료급여, 착유, 번식 등 관리 기록\n'
+                '• AI 챗봇 대화 내용 및 분석 결과\n'
+                '• 예측 분석 데이터 및 리포트\n'
+                '• 계정 설정 및 앱 사용 기록',
+                style: TextStyle(fontSize: 14, color: Colors.black87),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                '⚠️ 삭제된 정보는 복구가 불가능합니다.',
+                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+              ),
               const SizedBox(height: 16),
               TextField(
                 controller: passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: '현재 비밀번호',
+                obscureText: _obscureDeletePassword,
+                decoration: InputDecoration(
+                  labelText: '현재 비밀번호 확인',
                   hintText: '비밀번호를 입력하세요',
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
+                  suffixIcon: IconButton(
+                    icon: Icon(_obscureDeletePassword ? Icons.visibility : Icons.visibility_off),
+                    onPressed: () {
+                      setState(() {
+                        _obscureDeletePassword = !_obscureDeletePassword;
+                      });
+                    },
+                  ),
+                  errorText: _deleteErrorMessage,
                 ),
               ),
             ],
@@ -641,18 +669,15 @@ class _ProfilePageState extends State<ProfilePage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('취소', style: TextStyle(color: Colors.red)),
+              child: const Text('취소', style: TextStyle(color: Colors.grey)),
             ),
             TextButton(
               onPressed: () async {
                 final password = passwordController.text.trim();
                 if (password.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('비밀번호를 입력해주세요.'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
+                  setState(() {
+                    _deleteErrorMessage = '비밀번호를 입력해주세요.';
+                  });
                   return;
                 }
                 
@@ -668,23 +693,17 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     );
                   } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('비밀번호가 올바르지 않거나 탈퇴에 실패했습니다.'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
+                    setState(() {
+                      _deleteErrorMessage = '비밀번호가 올바르지 않습니다.';
+                    });
                   }
                 } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('회원 탈퇴에 실패했습니다: $e'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
+                  setState(() {
+                    _deleteErrorMessage = '탈퇴 처리 중 오류가 발생했습니다.';
+                  });
                 }
               },
-              child: const Text('탈퇴', style: TextStyle(color: Colors.red)),
+              child: const Text('탈퇴하기', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
             ),
           ],
         );
