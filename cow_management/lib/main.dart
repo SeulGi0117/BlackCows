@@ -3,16 +3,11 @@ import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:logging/logging.dart';
-import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
-import 'package:firebase_core/firebase_core.dart';
 
 // 웹이 아닐 때만 import
-// ignore: uri_does_not_exist
-import 'package:flutter_dotenv/flutter_dotenv.dart' if (dart.library.html) 'noop.dart';
-// ignore: uri_does_not_exist
-import 'package:firebase_core/firebase_core.dart' if (dart.library.html) 'noop.dart';
-// ignore: uri_does_not_exist
-import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart' if (dart.library.html) 'noop.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 // Models
 import 'models/cow.dart';
@@ -48,15 +43,25 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   if (!kIsWeb) {
-    await dotenv.load(fileName: "assets/config/.env");
+    try {
+      await dotenv.load(fileName: "assets/config/.env");
+    } catch (e) {
+      print('dotenv 로드 실패: $e');
+    }
+    
     try {
       await Firebase.initializeApp();
     } catch (e) {
       print('Firebase 초기화 실패: $e');
     }
-    KakaoSdk.init(
-      nativeAppKey: '40bba826862b5b1107aec5179bdbcb81',
-    );
+    
+    try {
+      KakaoSdk.init(
+        nativeAppKey: '40bba826862b5b1107aec5179bdbcb81',
+      );
+    } catch (e) {
+      print('Kakao SDK 초기화 실패: $e');
+    }
   }
   
   Logger.root.level = Level.ALL;
