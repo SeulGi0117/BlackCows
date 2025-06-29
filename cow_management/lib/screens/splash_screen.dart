@@ -71,7 +71,7 @@ class _SplashScreenState extends State<SplashScreen> {
         }
         
         // 메인 화면으로 이동
-        Navigator.pushReplacementNamed(context, '/main');
+        Navigator.pushReplacementNamed(context, '/home');
       } else {
         _logger.info('자동 로그인 실패 - 회원가입/로그인 선택 화면으로 이동');
         // 자동 로그인 실패 시 회원가입/로그인 선택 화면으로
