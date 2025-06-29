@@ -352,16 +352,14 @@ class _CowDetailedRecordsPageState extends State<CowDetailedRecordsPage>
   }) {
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16), // 카드 모서리 둥글게 설정
+      ),
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          gradient: LinearGradient(
-            colors: [color.withOpacity(0.1), Colors.white],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          borderRadius: BorderRadius.circular(16), // Container 모서리 둥글게 설정
+          color: Colors.white, // 배경 색상
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -372,7 +370,7 @@ class _CowDetailedRecordsPageState extends State<CowDetailedRecordsPage>
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: color.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(8), // 아이콘 부분 둥글게 설정
                   ),
                   child: Text(
                     emoji,
@@ -417,7 +415,8 @@ class _CowDetailedRecordsPageState extends State<CowDetailedRecordsPage>
                       backgroundColor: color,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius:
+                            BorderRadius.circular(16), // 버튼 모서리 둥글게 설정
                       ),
                     ),
                   ),
@@ -432,7 +431,8 @@ class _CowDetailedRecordsPageState extends State<CowDetailedRecordsPage>
                       foregroundColor: color,
                       side: BorderSide(color: color),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius:
+                            BorderRadius.circular(16), // 버튼 모서리 둥글게 설정
                       ),
                     ),
                   ),
