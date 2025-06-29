@@ -1,8 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:logging/logging.dart';
+import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
+import 'package:firebase_core/firebase_core.dart';
+
+// 웹이 아닐 때만 import
+// ignore: uri_does_not_exist
+import 'package:flutter_dotenv/flutter_dotenv.dart' if (dart.library.html) 'noop.dart';
+// ignore: uri_does_not_exist
+import 'package:firebase_core/firebase_core.dart' if (dart.library.html) 'noop.dart';
+// ignore: uri_does_not_exist
+import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart' if (dart.library.html) 'noop.dart';
 
 // Models
 import 'models/cow.dart';
@@ -32,211 +42,293 @@ import 'screens/notifications/notification_page.dart';
 import 'screens/todo/todo_page.dart';
 import 'screens/ai_chatbot/app_wrapper.dart';
 import 'screens/ai_chatbot/chatbot_history_page.dart';
+import 'screens/ai_analysis/analysis_page.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Flutter Web에서는 .env 파일을 로드하지 않음
   if (!kIsWeb) {
-    await dotenv.load(fileName: ".env");
+    await dotenv.load(fileName: "assets/config/.env");
+    try {
+      await Firebase.initializeApp();
+    } catch (e) {
+      print('Firebase 초기화 실패: $e');
+    }
+    KakaoSdk.init(
+      nativeAppKey: '40bba826862b5b1107aec5179bdbcb81',
+    );
   }
   
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MultiProvider(
+  Logger.root.level = Level.ALL;
+  Logger.root.onRecord.listen((record) {
+    print(
+        '${record.time}: ${record.level.name}: ${record.loggerName}: ${record.message}');
+  });
+  
+  runApp(
+    MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => CowProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
-      child: Consumer<ThemeProvider>(
-        builder: (context, themeProvider, _) {
-          return MaterialApp(
-            title: 'BlackCows 젖소 관리',
-            debugShowCheckedModeBanner: false,
-            locale: const Locale('ko', 'KR'),
-            themeMode: themeProvider.themeMode,
-            theme: ThemeData(
-              useMaterial3: true,
-              colorScheme: ColorScheme.fromSeed(
-                seedColor: const Color(0xFF4CAF50),
-                brightness: Brightness.light,
+      child: const SoDamApp(),
+    ),
+  );
+}
+
+class SoDamApp extends StatelessWidget {
+  const SoDamApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        return MaterialApp(
+          title: 'BlackCows 젖소 관리',
+          debugShowCheckedModeBanner: false,
+          locale: const Locale('ko', 'KR'),
+          themeMode: themeProvider.themeMode,
+          theme: ThemeData(
+            useMaterial3: true,
+            primaryColor: const Color(0xFF4CAF50),
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xFF4CAF50),
+              brightness: Brightness.light,
+            ),
+            scaffoldBackgroundColor: const Color(0xFFF8F9FA),
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Color(0xFF4CAF50),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              centerTitle: true,
+              iconTheme: IconThemeData(color: Colors.white),
+              titleTextStyle: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
               ),
-              appBarTheme: const AppBarTheme(
-                backgroundColor: Color(0xFF4CAF50),
-                foregroundColor: Colors.white,
-                elevation: 0,
-              ),
-              elevatedButtonTheme: ElevatedButtonThemeData(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4CAF50),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-              cardTheme: CardTheme(
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
                 ),
               ),
             ),
-            darkTheme: ThemeData(
-              useMaterial3: true,
-              colorScheme: ColorScheme.fromSeed(
-                seedColor: const Color(0xFF4CAF50),
-                brightness: Brightness.dark,
-              ),
-              appBarTheme: const AppBarTheme(
-                backgroundColor: Color(0xFF1A1A1A),
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4CAF50),
                 foregroundColor: Colors.white,
-                elevation: 0,
-              ),
-              elevatedButtonTheme: ElevatedButtonThemeData(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4CAF50),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-              cardTheme: CardTheme(
-                elevation: 2,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
-                color: const Color(0xFF2A2A2A),
-              ),
-              scaffoldBackgroundColor: const Color(0xFF121212),
-              textTheme: const TextTheme(
-                bodyLarge: TextStyle(color: Colors.white),
-                bodyMedium: TextStyle(color: Colors.white70),
-                titleLarge: TextStyle(color: Colors.white),
-                titleMedium: TextStyle(color: Colors.white),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               ),
             ),
-            localizationsDelegates: const [
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            supportedLocales: const [
-              Locale('ko', 'KR'),
-            ],
-            home: const SplashScreen(),
-            onGenerateRoute: (settings) {
-              switch (settings.name) {
-                // 온보딩 및 인증
-                case '/onboarding':
-                  return MaterialPageRoute(
-                    builder: (context) => const OnboardingPage(),
-                  );
-                case '/auth_selection':
-                  return MaterialPageRoute(
-                    builder: (context) => const AuthSelectionPage(),
-                  );
-                case '/login':
-                  return MaterialPageRoute(
-                    builder: (context) => const LoginPage(),
-                  );
-                case '/signup':
-                  return MaterialPageRoute(
-                    builder: (context) => const SignupPage(),
-                  );
-                case '/find_user_id':
-                  return MaterialPageRoute(
-                    builder: (context) => const FindUserIdPage(),
-                  );
-                case '/find_password':
-                  return MaterialPageRoute(
-                    builder: (context) => const FindPasswordPage(),
-                  );
-                
-                // 메인 화면들
-                case '/home':
-                  return MaterialPageRoute(
-                    builder: (context) => const AppWrapper(child: HomeScreen()),
-                  );
-                case '/cow_list':
-                  return MaterialPageRoute(
-                    builder: (context) => const AppWrapper(child: CowListPage()),
-                  );
-                case '/profile':
-                  return MaterialPageRoute(
-                    builder: (context) => const AppWrapper(child: ProfilePage()),
-                  );
-                case '/notifications':
-                  return MaterialPageRoute(
-                    builder: (context) => const AppWrapper(child: NotificationPage()),
-                  );
-                case '/todo':
-                  return MaterialPageRoute(
-                    builder: (context) => const AppWrapper(child: TodoPage()),
-                  );
-                
-                // 젖소 관련
-                case '/cow_add':
-                  return MaterialPageRoute(
-                    builder: (context) => const CowAddPage(),
-                  );
-                case '/cow_registration_flow':
-                  return MaterialPageRoute(
-                    builder: (context) => const CowRegistrationFlowPage(),
-                  );
-                case '/cow_detail':
-                  final cow = settings.arguments as Cow?;
-                  if (cow != null) {
-                    return MaterialPageRoute(
-                      builder: (context) => CowDetailPage(cow: cow),
-                    );
-                  }
-                  return MaterialPageRoute(
-                    builder: (context) => const CowListPage(),
-                  );
-                case '/cow_edit':
-                  final cow = settings.arguments as Cow?;
-                  if (cow != null) {
-                    return MaterialPageRoute(
-                      builder: (context) => CowEditPage(cow: cow),
-                    );
-                  }
-                  return MaterialPageRoute(
-                    builder: (context) => const CowListPage(),
-                  );
-                case '/cow_detailed_records':
-                  final cow = settings.arguments as Cow?;
-                  if (cow != null) {
-                    return MaterialPageRoute(
-                      builder: (context) => CowDetailedRecordsPage(cow: cow),
-                    );
-                  }
-                  return MaterialPageRoute(
-                    builder: (context) => const CowListPage(),
-                  );
-                
-                // AI 챗봇
-                case '/chatbot_history':
-                  return MaterialPageRoute(
-                    builder: (context) => const ChatbotHistoryPage(),
-                  );
-                
-                default:
-                  return MaterialPageRoute(
-                    builder: (context) => const SplashScreen(),
-                  );
-              }
+            cardTheme: CardTheme(
+              color: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            ),
+            inputDecorationTheme: InputDecorationTheme(
+              filled: true,
+              fillColor: Colors.grey.shade50,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              focusedBorder: const OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(12)),
+                borderSide: BorderSide(color: Color(0xFF4CAF50), width: 2),
+              ),
+              errorBorder: const OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(12)),
+                borderSide: BorderSide(color: Color(0xFFE53E3E)),
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            ),
+            bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+              selectedItemColor: Color(0xFF4CAF50),
+              unselectedItemColor: Color(0xFF9E9E9E),
+              backgroundColor: Colors.white,
+              type: BottomNavigationBarType.fixed,
+              selectedLabelStyle: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+              ),
+              unselectedLabelStyle: TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 12,
+              ),
+              elevation: 8,
+            ),
+          ),
+          darkTheme: ThemeData(
+            useMaterial3: true,
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xFF4CAF50),
+              brightness: Brightness.dark,
+            ),
+            scaffoldBackgroundColor: const Color(0xFF121212),
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Color(0xFF1A1A1A),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              centerTitle: true,
+              iconTheme: IconThemeData(color: Colors.white),
+              titleTextStyle: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
+                ),
+              ),
+            ),
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4CAF50),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              ),
+            ),
+            cardTheme: CardTheme(
+              color: const Color(0xFF232323),
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            ),
+            inputDecorationTheme: InputDecorationTheme(
+              filled: true,
+              fillColor: const Color(0xFF232323),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFF444444)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFF444444)),
+              ),
+              focusedBorder: const OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(12)),
+                borderSide: BorderSide(color: Color(0xFF4CAF50), width: 2),
+              ),
+              errorBorder: const OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(12)),
+                borderSide: BorderSide(color: Color(0xFFE53E3E)),
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            ),
+            bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+              selectedItemColor: Color(0xFF4CAF50),
+              unselectedItemColor: Color(0xFF9E9E9E),
+              backgroundColor: Color(0xFF232323),
+              type: BottomNavigationBarType.fixed,
+              selectedLabelStyle: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+              ),
+              unselectedLabelStyle: TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 12,
+              ),
+              elevation: 8,
+            ),
+          ),
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('ko', 'KR'),
+          ],
+          initialRoute: '/',
+          routes: {
+            '/': (context) => const SplashScreen(),
+            '/onboarding': (context) => const OnboardingPage(),
+            '/auth_selection': (context) => const AuthSelectionPage(),
+            '/main': (context) => const MainScaffold(),
+            '/login': (context) => const LoginPage(),
+            '/signup': (context) => const SignupPage(),
+            '/cows': (context) => const CowListPage(),
+            '/analysis': (context) => const AnalysisPage(),
+            '/profile': (context) => const ProfilePage(),
+            '/cows/detail': (context) {
+              final cow = ModalRoute.of(context)!.settings.arguments as Cow;
+              return CowDetailPage(cow: cow);
             },
-          );
-        },
+            '/cows/edit': (context) {
+              final cow = ModalRoute.of(context)!.settings.arguments as Cow;
+              return CowEditPage(cow: cow);
+            },
+          },
+        );
+      },
+    );
+  }
+}
+
+class MainScaffold extends StatefulWidget {
+  const MainScaffold({super.key});
+
+  @override
+  State<MainScaffold> createState() => _MainScaffoldState();
+}
+
+class _MainScaffoldState extends State<MainScaffold> {
+  int _selectedIndex = 0;
+
+  final List<Widget> _pages = [
+    const HomeScreen(),
+    const CowListPage(),
+    const AnalysisPage(),
+    const ChatbotHistoryPage(),
+    const ProfilePage(),
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AppWrapper(
+      child: Scaffold(
+        resizeToAvoidBottomInset: true,
+        body: _pages[_selectedIndex],
+        bottomNavigationBar: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          currentIndex: _selectedIndex,
+          onTap: _onItemTapped,
+          selectedItemColor: const Color(0xFF4CAF50),
+          unselectedItemColor: Colors.grey,
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: '홈'),
+            BottomNavigationBarItem(icon: Icon(Icons.list), label: '젖소 관리'),
+            BottomNavigationBarItem(icon: Icon(Icons.analytics), label: 'AI예측'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.chat_bubble_outline), label: '챗봇'),
+            BottomNavigationBarItem(icon: Icon(Icons.person), label: '내 정보'),
+          ],
+        ),
       ),
     );
   }
