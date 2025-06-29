@@ -6,13 +6,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:logging/logging.dart';
 import 'package:flutter/foundation.dart';
 
-String getApiBaseUrl() {
-  if (kIsWeb) {
-    return 'http://52.78.212.96:8000'; // 실제 서버 주소로 교체
-  }
-  return dotenv.env['API_BASE_URL'] ?? '';
-}
-
 class FindPasswordPage extends StatefulWidget {
   const FindPasswordPage({super.key});
 
@@ -52,10 +45,10 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
   @override
   void initState() {
     super.initState();
-    // baseUrl = dotenv.env['API_BASE_URL'] ?? '';
-    // if (baseUrl.isEmpty) {
-    //   _logger.warning('경고: API_BASE_URL이 설정되지 않았습니다. .env 파일을 확인해주세요.');
-    // }
+    baseUrl = dotenv.env['API_BASE_URL'] ?? '';
+    if (baseUrl.isEmpty) {
+      _logger.warning('경고: API_BASE_URL이 설정되지 않았습니다. .env 파일을 확인해주세요.');
+    }
   }
 
   // 1단계: 사용자 정보 확인 및 재설정 토큰 요청
@@ -63,7 +56,6 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
     final username = _usernameController.text.trim();
     final userId = _userIdController.text.trim();
     final email = _emailController.text.trim();
-    final baseUrl = getApiBaseUrl();
     final url = Uri.parse('$baseUrl/auth/request-password-reset');
 
     // 입력 검증
@@ -194,7 +186,6 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
     setState(() => _isLoading = true);
 
     try {
-      final baseUrl = getApiBaseUrl();
       final url = Uri.parse('$baseUrl/auth/verify-reset-token');
       _logger.info('토큰 확인 요청 URL: $url');
 
@@ -256,7 +247,6 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
     final newPassword = _newPasswordController.text.trim();
     final confirmPassword = _confirmPasswordController.text.trim();
     final token = _tokenController.text.trim();
-    final baseUrl = getApiBaseUrl();
 
     // 입력 검증
     if (newPassword.isEmpty || confirmPassword.isEmpty) {

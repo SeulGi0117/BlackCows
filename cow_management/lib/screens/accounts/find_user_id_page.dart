@@ -6,13 +6,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:logging/logging.dart';
 import 'package:flutter/foundation.dart';
 
-String getApiBaseUrl() {
-  if (kIsWeb) {
-    return 'http://52.78.212.96:8000'; // 실제 서버 주소로 교체
-  }
-  return dotenv.env['API_BASE_URL'] ?? '';
-}
-
 class FindUserIdPage extends StatefulWidget {
   const FindUserIdPage({super.key});
 
@@ -39,7 +32,7 @@ class _FindUserIdPageState extends State<FindUserIdPage> {
   Future<void> _findUserId() async {
     final username = _usernameController.text.trim(); // 사용자 이름/실명
     final email = _emailController.text.trim();
-    final baseUrl = getApiBaseUrl();
+    final baseUrl = dotenv.env['API_BASE_URL'] ?? '';
 
     // 입력 검증
     if (username.isEmpty || email.isEmpty) {

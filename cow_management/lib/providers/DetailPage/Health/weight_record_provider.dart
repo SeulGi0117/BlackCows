@@ -18,13 +18,14 @@ class WeightRecordProvider with ChangeNotifier {
     }
 
     try {
+      print('요청 데이터: $baseUrl/records/cow/$cowId/weight-records');
       final response = await dio.get(
         '$baseUrl/records/cow/$cowId/weight-records',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       print('✅ 체중 기록 조회 성공: ${response.statusCode}');
-      print('서버 응답: ${response.data}');
+      print('응답: ${response.data}');
 
       if (response.data == null || response.data is! List) {
         print('⚠️ 서버 응답 데이터가 올바르지 않습니다.');
@@ -77,6 +78,7 @@ class WeightRecordProvider with ChangeNotifier {
     if (baseUrl == null) return false;
 
     try {
+      print('요청 데이터: $baseUrl/records/weight');
       final response = await dio.post(
         '$baseUrl/records/weight',
         data: record.toJson(), // ✅ 통일된 toJson 사용

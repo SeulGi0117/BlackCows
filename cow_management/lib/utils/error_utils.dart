@@ -132,17 +132,6 @@ class ErrorUtils {
               ),
               child: const Text('이메일 복사'),
             ),
-            ElevatedButton(
-              onPressed: () async {
-                Navigator.of(context).pop();
-                await _launchContactPage();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('문의하기'),
-            ),
           ],
         );
       },

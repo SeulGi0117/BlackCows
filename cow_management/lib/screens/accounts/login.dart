@@ -8,18 +8,11 @@ import 'package:cow_management/widgets/loading_widget.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:logging/logging.dart';
 import 'dart:math';
-import 'find_user_id_page.dart';
-import 'find_password_page.dart';
+import 'find_user_id_page.dart' show FindUserIdPage;
+import 'find_password_page.dart' show FindPasswordPage;
 import '../../services/auth/google_auth_service.dart';
 import '../../services/auth/token_manager.dart';
 import 'package:flutter/foundation.dart';
-
-String getApiBaseUrl() {
-  if (kIsWeb) {
-    return 'https://your-server-url.com'; // 실제 서버 주소로 교체
-  }
-  return dotenv.env['API_BASE_URL'] ?? '';
-}
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -36,6 +29,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   
   bool _isLoading = false;
   bool _isPasswordVisible = false;
+  late String baseUrl;
   final _logger = Logger('LoginPage');
   
   late AnimationController _animationController;
@@ -60,6 +54,10 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   @override
   void initState() {
     super.initState();
+    baseUrl = dotenv.env['API_BASE_URL'] ?? '';
+    if (baseUrl.isEmpty) {
+      _logger.warning('경고: API_BASE_URL이 설정되지 않았습니다. .env 파일을 확인해주세요.');
+    }
     
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 1000),
@@ -326,16 +324,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                 onPressed: _loginWithGoogle,
               ),
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: _buildSocialButton(
-                icon: Icons.chat_bubble,
-                label: 'Kakao',
-                color: const Color(0xFFFFE812),
-                textColor: Colors.black,
-                onPressed: _loginWithKakao,
-              ),
-            ),
           ],
         ),
       ],
@@ -346,7 +334,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
     required IconData icon,
     required String label,
     required Color color,
-    Color? textColor,
     required VoidCallback onPressed,
   }) {
     return Container(
@@ -354,7 +341,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
       child: OutlinedButton(
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
-          foregroundColor: textColor ?? Colors.white,
+          foregroundColor: Colors.white,
           backgroundColor: color,
           side: BorderSide.none,
           shape: RoundedRectangleBorder(
@@ -370,7 +357,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
               label,
               style: TextStyle(
                 fontWeight: FontWeight.w600,
-                color: textColor ?? Colors.white,
+                color: Colors.white,
               ),
             ),
           ],
@@ -412,14 +399,14 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
       return;
     }
 
+    final userId = _userIdController.text.trim();
+    final password = _passwordController.text.trim();
+
     setState(() => _isLoading = true);
 
     try {
-      final userId = _userIdController.text.trim();
-      final password = _passwordController.text.trim();
-      final baseUrl = getApiBaseUrl();
       final userProvider = Provider.of<UserProvider>(context, listen: false);
-      final result = await userProvider.loginWithResult(userId, password, '$baseUrl/auth/login');
+      final result = await userProvider.loginWithResult(userId, password, baseUrl + '/auth/login');
 
       setState(() => _isLoading = false);
 
@@ -443,37 +430,48 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   }
 
   void _showErrorDialog(LoginResult result) {
-    String title = '로그인 실패';
-    String message = result.message;
-    List<Widget> actions = [];
-
     if (result.errorType == LoginErrorType.serverError || 
         result.errorType == LoginErrorType.timeout ||
         result.errorType == LoginErrorType.unknown) {
-      title = '서버 연결 오류';
-      message = '서버에 연결할 수 없습니다.\n잠시 후 다시 시도해주세요.';
-      actions = [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('확인'),
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              const Icon(Icons.error_outline, color: Colors.red),
+              const SizedBox(width: 8),
+              const Expanded(child: Text('서버 연결 오류')),
+            ],
+          ),
+          content: const Text('서버에 연결할 수 없습니다.\n잠시 후 다시 시도해주세요.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('확인'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                await Clipboard.setData(const ClipboardData(text: 'support@blackcowsdairy.com'));
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('개발자 이메일이 클립보드에 복사되었습니다.'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+                Navigator.of(context).pop();
+              },
+              child: const Text('개발자 문의'),
+            ),
+          ],
         ),
-        ElevatedButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-            _copyEmailToClipboard();
-          },
-          child: const Text('개발자 문의'),
-        ),
-      ];
-    } else {
-      actions = [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('확인'),
-        ),
-      ];
+      );
+      return;
     }
-
+    // 일반 오류는 기존처럼 AlertDialog 사용
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -482,13 +480,36 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
           children: [
             const Icon(Icons.error_outline, color: Colors.red),
             const SizedBox(width: 8),
-            Expanded(child: Text(title)),
+            const Expanded(child: Text('로그인 실패')),
           ],
         ),
-        content: Text(message),
-        actions: actions,
+        content: Text(result.message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('확인'),
+          ),
+        ],
       ),
     );
+  }
+
+  Future<void> _loginWithGoogle() async {
+    try {
+      setState(() => _isLoading = true);
+      
+      final token = await GoogleAuthService.signInWithGoogle();
+      
+      if (token != null && mounted) {
+        final userProvider = Provider.of<UserProvider>(context, listen: false);
+        // Google 로그인 처리 로직 구현
+        _showErrorSnackBar('Google 로그인 기능은 준비 중입니다.');
+      }
+    } catch (e) {
+      _showErrorSnackBar('Google 로그인에 실패했습니다.');
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   void _showErrorSnackBar(String message) {
@@ -521,47 +542,5 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
         margin: const EdgeInsets.all(16),
       ),
     );
-  }
-
-  Future<void> _copyEmailToClipboard() async {
-    try {
-                      await Clipboard.setData(const ClipboardData(text: 'support@blackcowsdairy.com'));
-      if (mounted) {
-        _showErrorSnackBar('개발자 이메일이 클립보드에 복사되었습니다.');
-      }
-    } catch (e) {
-      _logger.warning('클립보드 복사 실패: $e');
-    }
-  }
-
-     Future<void> _loginWithGoogle() async {
-     try {
-       setState(() => _isLoading = true);
-       
-       final token = await GoogleAuthService.signInWithGoogle();
-      
-      if (token != null && mounted) {
-        final userProvider = Provider.of<UserProvider>(context, listen: false);
-        // Google 로그인 처리 로직 구현
-        _showErrorSnackBar('Google 로그인 기능은 준비 중입니다.');
-      }
-    } catch (e) {
-      _showErrorSnackBar('Google 로그인에 실패했습니다.');
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
-
-  Future<void> _loginWithKakao() async {
-    try {
-      setState(() => _isLoading = true);
-      
-      // Kakao 로그인 처리 로직 구현
-      _showErrorSnackBar('Kakao 로그인 기능은 준비 중입니다.');
-    } catch (e) {
-      _showErrorSnackBar('Kakao 로그인에 실패했습니다.');
-    } finally {
-      setState(() => _isLoading = false);
-    }
   }
 }

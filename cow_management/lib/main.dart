@@ -3,10 +3,11 @@ import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:logging/logging.dart';
+import 'dart:io' show Platform;
 
 // 웹이 아닐 때만 import
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
+// import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart'; // 삭제
 import 'package:firebase_core/firebase_core.dart';
 
 // Models
@@ -53,35 +54,41 @@ import 'screens/ai_analysis/analysis_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  if (!kIsWeb) {
-    try {
-      await dotenv.load(fileName: "assets/config/.env");
-    } catch (e) {
-      print('dotenv 로드 실패: $e');
-    }
-    
+
+  // 웹 환경에서도 dotenv.load()를 반드시 호출해야 함
+  // 웹: web/.env 파일 필요, 모바일/데스크탑: assets/config/.env 사용
+  if (kIsWeb) {
+    await dotenv.load(); // web/.env 파일 사용
+  } else {
+    await dotenv.load(fileName: "assets/config/.env");
+  }
+
+  // Windows가 아니면 Firebase 초기화
+  if (!kIsWeb && !Platform.isWindows) {
     try {
       await Firebase.initializeApp();
     } catch (e) {
       print('Firebase 초기화 실패: $e');
     }
-    
-    try {
-      KakaoSdk.init(
-        nativeAppKey: '40bba826862b5b1107aec5179bdbcb81',
-      );
-    } catch (e) {
-      print('Kakao SDK 초기화 실패: $e');
-    }
   }
-  
+
+  // Kakao SDK도 Windows에서 실행하지 않음
+  // if (!kIsWeb && !Platform.isWindows) {
+  //   try {
+  //     KakaoSdk.init(
+  //       nativeAppKey: '40bba826862b5b1107aec5179bdbcb81',
+  //     );
+  //   } catch (e) {
+  //     print('Kakao SDK 초기화 실패: $e');
+  //   }
+  // }
+
   Logger.root.level = Level.ALL;
   Logger.root.onRecord.listen((record) {
     print(
         '${record.time}: ${record.level.name}: ${record.loggerName}: ${record.message}');
   });
-  
+
   runApp(
     MultiProvider(
       providers: [

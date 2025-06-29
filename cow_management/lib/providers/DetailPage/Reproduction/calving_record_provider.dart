@@ -15,12 +15,14 @@ class CalvingRecordProvider with ChangeNotifier {
     if (baseUrl == null) return [];
 
     try {
+      print('요청 데이터: $baseUrl/records/cow/$cowId/breeding-records');
       final response = await dio.get(
         '$baseUrl/records/cow/$cowId/breeding-records',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       if (response.statusCode == 200) {
+        print('응답: $response');
         final List<dynamic> data = response.data;
 
         final calvingRecords = data
@@ -38,14 +40,14 @@ class CalvingRecordProvider with ChangeNotifier {
         _records = calvingRecords;
         notifyListeners();
 
-        debugPrint('📦 불러온 분만 기록 수: ${_records.length}');
+        print('📦 불러온 분만 기록 수: ${_records.length}');
         return _records;
       } else {
-        debugPrint('분만 기록 조회 실패: 상태코드 ${response.statusCode}');
+        print('분만 기록 조회 실패: 상태코드 ${response.statusCode}');
         return [];
       }
     } catch (e) {
-      debugPrint('분만 기록 조회 오류: $e');
+      print('분만 기록 조회 오류: $e');
       return [];
     }
   }
@@ -62,15 +64,17 @@ class CalvingRecordProvider with ChangeNotifier {
     if (baseUrl == null) return false;
 
     try {
+      print('요청 데이터: $baseUrl/records/calving');
       final response = await dio.post(
         '$baseUrl/records/calving',
         data: record.toJson(),
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
+      print('응답: $response');
       return response.statusCode == 201;
     } catch (e) {
-      debugPrint('분만 기록 생성 실패: $e');
+      print('분만 기록 생성 실패: $e');
       return false;
     }
   }
@@ -82,15 +86,17 @@ class CalvingRecordProvider with ChangeNotifier {
     if (baseUrl == null) return false;
 
     try {
+      print('요청 데이터: $baseUrl/records/$recordId');
       final response = await dio.put(
         '$baseUrl/records/$recordId',
         data: record.toJson(),
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
+      print('응답: $response');
       return response.statusCode == 200;
     } catch (e) {
-      debugPrint('분만 기록 수정 실패: $e');
+      print('분만 기록 수정 실패: $e');
       return false;
     }
   }
@@ -102,14 +108,16 @@ class CalvingRecordProvider with ChangeNotifier {
     if (baseUrl == null) return false;
 
     try {
+      print('요청 데이터: $baseUrl/records/$recordId');
       final response = await dio.delete(
         '$baseUrl/records/$recordId',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
+      print('응답: $response');
       return response.statusCode == 200;
     } catch (e) {
-      debugPrint('분만 기록 삭제 실패: $e');
+      print('분만 기록 삭제 실패: $e');
       return false;
     }
   }
