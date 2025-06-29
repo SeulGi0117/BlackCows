@@ -56,6 +56,8 @@ class _HealthCheckListPageState extends State<HealthCheckListPage> {
 
   @override
   Widget build(BuildContext context) {
+    print('Cow ID: ${widget.cowId}');
+    print('Cow Name: ${widget.cowName}');
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.cowName} - 건강검진 목록'),
@@ -188,7 +190,8 @@ class _HealthCheckListPageState extends State<HealthCheckListPage> {
                   style: const TextStyle(fontSize: 14, color: Colors.grey),
                 ),
               ),
-              trailing: const Icon(Icons.arrow_forward_ios, color: Color(0xFF4CAF50)),
+              trailing:
+                  const Icon(Icons.arrow_forward_ios, color: Color(0xFF4CAF50)),
               onTap: () {
                 Navigator.push(
                   context,

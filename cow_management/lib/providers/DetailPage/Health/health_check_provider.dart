@@ -8,68 +8,58 @@ class HealthCheckProvider with ChangeNotifier {
 
   List<HealthCheckRecord> get records => _records;
 
-  Future<List<HealthCheckRecord>> fetchRecords(
-      String cowId, String token) async {
+  Future<bool> fetchRecords(String cowId, String token) async {
     final dio = Dio();
     final baseUrl = dotenv.env['API_BASE_URL'];
 
     if (baseUrl == null) {
       print('⚠️ API_BASE_URL이 설정되지 않았습니다.');
-      return [];
+      return false;
     }
 
     try {
-      print('요청 데이터: $baseUrl/records/cow/$cowId/health-records');
       final response = await dio.get(
         '$baseUrl/records/cow/$cowId/health-records',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
-      print('✅ 건강검진 기록 조회 성공: ${response.statusCode}');
-      print('서버 응답: ${response.data}');
+      if (response.statusCode == 200) {
+        final data = response.data;
+        if (data == null || data is! List) {
+          print('⚠️ 서버 응답 데이터가 올바르지 않습니다.');
+          return false;
+        }
 
-      if (response.data == null || response.data is! List) {
-        print('⚠️ 서버 응답 데이터가 올바르지 않습니다.');
-        return [];
-      }
+        _records = data
+            .where((json) {
+              return json['record_type'] == 'health_check';
+            })
+            .map((json) => HealthCheckRecord.fromJson(json))
+            .toList();
 
-      _records = (response.data as List).where((json) {
-        // record_type이 'health_check'인 것만 필터링
-        return json['record_type'] == 'health_check';
-      }).map((json) {
-        // 전체 JSON을 그대로 전달 (key_values 포함)
-        return HealthCheckRecord.fromJson(json);
-      }).toList();
-
-      print('✅ 파싱된 건강검진 기록 수: ${_records.length}');
-      for (var record in _records) {
-        print(
-            '기록: 날짜=${record.recordDate}, 체온=${record.bodyTemperature}, BCS=${record.bodyConditionScore}, 메모=${record.notes}');
-      }
-
-      notifyListeners();
-      return _records;
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 500) {
-        print('🚨 서버 내부 오류 (500): 백엔드 서버에 문제가 있습니다.');
-        print('서버 응답: ${e.response?.data}');
-        // 서버 오류 시 빈 리스트 반환하여 앱이 계속 작동하도록 함
-        _records = [];
-        notifyListeners();
-        return [];
-      } else if (e.response?.statusCode == 404) {
-        print('📭 건강검진 기록이 없습니다 (404)');
-        _records = [];
-        notifyListeners();
-        return [];
+        print('✅ 파싱된 건강검진 기록 수: ${_records.length}');
+        notifyListeners(); // 데이터가 성공적으로 파싱된 후 호출
+        return true;
       } else {
-        print('❌ 건강검진 기록 불러오기 네트워크 오류: ${e.message}');
-        return [];
+        throw Exception('서버 응답 오류: ${response.statusCode}');
       }
-    } catch (e) {
-      print('❌ 건강검진 기록 불러오기 예상치 못한 오류: $e');
-      return [];
+    } on DioException catch (e) {
+      print('❌ 오류 발생: ${e.message}');
+      notifyListeners(); // 오류 발생 시에도 UI 갱신
+      return false;
     }
+  }
+
+  void _handleDioError(DioException e) {
+    if (e.response?.statusCode == 500) {
+      print('🚨 서버 내부 오류 (500)');
+    } else if (e.response?.statusCode == 404) {
+      print('📭 건강검진 기록이 없습니다 (404)');
+    } else {
+      print('❌ 네트워크 오류: ${e.message}');
+    }
+    _records = [];
+    notifyListeners();
   }
 
   Future<void> fetchFilteredRecords(

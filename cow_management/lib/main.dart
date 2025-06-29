@@ -52,6 +52,31 @@ import 'screens/ai_chatbot/app_wrapper.dart';
 import 'screens/ai_chatbot/chatbot_history_page.dart';
 import 'screens/ai_analysis/analysis_page.dart';
 
+import 'screens/cow_list/Cow_Detail//Milk/milk_add_page.dart';
+import 'screens/cow_list/Cow_Detail//Milk/milk_list_page.dart';
+import 'screens/cow_list/Cow_Detail//Milk/milk_detail_page.dart';
+
+import 'screens/cow_list/Cow_Detail//Health/health_check_list_page.dart';
+import 'screens/cow_list/Cow_Detail/Health/health_check_add_page.dart';
+
+import 'screens/cow_list/Cow_Detail/Vaccination/vaccination_list_page.dart';
+import 'screens/cow_list/Cow_Detail/Vaccination/vaccination_add_page.dart';
+
+import 'screens/cow_list/Cow_Detail/Weight/weight_list_page.dart';
+import 'screens/cow_list/Cow_Detail/Weight/weight_add_page.dart';
+
+import 'screens/cow_list/Cow_Detail/Treatment/treatment_list_page.dart';
+import 'screens/cow_list/Cow_Detail/Treatment/treatment_add_page.dart';
+
+import 'screens/cow_list/Cow_Detail/Estrus/estrus_add_page.dart';
+import 'screens/cow_list/Cow_Detail/Estrus/estrus_list_page.dart';
+
+import 'screens/cow_list/Cow_Detail//Insemination/insemination_add_page.dart';
+import 'screens/cow_list/Cow_Detail//Insemination/insemination_list_page.dart';
+
+import 'screens/cow_list/Cow_Detail/Breeding/breeding_add_page.dart';
+import 'screens/cow_list/Cow_Detail/Breeding/breeding_list_page.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -158,10 +183,11 @@ class SoDamApp extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               ),
             ),
-            cardTheme: CardTheme(
+            cardTheme: CardThemeData(
               color: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(
@@ -188,7 +214,8 @@ class SoDamApp extends StatelessWidget {
                 borderRadius: BorderRadius.all(Radius.circular(12)),
                 borderSide: BorderSide(color: Color(0xFFE53E3E)),
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             ),
             bottomNavigationBarTheme: const BottomNavigationBarThemeData(
               selectedItemColor: Color(0xFF4CAF50),
@@ -238,10 +265,11 @@ class SoDamApp extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               ),
             ),
-            cardTheme: CardTheme(
+            cardTheme: CardThemeData(
               color: const Color(0xFF232323),
               elevation: 0,
               shape: RoundedRectangleBorder(
@@ -268,7 +296,8 @@ class SoDamApp extends StatelessWidget {
                 borderRadius: BorderRadius.all(Radius.circular(12)),
                 borderSide: BorderSide(color: Color(0xFFE53E3E)),
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             ),
             bottomNavigationBarTheme: const BottomNavigationBarThemeData(
               selectedItemColor: Color(0xFF4CAF50),
@@ -315,6 +344,126 @@ class SoDamApp extends StatelessWidget {
             },
             '/notifications': (context) => const NotificationPage(),
             '/todo': (context) => const TodoPage(),
+
+            // 상세 기록 페이지
+            '/milking-record-add': (context) {
+              // 우유 기록 추가 (새 라우트 이름)
+              final args = ModalRoute.of(context)!.settings.arguments
+                  as Map<String, String>;
+              return MilkingRecordPage(
+                cowId: args['cowId']!,
+                cowName: args['cowName']!,
+              );
+            },
+            '/milking-records': (context) {
+              // 우유 기록 조회
+              final args = ModalRoute.of(context)!.settings.arguments as Map;
+              return MilkingRecordListPage(
+                cowId: args['cowId'],
+                cowName: args['cowName'],
+              );
+            },
+            '/milking-record-detail': (context) =>
+                const MilkingRecordDetailPage(),
+            '/breeding-record': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments
+                  as Map<String, String>;
+              return BreedingRecordAddPage(
+                cowId: args['cowId']!,
+                cowName: args['cowName']!,
+              );
+            },
+
+            '/health-check/add': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments as Map;
+              return HealthCheckAddPage(
+                cowId: args['cowId'],
+                cowName: args['cowName'],
+              );
+            },
+            '/health-check/list': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments as Map;
+              return HealthCheckListPage(
+                cowId: args['cowId'],
+                cowName: args['cowName'],
+              );
+            },
+            '/vaccination/list': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments as Map;
+              return VaccinationListPage(
+                cowId: args['cowId'],
+                cowName: args['cowName'],
+              );
+            },
+            '/weight/list': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments as Map;
+              return WeightListPage(
+                cowId: args['cowId'],
+                cowName: args['cowName'],
+              );
+            },
+            '/treatment/list': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments as Map;
+              return TreatmentListPage(
+                cowId: args['cowId'],
+                cowName: args['cowName'],
+              );
+            },
+
+            '/treatment/add': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments as Map;
+              return TreatmentAddPage(
+                cowId: args['cowId'],
+                cowName: args['cowName'],
+              );
+            },
+            '/vaccination/add': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments as Map;
+              return VaccinationAddPage(
+                cowId: args['cowId'],
+                cowName: args['cowName'],
+              );
+            },
+            '/weight/add': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments as Map;
+              return WeightAddPage(
+                cowId: args['cowId'],
+                cowName: args['cowName'],
+              );
+            },
+            '/estrus-record/list': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments
+                  as Map<String, String>;
+              return EstrusRecordListPage(
+                cowId: args['cowId']!,
+                cowName: args['cowName']!,
+              );
+            },
+            '/estrus-record/add': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments
+                  as Map<String, String>;
+              return EstrusAddPage(
+                cowId: args['cowId']!,
+                cowName: args['cowName']!,
+              );
+            },
+            // 인공수정 기록 라우트
+            '/insemination-record/list': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments
+                  as Map<String, String>;
+              return InseminationRecordListPage(
+                cowId: args['cowId']!,
+                cowName: args['cowName']!,
+              );
+            },
+            '/insemination-record/add': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments
+                  as Map<String, String>;
+              return InseminationRecordAddPage(
+                cowId: args['cowId']!,
+                cowName: args['cowName']!,
+              );
+            },
           },
         );
       },
@@ -370,4 +519,4 @@ class _MainScaffoldState extends State<MainScaffold> {
       ),
     );
   }
-} 
+}
