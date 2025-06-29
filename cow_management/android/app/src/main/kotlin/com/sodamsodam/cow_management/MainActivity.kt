@@ -1,4 +1,4 @@
-package com.example.cow_management
+package com.sodamsodam.cow_management
 
 import io.flutter.embedding.android.FlutterActivity
 

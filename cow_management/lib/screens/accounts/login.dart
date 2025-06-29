@@ -8,6 +8,8 @@ import 'package:logging/logging.dart';
 import 'dart:math';
 import 'find_user_id_page.dart';
 import 'find_password_page.dart';
+import '../../services/auth/google_auth_service.dart';
+import '../../services/auth/token_manager.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -221,6 +223,56 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  // 구글 로그인 처리
+  Future<void> _handleGoogleLogin() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final result = await GoogleAuthService.signInWithGoogle();
+
+      setState(() => _isLoading = false);
+
+      if (result.success && mounted) {
+        // 구글 로그인 성공 시 토큰 저장
+        if (result.accessToken != null && result.refreshToken != null) {
+          await TokenManager.saveTokens(
+            accessToken: result.accessToken!,
+            refreshToken: result.refreshToken!,
+          );
+        }
+
+        // CowProvider 데이터 초기화 및 새로 불러오기
+        final cowProvider = Provider.of<CowProvider>(context, listen: false);
+        cowProvider.clearAll();
+        
+        if (result.accessToken != null) {
+          await cowProvider.fetchCowsFromBackend(result.accessToken!);
+        }
+        
+        Navigator.pushReplacementNamed(context, '/main');
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result.message),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      
+      if (mounted) {
+        _logger.severe('구글 로그인 예외 발생: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('구글 로그인 중 오류가 발생했습니다. 다시 시도해주세요.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   void dispose() {
     _userIdController.dispose();
@@ -378,7 +430,63 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 24),
+              
+              // 구글 로그인 구분선
+              Row(
+                children: [
+                  Expanded(child: Divider(color: Colors.grey[400])),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      '또는 구글로 로그인하세요',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                  Expanded(child: Divider(color: Colors.grey[400])),
+                ],
+              ),
+              const SizedBox(height: 24),
+              
+              // 구글 로그인 버튼
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _isLoading ? null : _handleGoogleLogin,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black87,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    side: const BorderSide(color: Colors.grey),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  icon: Image.asset(
+                    'assets/images/google_logo.png',
+                    height: 24,
+                    width: 24,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(
+                        Icons.login,
+                        color: Color(0xFF4285F4),
+                        size: 24,
+                      );
+                    },
+                  ),
+                  label: const Text(
+                    '구글로 로그인',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
               
               // 회원가입 버튼
               TextButton(

@@ -45,5 +45,28 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	
+	<!-- URL Schemes -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<!-- Kakao 로그인 -->
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>kakao</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<!-- 실제 카카오 앱키 -->
+				<string>kakao40bba826862b5b1107aec5179bdbcb81</string>
+			</array>
+		</dict>
+	</array>
+	
+	<!-- LSApplicationQueriesSchemes -->
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>kakaokompassauth</string>
+		<string>kakaolink</string>
+		<string>kakaotalk-5.9.7</string>
+	</array>
 </dict>
 </plist>

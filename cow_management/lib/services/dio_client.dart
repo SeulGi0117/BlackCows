@@ -30,7 +30,8 @@ class DioClient {
       onRequest: (options, handler) async {
         if (!options.path.contains('/auth/login') && 
             !options.path.contains('/auth/register') &&
-            !options.path.contains('/auth/refresh')) {
+            !options.path.contains('/auth/refresh') &&
+            !options.path.contains('/sns/')) {
           final prefs = await SharedPreferences.getInstance();
           final token = prefs.getString('access_token');
 
@@ -45,7 +46,8 @@ class DioClient {
         if (e.response?.statusCode == 401 && 
             !e.requestOptions.path.contains('/auth/login') &&
             !e.requestOptions.path.contains('/auth/register') &&
-            !e.requestOptions.path.contains('/auth/refresh')) {
+            !e.requestOptions.path.contains('/auth/refresh') &&
+            !e.requestOptions.path.contains('/sns/')) {
           
           _logger.info('401 에러 감지 - 토큰 갱신 시도');
           
