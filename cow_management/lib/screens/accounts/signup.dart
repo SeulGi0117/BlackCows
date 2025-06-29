@@ -9,6 +9,14 @@ import 'package:provider/provider.dart';
 import 'package:cow_management/providers/user_provider.dart';
 import 'package:cow_management/widgets/modern_card.dart';
 import 'package:cow_management/widgets/loading_widget.dart';
+import 'package:flutter/foundation.dart';
+
+String getApiBaseUrl() {
+  if (kIsWeb) {
+    return 'http://52.78.212.96:8000'; // 실제 서버 주소로 교체
+  }
+  return dotenv.env['API_BASE_URL'] ?? '';
+}
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -37,7 +45,6 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
   bool _isLoading = false;
   int _currentPage = 0;
   
-  late String baseUrl;
   final _logger = Logger('SignupPage');
   
   // Animation Controller
@@ -48,11 +55,6 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
   @override
   void initState() {
     super.initState();
-    baseUrl = dotenv.env['API_BASE_URL'] ?? '';
-    if (baseUrl.isEmpty) {
-      _logger.warning('경고: API_BASE_URL이 설정되지 않았습니다. .env 파일을 확인해주세요.');
-    }
-    
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -625,7 +627,8 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
       final password = _passwordController.text;
       final passwordConfirm = _passwordConfirmController.text;
       final farmNickname = _farmNicknameController.text.trim();
-
+      final baseUrl = getApiBaseUrl();
+      
       final url = Uri.parse('$baseUrl/auth/register');
       
       final response = await http.post(

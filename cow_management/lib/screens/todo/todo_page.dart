@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../widgets/modern_card.dart';
+// 캘린더 패키지 임포트 (예시)
+// import 'package:table_calendar/table_calendar.dart';
 
 class TodoPage extends StatefulWidget {
   const TodoPage({super.key});
@@ -52,6 +54,15 @@ class _TodoPageState extends State<TodoPage> {
     ),
   ];
 
+  // 더미 캘린더 일정 데이터
+  final Map<DateTime, List<String>> _dummyEvents = {
+    DateTime.utc(2024, 6, 10): ['백신접종', '건강검진'],
+    DateTime.utc(2024, 6, 12): ['착유'],
+    DateTime.utc(2024, 6, 15): ['사료배급'],
+  };
+
+  DateTime _selectedDay = DateTime.now();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -64,6 +75,76 @@ class _TodoPageState extends State<TodoPage> {
       ),
       body: Column(
         children: [
+          // 더미 캘린더
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('더미 일정 캘린더', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                const SizedBox(height: 8),
+                // 실제 캘린더 위젯으로 교체 가능
+                SizedBox(
+                  height: 80,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: _dummyEvents.entries.map((entry) {
+                      return Container(
+                        margin: const EdgeInsets.only(right: 12),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text('${entry.key.month}/${entry.key.day}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                            ...entry.value.map((e) => Text(e, style: const TextStyle(fontSize: 12))).toList(),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // 실제 유저 할일 기반 캘린더 (구조만, 실제 연동은 추후)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('내 할일 캘린더', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 80,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: _todos.map((todo) {
+                      return Container(
+                        margin: const EdgeInsets.only(right: 12),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text('${todo.dueDate.month}/${todo.dueDate.day}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                            Text(todo.title, style: const TextStyle(fontSize: 12)),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
           _buildTodoSummary(),
           Expanded(
             child: _buildTodoItems(),

@@ -12,6 +12,14 @@ import 'find_user_id_page.dart';
 import 'find_password_page.dart';
 import '../../services/auth/google_auth_service.dart';
 import '../../services/auth/token_manager.dart';
+import 'package:flutter/foundation.dart';
+
+String getApiBaseUrl() {
+  if (kIsWeb) {
+    return 'https://your-server-url.com'; // 실제 서버 주소로 교체
+  }
+  return dotenv.env['API_BASE_URL'] ?? '';
+}
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -28,7 +36,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   
   bool _isLoading = false;
   bool _isPasswordVisible = false;
-  late String baseUrl;
   final _logger = Logger('LoginPage');
   
   late AnimationController _animationController;
@@ -53,10 +60,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   @override
   void initState() {
     super.initState();
-    baseUrl = dotenv.env['API_BASE_URL'] ?? '';
-    if (baseUrl.isEmpty) {
-      _logger.warning('경고: API_BASE_URL이 설정되지 않았습니다. .env 파일을 확인해주세요.');
-    }
     
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 1000),
@@ -409,12 +412,12 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
       return;
     }
 
-    final userId = _userIdController.text.trim();
-    final password = _passwordController.text.trim();
-
     setState(() => _isLoading = true);
 
     try {
+      final userId = _userIdController.text.trim();
+      final password = _passwordController.text.trim();
+      final baseUrl = getApiBaseUrl();
       final userProvider = Provider.of<UserProvider>(context, listen: false);
       final result = await userProvider.loginWithResult(userId, password, '$baseUrl/auth/login');
 

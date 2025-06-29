@@ -4,6 +4,14 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:logging/logging.dart';
+import 'package:flutter/foundation.dart';
+
+String getApiBaseUrl() {
+  if (kIsWeb) {
+    return 'http://52.78.212.96:8000'; // 실제 서버 주소로 교체
+  }
+  return dotenv.env['API_BASE_URL'] ?? '';
+}
 
 class FindPasswordPage extends StatefulWidget {
   const FindPasswordPage({super.key});
@@ -44,17 +52,19 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
   @override
   void initState() {
     super.initState();
-    baseUrl = dotenv.env['API_BASE_URL'] ?? '';
-    if (baseUrl.isEmpty) {
-      _logger.warning('경고: API_BASE_URL이 설정되지 않았습니다. .env 파일을 확인해주세요.');
-    }
+    // baseUrl = dotenv.env['API_BASE_URL'] ?? '';
+    // if (baseUrl.isEmpty) {
+    //   _logger.warning('경고: API_BASE_URL이 설정되지 않았습니다. .env 파일을 확인해주세요.');
+    // }
   }
 
   // 1단계: 사용자 정보 확인 및 재설정 토큰 요청
   Future<void> _requestPasswordReset() async {
-    final username = _usernameController.text.trim(); // 사용자 이름/실명
-    final userId = _userIdController.text.trim(); // 로그인용 아이디
-    final email = _emailController.text.trim(); // 이메일
+    final username = _usernameController.text.trim();
+    final userId = _userIdController.text.trim();
+    final email = _emailController.text.trim();
+    final baseUrl = getApiBaseUrl();
+    final url = Uri.parse('$baseUrl/auth/request-password-reset');
 
     // 입력 검증
     if (username.isEmpty || userId.isEmpty || email.isEmpty) {
@@ -92,7 +102,6 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
     setState(() => _isLoading = true);
 
     try {
-      final url = Uri.parse('$baseUrl/auth/request-password-reset');
       _logger.info('비밀번호 재설정 요청 URL: $url');
       _logger.info('요청 데이터: username=$username, user_id=$userId, email=$email');
 
@@ -185,6 +194,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
     setState(() => _isLoading = true);
 
     try {
+      final baseUrl = getApiBaseUrl();
       final url = Uri.parse('$baseUrl/auth/verify-reset-token');
       _logger.info('토큰 확인 요청 URL: $url');
 
@@ -246,6 +256,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
     final newPassword = _newPasswordController.text.trim();
     final confirmPassword = _confirmPasswordController.text.trim();
     final token = _tokenController.text.trim();
+    final baseUrl = getApiBaseUrl();
 
     // 입력 검증
     if (newPassword.isEmpty || confirmPassword.isEmpty) {

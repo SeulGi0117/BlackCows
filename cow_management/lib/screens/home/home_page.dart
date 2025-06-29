@@ -788,76 +788,79 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     final todayTodos = 3;
     final overdueTodos = 1;
     
-    return Row(
-      children: [
-        Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: const Color(0xFFFF9800).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
+    return InkWell(
+      onTap: () => Navigator.pushNamed(context, '/todo'),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: const Color(0xFFFF9800).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.assignment, color: Color(0xFFFF9800), size: 24),
           ),
-          child: const Icon(Icons.assignment, color: Color(0xFFFF9800), size: 24),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                '할일 관리',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2E3A59),
-                ),
-              ),
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF4CAF50).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '오늘 $todayTodos개',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF4CAF50),
-                      ),
-                    ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '할일 관리',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF2E3A59),
                   ),
-                  const SizedBox(width: 8),
-                  if (overdueTodos > 0)
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFE53935).withOpacity(0.1),
+                        color: const Color(0xFF4CAF50).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        '지연 $overdueTodos개',
+                        '오늘 $todayTodos개',
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFFE53935),
+                          color: Color(0xFF4CAF50),
                         ),
                       ),
                     ),
-                ],
-              ),
-            ],
+                    const SizedBox(width: 8),
+                    if (overdueTodos > 0)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE53935).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '지연 $overdueTodos개',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFFE53935),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
-        Icon(
-          Icons.arrow_forward_ios_rounded,
-          color: Colors.grey.shade400,
-          size: 16,
-        ),
-      ],
+          Icon(
+            Icons.arrow_forward_ios_rounded,
+            color: Colors.grey.shade400,
+            size: 16,
+          ),
+        ],
+      ),
     );
   }
 
