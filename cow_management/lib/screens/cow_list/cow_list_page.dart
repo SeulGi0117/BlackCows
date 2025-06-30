@@ -19,39 +19,46 @@ class CowListPage extends StatefulWidget {
   State<CowListPage> createState() => _CowListPageState();
 }
 
-class _CowListPageState extends State<CowListPage> with TickerProviderStateMixin {
+class _CowListPageState extends State<CowListPage>
+    with TickerProviderStateMixin {
   final _logger = Logger('CowListPage');
   final TextEditingController _searchController = TextEditingController();
   String? _selectedStatus;
   bool _isLoading = false;
   bool _cowsLoadedOnce = false;
-  
+
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  
+
   final List<String> _statusFilters = ['전체', '정상', '주의', '이상'];
 
   @override
   void initState() {
     super.initState();
-    
+
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
-    
+
     _animationController.forward();
-    
+
     final cowProvider = Provider.of<CowProvider>(context, listen: false);
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    
-    if (!_cowsLoadedOnce && cowProvider.cows.isEmpty && userProvider.isLoggedIn && userProvider.accessToken != null) {
+
+    if (!_cowsLoadedOnce &&
+        cowProvider.cows.isEmpty &&
+        userProvider.isLoggedIn &&
+        userProvider.accessToken != null) {
       _cowsLoadedOnce = true;
-      cowProvider.fetchCowsFromBackend(userProvider.accessToken!, forceRefresh: true, userProvider: userProvider).catchError((error) {
+      cowProvider
+          .fetchCowsFromBackend(userProvider.accessToken!,
+              forceRefresh: true, userProvider: userProvider)
+          .catchError((error) {
         _cowsLoadedOnce = false;
         print('소 목록 페이지에서 초기 로딩 실패: $error');
       });
@@ -142,7 +149,7 @@ class _CowListPageState extends State<CowListPage> with TickerProviderStateMixin
     return Consumer<CowProvider>(
       builder: (context, cowProvider, child) {
         final filteredCows = _getFilteredCows(cowProvider.cows);
-        
+
         return ModernCard(
           margin: const EdgeInsets.all(16),
           child: Column(
@@ -190,7 +197,8 @@ class _CowListPageState extends State<CowListPage> with TickerProviderStateMixin
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: const Color(0xFF4CAF50).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
@@ -198,9 +206,9 @@ class _CowListPageState extends State<CowListPage> with TickerProviderStateMixin
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.favorite,
-                          color: const Color(0xFF4CAF50),
+                          color: Color(0xFF4CAF50),
                           size: 16,
                         ),
                         const SizedBox(width: 4),
@@ -233,8 +241,9 @@ class _CowListPageState extends State<CowListPage> with TickerProviderStateMixin
         itemCount: _statusFilters.length,
         itemBuilder: (context, index) {
           final status = _statusFilters[index];
-          final isSelected = _selectedStatus == status || (_selectedStatus == null && status == '전체');
-          
+          final isSelected = _selectedStatus == status ||
+              (_selectedStatus == null && status == '전체');
+
           return Container(
             margin: const EdgeInsets.only(right: 12),
             child: FilterChip(
@@ -249,11 +258,13 @@ class _CowListPageState extends State<CowListPage> with TickerProviderStateMixin
               selectedColor: const Color(0xFF4CAF50).withOpacity(0.1),
               checkmarkColor: const Color(0xFF4CAF50),
               labelStyle: TextStyle(
-                color: isSelected ? const Color(0xFF4CAF50) : Colors.grey.shade600,
+                color:
+                    isSelected ? const Color(0xFF4CAF50) : Colors.grey.shade600,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
               side: BorderSide(
-                color: isSelected ? const Color(0xFF4CAF50) : Colors.grey.shade300,
+                color:
+                    isSelected ? const Color(0xFF4CAF50) : Colors.grey.shade300,
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
@@ -277,11 +288,10 @@ class _CowListPageState extends State<CowListPage> with TickerProviderStateMixin
         if (filteredCows.isEmpty) {
           return ModernEmptyWidget(
             title: cowProvider.cows.isEmpty ? '등록된 소가 없습니다' : '해당 조건의 소가 없습니다',
-            description: cowProvider.cows.isEmpty 
-                ? '첫 번째 소를 등록해보세요!' 
-                : '다른 조건으로 검색해보세요',
+            description:
+                cowProvider.cows.isEmpty ? '첫 번째 소를 등록해보세요!' : '다른 조건으로 검색해보세요',
             icon: Icons.pets,
-            action: cowProvider.cows.isEmpty 
+            action: cowProvider.cows.isEmpty
                 ? ModernButton(
                     text: '소 등록하기',
                     onPressed: () => _showAddCowOptions(context),
@@ -363,7 +373,9 @@ class _CowListPageState extends State<CowListPage> with TickerProviderStateMixin
                             return IconButton(
                               icon: Icon(
                                 cow.isFavorite ? Icons.star : Icons.star_border,
-                                color: cow.isFavorite ? Colors.amber : Colors.grey.shade400,
+                                color: cow.isFavorite
+                                    ? Colors.amber
+                                    : Colors.grey.shade400,
                                 size: 24,
                               ),
                               onPressed: () => _toggleFavorite(cow),
@@ -445,7 +457,8 @@ class _CowListPageState extends State<CowListPage> with TickerProviderStateMixin
               ),
               const SizedBox(width: 12),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: const Color(0xFF4CAF50).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
@@ -484,35 +497,33 @@ class _CowListPageState extends State<CowListPage> with TickerProviderStateMixin
 
     // 상태 필터
     if (_selectedStatus != null) {
-      filtered = filtered.where((cow) => cow.status == _selectedStatus).toList();
+      filtered =
+          filtered.where((cow) => cow.status == _selectedStatus).toList();
     }
 
     // 검색 필터
     if (_searchController.text.isNotEmpty) {
       final query = _searchController.text.toLowerCase();
-      filtered = filtered.where((cow) =>
-          cow.name.toLowerCase().contains(query) ||
-          (cow.breed?.toLowerCase() ?? '').contains(query) ||
-          cow.earTagNumber.toLowerCase().contains(query)).toList();
+      filtered = filtered
+          .where((cow) =>
+              cow.name.toLowerCase().contains(query) ||
+              (cow.breed?.toLowerCase() ?? '').contains(query) ||
+              cow.earTagNumber.toLowerCase().contains(query))
+          .toList();
     }
 
     return filtered;
   }
 
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case '정상':
-      case '건강':
+  Color _getStatusColor(String healthStatus) {
+    switch (healthStatus) {
+      case '양호':
         return const Color(0xFF4CAF50); // 초록
-      case '주의':
-      case '치료중':
-        return const Color(0xFFFF9800); // 주황
-      case '이상':
+      case '경고':
+        return const Color.fromARGB(255, 255, 137, 2); //주황
+      case '위험':
         return const Color(0xFFE53935); // 빨강
-      case '임신':
-        return const Color(0xFF2196F3);
-      case '건유':
-        return const Color(0xFFFF9800);
+
       default:
         return Colors.grey;
     }
@@ -535,30 +546,20 @@ class _CowListPageState extends State<CowListPage> with TickerProviderStateMixin
 
   String _getAgeString(DateTime? birthDate) {
     if (birthDate == null) {
-      return '정보없음';
+      return '생년월일 정보 없음';
     }
-    
+
     try {
-      final now = DateTime.now();
-      final difference = now.difference(birthDate);
-      final days = difference.inDays;
-      
-      if (days < 30) {
-        return '${days}일';
-      } else if (days < 365) {
-        return '${(days / 30).floor()}개월';
-      } else {
-        return '${(days / 365).floor()}세';
-      }
+      return '${birthDate.year}년 ${birthDate.month.toString().padLeft(2, '0')}월 ${birthDate.day.toString().padLeft(2, '0')}일생';
     } catch (e) {
-      return '정보없음';
+      return '생년월일 정보 오류';
     }
   }
 
   Future<void> _toggleFavorite(Cow cow) async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final cowProvider = Provider.of<CowProvider>(context, listen: false);
-    
+
     if (userProvider.accessToken == null) {
       _showErrorSnackBar('로그인이 필요합니다.');
       return;
@@ -566,7 +567,7 @@ class _CowListPageState extends State<CowListPage> with TickerProviderStateMixin
 
     try {
       await cowProvider.toggleFavorite(cow, userProvider.accessToken!);
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
@@ -578,14 +579,18 @@ class _CowListPageState extends State<CowListPage> with TickerProviderStateMixin
               ),
               const SizedBox(width: 12),
               Text(
-                cow.isFavorite ? '${cow.name}을(를) 즐겨찾기에 추가했습니다' : '${cow.name}을(를) 즐겨찾기에서 제거했습니다',
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+                cow.isFavorite
+                    ? '${cow.name}을(를) 즐겨찾기에 추가했습니다'
+                    : '${cow.name}을(를) 즐겨찾기에서 제거했습니다',
+                style: const TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.w500),
               ),
             ],
           ),
           backgroundColor: const Color(0xFF4CAF50),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           margin: const EdgeInsets.all(16),
         ),
       );
@@ -710,7 +715,8 @@ class _CowListPageState extends State<CowListPage> with TickerProviderStateMixin
               spacing: 12,
               runSpacing: 12,
               children: ['전체', '건강', '치료중', '임신', '건유'].map((status) {
-                final isSelected = _selectedStatus == status || (_selectedStatus == null && status == '전체');
+                final isSelected = _selectedStatus == status ||
+                    (_selectedStatus == null && status == '전체');
                 return FilterChip(
                   label: Text(status),
                   selected: isSelected,
@@ -724,7 +730,9 @@ class _CowListPageState extends State<CowListPage> with TickerProviderStateMixin
                   selectedColor: const Color(0xFF4CAF50).withOpacity(0.1),
                   checkmarkColor: const Color(0xFF4CAF50),
                   side: BorderSide(
-                    color: isSelected ? const Color(0xFF4CAF50) : Colors.grey.shade300,
+                    color: isSelected
+                        ? const Color(0xFF4CAF50)
+                        : Colors.grey.shade300,
                   ),
                 );
               }).toList(),
@@ -771,7 +779,8 @@ class _CowListPageState extends State<CowListPage> with TickerProviderStateMixin
             ),
             const SizedBox(height: 20),
             ListTile(
-              leading: const Icon(Icons.sort_by_alpha, color: Color(0xFF4CAF50)),
+              leading:
+                  const Icon(Icons.sort_by_alpha, color: Color(0xFF4CAF50)),
               title: const Text('이름순'),
               onTap: () => Navigator.pop(context),
             ),
@@ -781,7 +790,8 @@ class _CowListPageState extends State<CowListPage> with TickerProviderStateMixin
               onTap: () => Navigator.pop(context),
             ),
             ListTile(
-              leading: const Icon(Icons.health_and_safety, color: Color(0xFF4CAF50)),
+              leading:
+                  const Icon(Icons.health_and_safety, color: Color(0xFF4CAF50)),
               title: const Text('상태별'),
               onTap: () => Navigator.pop(context),
             ),
@@ -870,7 +880,8 @@ class _CowListPageState extends State<CowListPage> with TickerProviderStateMixin
                               ),
                               const SizedBox(width: 8),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 2),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFF4CAF50),
                                   borderRadius: BorderRadius.circular(12),
@@ -982,7 +993,8 @@ class _CowListPageState extends State<CowListPage> with TickerProviderStateMixin
             Expanded(
               child: Text(
                 message,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+                style: const TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.w500),
               ),
             ),
           ],
@@ -997,7 +1009,7 @@ class _CowListPageState extends State<CowListPage> with TickerProviderStateMixin
 
   Future<void> _refreshCowList() async {
     setState(() => _isLoading = true);
-    
+
     try {
       await _fetchCowsFromBackend();
     } finally {
@@ -1008,7 +1020,7 @@ class _CowListPageState extends State<CowListPage> with TickerProviderStateMixin
   Future<void> _fetchCowsFromBackend() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final cowProvider = Provider.of<CowProvider>(context, listen: false);
-    
+
     if (userProvider.accessToken != null) {
       try {
         await cowProvider.fetchCowsFromBackend(

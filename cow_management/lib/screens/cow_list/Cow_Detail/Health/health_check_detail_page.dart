@@ -33,7 +33,7 @@ class HealthCheckDetailPage extends StatelessWidget {
                     style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.blue),
+                        color: Colors.black),
                   ),
                   const SizedBox(height: 16),
                   _buildInfoRow('📅 검진 날짜', record.recordDate),
@@ -58,7 +58,7 @@ class HealthCheckDetailPage extends StatelessWidget {
                     style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.red),
+                        color: Colors.black),
                   ),
                   const SizedBox(height: 16),
                   _buildInfoRow('🌡️ 체온', '${record.bodyTemperature}°C'),
@@ -85,7 +85,7 @@ class HealthCheckDetailPage extends StatelessWidget {
                     style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.green),
+                        color: Colors.black),
                   ),
                   const SizedBox(height: 16),
                   if (record.udderCondition.isNotEmpty)
@@ -118,7 +118,7 @@ class HealthCheckDetailPage extends StatelessWidget {
                       style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Colors.orange),
+                          color: Colors.black),
                     ),
                     const SizedBox(height: 16),
                     if (record.activityLevel.isNotEmpty)
@@ -145,7 +145,7 @@ class HealthCheckDetailPage extends StatelessWidget {
                       style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Colors.red),
+                          color: Colors.black),
                     ),
                     const SizedBox(height: 16),
                     _buildInfoRow('🚨 증상', record.abnormalSymptoms.join(', ')),
@@ -168,7 +168,7 @@ class HealthCheckDetailPage extends StatelessWidget {
                     style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.purple),
+                        color: Colors.black),
                   ),
                   const SizedBox(height: 16),
                   if (record.nextCheckDate.isNotEmpty)
