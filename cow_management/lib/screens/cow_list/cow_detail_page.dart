@@ -7,7 +7,6 @@ import 'package:cow_management/models/cow.dart';
 import 'package:cow_management/screens/cow_list/cow_edit_page.dart';
 import 'package:cow_management/providers/user_provider.dart';
 import 'package:cow_management/utils/error_utils.dart';
-import 'package:cow_management/screens/cow_list/cow_list_page.dart';
 import 'package:cow_management/screens/cow_list/cow_detailed_records_page.dart';
 
 class CowDetailPage extends StatefulWidget {

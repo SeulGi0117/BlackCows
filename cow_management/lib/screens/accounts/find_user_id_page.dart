@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:logging/logging.dart';
+import '../../config/api_config.dart';
 import 'package:flutter/foundation.dart';
 
 class FindUserIdPage extends StatefulWidget {
@@ -32,7 +32,7 @@ class _FindUserIdPageState extends State<FindUserIdPage> {
   Future<void> _findUserId() async {
     final username = _usernameController.text.trim(); // 사용자 이름/실명
     final email = _emailController.text.trim();
-    final baseUrl = dotenv.env['API_BASE_URL'] ?? '';
+    final baseUrl = ApiConfig.baseUrl;
 
     // 입력 검증
     if (username.isEmpty || email.isEmpty) {

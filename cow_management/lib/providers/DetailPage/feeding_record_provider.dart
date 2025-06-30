@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:logging/logging.dart';
+import '../../config/api_config.dart';
 import 'package:cow_management/models/Detail/feeding_record.dart';
 
 class FeedingRecordProvider with ChangeNotifier {
+  final baseUrl = ApiConfig.baseUrl;
+  final _logger = Logger('FeedingRecordProvider');
   List<FeedingRecord> _records = [];
 
   List<FeedingRecord> get records => _records;
 
   Future<void> fetchRecords(String cowId, String token) async {
     final dio = Dio();
-    final baseUrl = dotenv.env['API_BASE_URL'];
 
     if (baseUrl == null) {
       print('⚠️ API_BASE_URL이 설정되지 않았습니다.');
@@ -98,7 +100,6 @@ class FeedingRecordProvider with ChangeNotifier {
 
   Future<bool> addRecord(FeedingRecord record, String token) async {
     final dio = Dio();
-    final baseUrl = dotenv.env['API_BASE_URL'];
 
     if (baseUrl == null) return false;
 
@@ -122,7 +123,6 @@ class FeedingRecordProvider with ChangeNotifier {
 
   Future<bool> deleteRecord(String id, String token) async {
     final dio = Dio();
-    final baseUrl = dotenv.env['API_BASE_URL'];
 
     if (baseUrl == null) return false;
 
@@ -145,7 +145,6 @@ class FeedingRecordProvider with ChangeNotifier {
 
   Future<bool> updateRecord(String id, FeedingRecord updated, String token) async {
     final dio = Dio();
-    final baseUrl = dotenv.env['API_BASE_URL'];
 
     if (baseUrl == null) return false;
 

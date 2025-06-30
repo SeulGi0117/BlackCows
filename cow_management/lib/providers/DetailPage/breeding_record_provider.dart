@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:logging/logging.dart';
+import '../../config/api_config.dart';
 import 'package:cow_management/models/Detail/breeding_record.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class BreedingRecordProvider with ChangeNotifier {
   final List<BreedingRecord> _records = [];
+  final String baseUrl = ApiConfig.baseUrl;
+  final _logger = Logger('BreedingRecordProvider');
 
   List<BreedingRecord> get records => List.unmodifiable(_records);
 
   final Dio _dio = Dio();
-  final String baseUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
 
   Future<void> fetchRecords(String cowId, String token) async {
     try {

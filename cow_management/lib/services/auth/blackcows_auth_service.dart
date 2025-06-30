@@ -1,16 +1,12 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'token_manager.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/foundation.dart';
+import '../../config/api_config.dart';
 
 class BlackCowsAuthService {
   static String get baseUrl {
-    if (kIsWeb) {
-      return 'http://52.78.212.96:8000';
-    } else {
-      return dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
-    }
+    return ApiConfig.baseUrl;
   }
 
   static Future<Map<String, dynamic>?> loginToServer({

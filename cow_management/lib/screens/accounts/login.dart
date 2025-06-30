@@ -5,8 +5,8 @@ import 'package:cow_management/providers/user_provider.dart';
 import 'package:cow_management/providers/cow_provider.dart';
 import 'package:cow_management/widgets/modern_card.dart';
 import 'package:cow_management/widgets/loading_widget.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:logging/logging.dart';
+import '../../config/api_config.dart';
 import 'dart:math';
 import 'find_user_id_page.dart' show FindUserIdPage;
 import 'find_password_page.dart' show FindPasswordPage;
@@ -54,7 +54,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   @override
   void initState() {
     super.initState();
-    baseUrl = dotenv.env['API_BASE_URL'] ?? '';
+    baseUrl = ApiConfig.baseUrl;
     if (baseUrl.isEmpty) {
       _logger.warning('경고: API_BASE_URL이 설정되지 않았습니다. .env 파일을 확인해주세요.');
     }

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cow_management/models/cow.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:dio/dio.dart';
 import 'package:logging/logging.dart';
 import 'package:cow_management/providers/user_provider.dart';
+import '../config/api_config.dart';
 
 class CowProvider with ChangeNotifier {
   final List<Cow> _cows = [];
@@ -62,7 +62,7 @@ class CowProvider with ChangeNotifier {
   // 즐겨찾기 기능 (새로운 API 엔드포인트 사용)
   Future<void> toggleFavorite(Cow cow, String token) async {
     final dio = Dio();
-    final apiUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
+    final apiUrl = ApiConfig.baseUrl;
 
     final newValue = !cow.isFavorite;
 
@@ -103,7 +103,7 @@ class CowProvider with ChangeNotifier {
   // 이표번호로 젖소 검색
   Future<Cow?> searchByEarTag(String earTagNumber, String token) async {
     final dio = Dio();
-    final apiUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
+    final apiUrl = ApiConfig.baseUrl;
 
     try {
       final response = await dio.get(
@@ -130,7 +130,7 @@ class CowProvider with ChangeNotifier {
   // 농장 통계 조회
   Future<Map<String, dynamic>?> getFarmStatistics(String token) async {
     final dio = Dio();
-    final apiUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
+    final apiUrl = ApiConfig.baseUrl;
 
     try {
       final response = await dio.get(
@@ -157,7 +157,7 @@ class CowProvider with ChangeNotifier {
   // 즐겨찾기 젖소 목록 조회
   Future<List<Cow>> getFavoritesList(String token) async {
     final dio = Dio();
-    final apiUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
+    final apiUrl = ApiConfig.baseUrl;
 
     try {
       final response = await dio.get(
@@ -185,7 +185,7 @@ class CowProvider with ChangeNotifier {
   // 젖소 상세정보 보유 여부 확인
   Future<bool> hasDetailedInfo(String cowId, String token) async {
     final dio = Dio();
-    final apiUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
+    final apiUrl = ApiConfig.baseUrl;
 
     try {
       final response = await dio.get(
@@ -212,7 +212,7 @@ class CowProvider with ChangeNotifier {
   // 축산물이력제 정보 조회
   Future<Map<String, dynamic>?> getLivestockTraceInfo(String cowId, String token) async {
     final dio = Dio();
-    final apiUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
+    final apiUrl = ApiConfig.baseUrl;
 
     try {
       final response = await dio.get(
@@ -259,7 +259,7 @@ class CowProvider with ChangeNotifier {
     if (!forceRefresh && _cowsLoadedOnce) return;
     
     final dio = Dio();
-    final apiUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
+    final apiUrl = ApiConfig.baseUrl;
     
     _logger.info('소 목록 로딩 시작 - API URL: $apiUrl');
     

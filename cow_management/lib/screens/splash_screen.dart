@@ -3,8 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cow_management/providers/user_provider.dart';
 import 'package:cow_management/providers/cow_provider.dart';
-import 'package:cow_management/main.dart';
-import 'package:cow_management/screens/accounts/login.dart';
 import 'package:logging/logging.dart';
 
 class SplashScreen extends StatefulWidget {

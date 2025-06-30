@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:logging/logging.dart';
+import '../config/api_config.dart';
 
 class DetailedRecordsService {
   static final DetailedRecordsService _instance = DetailedRecordsService._internal();
@@ -10,7 +10,7 @@ class DetailedRecordsService {
   final _logger = Logger('DetailedRecordsService');
 
   DetailedRecordsService._internal() {
-    final baseUrl = dotenv.env['API_BASE_URL'] ?? '';
+    final baseUrl = ApiConfig.baseUrl;
     dio = Dio(BaseOptions(
       baseUrl: baseUrl,
       contentType: 'application/json',

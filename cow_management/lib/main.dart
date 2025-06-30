@@ -6,7 +6,7 @@ import 'package:logging/logging.dart';
 import 'dart:io' show Platform;
 
 // 웹이 아닐 때만 import
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+// import 'package:flutter_dotenv/flutter_dotenv.dart'; // 웹에서는 사용하지 않음
 // import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart'; // 삭제
 import 'package:firebase_core/firebase_core.dart';
 
@@ -36,15 +36,10 @@ import 'screens/onboarding/onboarding_page.dart';
 import 'screens/onboarding/auth_selection_page.dart';
 import 'screens/accounts/login.dart';
 import 'screens/accounts/signup.dart';
-import 'screens/accounts/find_user_id_page.dart';
-import 'screens/accounts/find_password_page.dart';
 import 'screens/home/home_page.dart';
 import 'screens/cow_list/cow_list_page.dart';
 import 'screens/cow_list/cow_detail_page.dart';
-import 'screens/cow_list/cow_add_page.dart';
 import 'screens/cow_list/cow_edit_page.dart';
-import 'screens/cow_list/cow_registration_flow_page.dart';
-import 'screens/cow_list/cow_detailed_records_page.dart';
 import 'screens/profile/profile_page.dart';
 import 'screens/notifications/notification_page.dart';
 import 'screens/todo/todo_page.dart';
@@ -75,18 +70,16 @@ import 'screens/cow_list/Cow_Detail//Insemination/insemination_add_page.dart';
 import 'screens/cow_list/Cow_Detail//Insemination/insemination_list_page.dart';
 
 import 'screens/cow_list/Cow_Detail/Breeding/breeding_add_page.dart';
-import 'screens/cow_list/Cow_Detail/Breeding/breeding_list_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 웹 환경에서도 dotenv.load()를 반드시 호출해야 함
-  // 웹: web/.env 파일 필요, 모바일/데스크탑: assets/config/.env 사용
-  if (kIsWeb) {
-    await dotenv.load(); // web/.env 파일 사용
-  } else {
-    await dotenv.load(fileName: "assets/config/.env");
-  }
+  // 웹에서는 컴파일 타임 환경변수 사용, 모바일에서만 .env 파일 로드
+  // if (kIsWeb) {
+  //   await dotenv.load(); // web/.env 파일 사용
+  // } else {
+  //   await dotenv.load(fileName: "assets/config/.env");
+  // }
 
   // Windows가 아니면 Firebase 초기화
   if (!kIsWeb && !Platform.isWindows) {
@@ -96,17 +89,6 @@ Future<void> main() async {
       print('Firebase 초기화 실패: $e');
     }
   }
-
-  // Kakao SDK도 Windows에서 실행하지 않음
-  // if (!kIsWeb && !Platform.isWindows) {
-  //   try {
-  //     KakaoSdk.init(
-  //       nativeAppKey: '40bba826862b5b1107aec5179bdbcb81',
-  //     );
-  //   } catch (e) {
-  //     print('Kakao SDK 초기화 실패: $e');
-  //   }
-  // }
 
   Logger.root.level = Level.ALL;
   Logger.root.onRecord.listen((record) {
@@ -187,7 +169,7 @@ class SoDamApp extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               ),
             ),
-            cardTheme: CardThemeData(
+            cardTheme: CardTheme(
               color: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(
@@ -269,7 +251,7 @@ class SoDamApp extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               ),
             ),
-            cardTheme: CardThemeData(
+            cardTheme: CardTheme(
               color: const Color(0xFF232323),
               elevation: 0,
               shape: RoundedRectangleBorder(

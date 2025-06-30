@@ -4,8 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart';
 import 'package:cow_management/services/dio_client.dart';
 import 'package:logging/logging.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
+import '../config/api_config.dart';
 
 // 로그인 에러 타입 정의
 enum LoginErrorType {
@@ -348,7 +348,7 @@ class UserProvider with ChangeNotifier {
     }
 
     try {
-      final baseUrl = dotenv.env['API_BASE_URL'] ?? '';
+      final baseUrl = ApiConfig.baseUrl;
       if (baseUrl.isEmpty) {
         _logger.warning('API_BASE_URL이 설정되지 않았습니다');
         return false;
@@ -471,7 +471,7 @@ class UserProvider with ChangeNotifier {
   // 토큰 유효성 검증 및 사용자 정보 로드
   Future<bool> _validateTokenAndLoadUser() async {
     try {
-      final baseUrl = dotenv.env['API_BASE_URL'] ?? '';
+      final baseUrl = ApiConfig.baseUrl;
       _logger.info('API_BASE_URL: $baseUrl');
       
       if (baseUrl.isEmpty) {
@@ -588,7 +588,7 @@ class UserProvider with ChangeNotifier {
     }
 
     try {
-      final baseUrl = dotenv.env['API_BASE_URL'] ?? '';
+      final baseUrl = ApiConfig.baseUrl;
       final dio = DioClient().dio;
       
       _logger.info('=== 목장 이름 수정 요청 시작 ===');
@@ -651,7 +651,7 @@ class UserProvider with ChangeNotifier {
     }
 
     try {
-      final baseUrl = dotenv.env['API_BASE_URL'] ?? '';
+      final baseUrl = ApiConfig.baseUrl;
       final dio = DioClient().dio;
       
       _logger.info('=== 회원 탈퇴 요청 시작 ===');
