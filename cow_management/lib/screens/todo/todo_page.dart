@@ -81,7 +81,7 @@ class _TodoPageState extends State<TodoPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('더미 일정 캘린더', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                const Text('일정 캘린더', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 const SizedBox(height: 8),
                 // 실제 캘린더 위젯으로 교체 가능
                 SizedBox(

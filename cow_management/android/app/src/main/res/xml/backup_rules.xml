@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- 전체 백업에서 제외할 데이터 -->
+    <exclude domain="sharedpref" path="flutter_secure_storage" />
+    <exclude domain="database" path="." />
+    <exclude domain="file" path="cache/" />
+</full-backup-content>

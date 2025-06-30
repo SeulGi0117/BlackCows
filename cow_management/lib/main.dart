@@ -149,7 +149,6 @@ class SoDamApp extends StatelessWidget {
           title: 'BlackCows 젖소 관리',
           debugShowCheckedModeBanner: false,
           locale: const Locale('ko', 'KR'),
-          themeMode: themeProvider.themeMode,
           theme: ThemeData(
             useMaterial3: true,
             primaryColor: const Color(0xFF4CAF50),
@@ -187,7 +186,7 @@ class SoDamApp extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               ),
             ),
-            cardTheme: CardThemeData(
+            cardTheme: CardTheme(
               color: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(
@@ -221,88 +220,6 @@ class SoDamApp extends StatelessWidget {
               selectedItemColor: Color(0xFF4CAF50),
               unselectedItemColor: Color(0xFF9E9E9E),
               backgroundColor: Colors.white,
-              type: BottomNavigationBarType.fixed,
-              selectedLabelStyle: TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 12,
-              ),
-              unselectedLabelStyle: TextStyle(
-                fontWeight: FontWeight.w500,
-                fontSize: 12,
-              ),
-              elevation: 8,
-            ),
-          ),
-          darkTheme: ThemeData(
-            useMaterial3: true,
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: const Color(0xFF4CAF50),
-              brightness: Brightness.dark,
-            ),
-            scaffoldBackgroundColor: const Color(0xFF121212),
-            appBarTheme: const AppBarTheme(
-              backgroundColor: Color(0xFF1A1A1A),
-              foregroundColor: Colors.white,
-              elevation: 0,
-              centerTitle: true,
-              iconTheme: IconThemeData(color: Colors.white),
-              titleTextStyle: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(20),
-                  bottomRight: Radius.circular(20),
-                ),
-              ),
-            ),
-            elevatedButtonTheme: ElevatedButtonThemeData(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4CAF50),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              ),
-            ),
-            cardTheme: CardThemeData(
-              color: const Color(0xFF232323),
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            ),
-            inputDecorationTheme: InputDecorationTheme(
-              filled: true,
-              fillColor: const Color(0xFF232323),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFF444444)),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFF444444)),
-              ),
-              focusedBorder: const OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(12)),
-                borderSide: BorderSide(color: Color(0xFF4CAF50), width: 2),
-              ),
-              errorBorder: const OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(12)),
-                borderSide: BorderSide(color: Color(0xFFE53E3E)),
-              ),
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            ),
-            bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-              selectedItemColor: Color(0xFF4CAF50),
-              unselectedItemColor: Color(0xFF9E9E9E),
-              backgroundColor: Color(0xFF232323),
               type: BottomNavigationBarType.fixed,
               selectedLabelStyle: TextStyle(
                 fontWeight: FontWeight.w600,
