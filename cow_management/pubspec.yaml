@@ -45,9 +45,6 @@ dependencies:
   url_launcher: ^6.3.0
   image_picker: ^1.1.2
   
-  # 카카오 로그인
-  kakao_flutter_sdk: ^1.9.7+3
-  
   # 구글 로그인
   google_sign_in: ^6.2.2
   firebase_auth: ^5.3.3

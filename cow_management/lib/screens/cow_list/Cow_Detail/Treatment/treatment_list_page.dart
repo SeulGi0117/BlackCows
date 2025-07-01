@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:cow_management/models/Detail/Health/treatment_record.model.dart';
 import 'package:cow_management/providers/DetailPage/Health/treatment_record_provider.dart';
 import 'package:cow_management/providers/user_provider.dart';
+import 'package:cow_management/screens/cow_list/Cow_Detail/Treatment/treatment_detail_page.dart';
 
 class TreatmentListPage extends StatefulWidget {
   final String cowId;
@@ -218,10 +219,11 @@ class _TreatmentListPageState extends State<TreatmentListPage> {
             ),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
-              Navigator.pushNamed(
+              Navigator.push(
                 context,
-                '/treatment/detail',
-                arguments: record,
+                MaterialPageRoute(
+                  builder: (context) => TreatmentDetailPage(record: record),
+                ),
               );
             },
           ),

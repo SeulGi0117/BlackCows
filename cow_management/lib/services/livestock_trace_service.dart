@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:cow_management/utils/api_config.dart';
 import 'package:logging/logging.dart';
 
+
 class LivestockTraceService {
   static final LivestockTraceService _instance = LivestockTraceService._internal();
   factory LivestockTraceService() => _instance;

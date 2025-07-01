@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:cow_management/models/Detail/Health/weight_record_model.dart';
 import 'package:cow_management/providers/DetailPage/Health/weight_record_provider.dart';
 import 'package:cow_management/providers/user_provider.dart';
+import 'package:cow_management/screens/cow_list/Cow_Detail/Weight/weight_detail_page.dart';
 
 class WeightListPage extends StatefulWidget {
   final String cowId;
@@ -37,10 +38,11 @@ class _WeightListPageState extends State<WeightListPage> {
         _errorMessage = '';
       });
 
-      final token = Provider.of<UserProvider>(context, listen: false).accessToken;
+      final token =
+          Provider.of<UserProvider>(context, listen: false).accessToken;
       await Provider.of<WeightRecordProvider>(context, listen: false)
           .fetchRecords(widget.cowId, token!);
-      
+
       setState(() {
         _isLoading = false;
       });
@@ -143,17 +145,17 @@ class _WeightListPageState extends State<WeightListPage> {
     }
 
     if (records.isEmpty) {
-      return Center(
+      return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.monitor_weight_outlined,
               size: 64,
               color: Colors.grey,
             ),
-            const SizedBox(height: 16),
-            const Text(
+            SizedBox(height: 16),
+            Text(
               '체중측정 기록이 없습니다',
               style: TextStyle(
                 fontSize: 18,
@@ -161,8 +163,8 @@ class _WeightListPageState extends State<WeightListPage> {
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const SizedBox(height: 8),
-            const Text(
+            SizedBox(height: 8),
+            Text(
               '아래 + 버튼을 눌러 첫 번째 기록을 추가해보세요',
               style: TextStyle(
                 fontSize: 14,
@@ -184,7 +186,7 @@ class _WeightListPageState extends State<WeightListPage> {
           elevation: 2,
           child: ListTile(
             leading: CircleAvatar(
-              backgroundColor: Color(0xFF4CAF50).withOpacity(0.1),
+              backgroundColor: const Color(0xFF4CAF50).withOpacity(0.1),
               child: const Icon(
                 Icons.monitor_weight,
                 color: Color(0xFF4CAF50),
@@ -208,10 +210,11 @@ class _WeightListPageState extends State<WeightListPage> {
             ),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
-              Navigator.pushNamed(
+              Navigator.push(
                 context,
-                '/weight/detail',
-                arguments: record,
+                MaterialPageRoute(
+                  builder: (context) => WeightDetailPage(record: record),
+                ),
               );
             },
           ),
