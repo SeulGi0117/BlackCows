@@ -1,8 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:cow_management/utils/api_config.dart';
 import 'package:logging/logging.dart';
-import 'package:flutter/foundation.dart';
 
 class DioClient {
   static final DioClient _instance = DioClient._internal();
@@ -14,12 +13,9 @@ class DioClient {
   final List<RequestOptions> _pendingRequests = [];
 
   DioClient._internal() {
-    // 웹에서는 실제 EC2 서버 URL 사용
-    final baseUrl = kIsWeb 
-        ? 'http://52.78.212.96:8000'  // 실제 EC2 서버 주소
-        : (dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000');
+    final baseUrl = ApiConfig.baseUrl;
     
-    _logger.info('DioClient 초기화 - Platform: ${kIsWeb ? 'Web' : 'Mobile'}, BaseURL: $baseUrl');
+    _logger.info('DioClient 초기화 - BaseURL: $baseUrl');
     
     dio = Dio(BaseOptions(
       baseUrl: baseUrl,

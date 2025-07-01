@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:cow_management/utils/api_config.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 import 'package:cow_management/providers/user_provider.dart';
@@ -620,7 +620,7 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
       final password = _passwordController.text;
       final passwordConfirm = _passwordConfirmController.text;
       final farmNickname = _farmNicknameController.text.trim();
-      final baseUrl = dotenv.env['API_BASE_URL'] ?? '';
+      final baseUrl = ApiConfig.baseUrl;
       
       final url = Uri.parse('$baseUrl/auth/register');
       

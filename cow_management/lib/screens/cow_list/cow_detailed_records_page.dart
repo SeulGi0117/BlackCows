@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import '../../providers/user_provider.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:cow_management/utils/api_config.dart';
 
 class CowDetailedRecordsPage extends StatefulWidget {
   final Cow cow;
@@ -31,7 +31,7 @@ class _CowDetailedRecordsPageState extends State<CowDetailedRecordsPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    _baseUrl = dotenv.env['API_BASE_URL'] ?? '';
+    _baseUrl = ApiConfig.baseUrl;
     _fetchDetailedRecords();
   }
 

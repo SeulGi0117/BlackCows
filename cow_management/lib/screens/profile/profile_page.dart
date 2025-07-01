@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:cow_management/providers/user_provider.dart';
 import 'package:cow_management/screens/onboarding/auth_selection_page.dart';
 import 'package:cow_management/widgets/modern_card.dart';
-import 'package:cow_management/widgets/loading_widget.dart';
 import 'package:flutter/services.dart';
 import 'package:cow_management/providers/theme_provider.dart';
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cow_management/models/Detail/Reproduction/pregnancy_check_record.dart';
+import 'package:cow_management/utils/api_config.dart';
 
 class PregnancyCheckProvider with ChangeNotifier {
   List<PregnancyCheckRecord> _records = [];
@@ -11,9 +11,7 @@ class PregnancyCheckProvider with ChangeNotifier {
   Future<List<PregnancyCheckRecord>> fetchRecords(
       String cowId, String token) async {
     final dio = Dio();
-    final baseUrl = dotenv.env['API_BASE_URL'];
-
-    if (baseUrl == null) return [];
+    final baseUrl = ApiConfig.baseUrl;
 
     try {
       print('요청 데이터: $baseUrl/records/cow/$cowId/breeding-records');
@@ -56,9 +54,7 @@ class PregnancyCheckProvider with ChangeNotifier {
   Future<bool> addPregnancyCheckRecord(
       PregnancyCheckRecord record, String token) async {
     final dio = Dio();
-    final baseUrl = dotenv.env['API_BASE_URL'];
-
-    if (baseUrl == null) return false;
+    final baseUrl = ApiConfig.baseUrl;
 
     try {
       print('요청 데이터: $baseUrl/records/pregnancy-check');
@@ -78,9 +74,7 @@ class PregnancyCheckProvider with ChangeNotifier {
   Future<bool> updateRecord(
       String recordId, PregnancyCheckRecord record, String token) async {
     final dio = Dio();
-    final baseUrl = dotenv.env['API_BASE_URL'];
-
-    if (baseUrl == null) return false;
+    final baseUrl = ApiConfig.baseUrl;
 
     try {
       final response = await dio.put(
@@ -98,9 +92,7 @@ class PregnancyCheckProvider with ChangeNotifier {
 
   Future<bool> deleteRecord(String recordId, String token) async {
     final dio = Dio();
-    final baseUrl = dotenv.env['API_BASE_URL'];
-
-    if (baseUrl == null) return false;
+    final baseUrl = ApiConfig.baseUrl;
 
     try {
       final response = await dio.delete(

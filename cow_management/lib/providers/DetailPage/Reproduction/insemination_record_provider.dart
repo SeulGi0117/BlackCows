@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cow_management/models/Detail/Reproduction/insemination_record.dart';
+import 'package:cow_management/utils/api_config.dart';
 
 class InseminationRecordProvider with ChangeNotifier {
   List<InseminationRecord> _records = [];
@@ -11,9 +11,7 @@ class InseminationRecordProvider with ChangeNotifier {
   Future<List<InseminationRecord>> fetchRecords(
       String cowId, String token) async {
     final dio = Dio();
-    final baseUrl = dotenv.env['API_BASE_URL'];
-
-    if (baseUrl == null) return [];
+    final baseUrl = ApiConfig.baseUrl;
 
     try {
       final response = await dio.get(
@@ -64,9 +62,7 @@ class InseminationRecordProvider with ChangeNotifier {
   Future<bool> addInseminationRecord(
       InseminationRecord record, String token) async {
     final dio = Dio();
-    final baseUrl = dotenv.env['API_BASE_URL'];
-
-    if (baseUrl == null) return false;
+    final baseUrl = ApiConfig.baseUrl;
 
     try {
       final requestData = record.toJson(); // ✅ 핵심 수정 포인트
@@ -90,9 +86,7 @@ class InseminationRecordProvider with ChangeNotifier {
   Future<bool> updateRecord(
       String recordId, InseminationRecord record, String token) async {
     final dio = Dio();
-    final baseUrl = dotenv.env['API_BASE_URL'];
-
-    if (baseUrl == null) return false;
+    final baseUrl = ApiConfig.baseUrl;
 
     try {
       final response = await dio.put(
@@ -110,9 +104,7 @@ class InseminationRecordProvider with ChangeNotifier {
 
   Future<bool> deleteRecord(String recordId, String token) async {
     final dio = Dio();
-    final baseUrl = dotenv.env['API_BASE_URL'];
-
-    if (baseUrl == null) return false;
+    final baseUrl = ApiConfig.baseUrl;
 
     try {
       final response = await dio.delete(

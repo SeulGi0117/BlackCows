@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cow_management/models/Detail/Reproduction/estrus_record.dart';
+import 'package:cow_management/utils/api_config.dart';
 
 class EstrusRecordProvider with ChangeNotifier {
   List<EstrusRecord> _records = [];
@@ -10,9 +10,7 @@ class EstrusRecordProvider with ChangeNotifier {
 
   Future<List<EstrusRecord>> fetchRecords(String cowId, String token) async {
     final dio = Dio();
-    final baseUrl = dotenv.env['API_BASE_URL'];
-
-    if (baseUrl == null) return [];
+    final baseUrl = ApiConfig.baseUrl;
 
     try {
       print('🔄 발정 기록 조회 시작: $baseUrl/records/cow/$cowId/breeding-records');
@@ -68,9 +66,8 @@ class EstrusRecordProvider with ChangeNotifier {
 
   Future<bool> addEstrusRecord(EstrusRecord record, String token) async {
     final dio = Dio();
-    final baseUrl = dotenv.env['API_BASE_URL'];
+    final baseUrl = ApiConfig.baseUrl;
 
-    if (baseUrl == null) return false;
 
     try {
       final requestData = {

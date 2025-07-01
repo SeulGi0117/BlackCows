@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:cow_management/models/Detail/Health/health_check_record.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:cow_management/utils/api_config.dart';
 
 class HealthCheckProvider with ChangeNotifier {
   List<HealthCheckRecord> _records = [];
@@ -10,12 +10,7 @@ class HealthCheckProvider with ChangeNotifier {
 
   Future<bool> fetchRecords(String cowId, String token) async {
     final dio = Dio();
-    final baseUrl = dotenv.env['API_BASE_URL'];
-
-    if (baseUrl == null) {
-      print('⚠️ API_BASE_URL이 설정되지 않았습니다.');
-      return false;
-    }
+    final baseUrl = ApiConfig.baseUrl;
 
     try {
       final response = await dio.get(
@@ -67,7 +62,7 @@ class HealthCheckProvider with ChangeNotifier {
     try {
       final dio = Dio();
       dio.options.headers['Authorization'] = 'Bearer $token';
-      final apiUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
+      final apiUrl = ApiConfig.baseUrl;
 
       print('요청 데이터: $apiUrl/records/cow/$cowId');
       final response = await dio.get(
@@ -94,9 +89,7 @@ class HealthCheckProvider with ChangeNotifier {
 
   Future<bool> addRecord(HealthCheckRecord record, String token) async {
     final dio = Dio();
-    final baseUrl = dotenv.env['API_BASE_URL'];
-
-    if (baseUrl == null) return false;
+    final baseUrl = ApiConfig.baseUrl;
 
     try {
       print('요청 데이터: $baseUrl/records/health-check');
@@ -123,9 +116,7 @@ class HealthCheckProvider with ChangeNotifier {
   Future<bool> updateRecord(
       String id, HealthCheckRecord updated, String token) async {
     final dio = Dio();
-    final baseUrl = dotenv.env['API_BASE_URL'];
-
-    if (baseUrl == null) return false;
+    final baseUrl = ApiConfig.baseUrl;
 
     try {
       final response = await dio.put(
@@ -153,9 +144,7 @@ class HealthCheckProvider with ChangeNotifier {
 
   Future<bool> deleteRecord(String id, String token) async {
     final dio = Dio();
-    final baseUrl = dotenv.env['API_BASE_URL'];
-
-    if (baseUrl == null) return false;
+    final baseUrl = ApiConfig.baseUrl;
 
     try {
       final response = await dio.delete(

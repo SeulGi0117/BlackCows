@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:cow_management/utils/api_config.dart';
 import 'package:logging/logging.dart';
 import 'package:cow_management/models/cow.dart';
 import 'package:cow_management/screens/cow_list/cow_edit_page.dart';
 import 'package:cow_management/providers/user_provider.dart';
 import 'package:cow_management/utils/error_utils.dart';
-import 'package:cow_management/screens/cow_list/cow_list_page.dart';
 import 'package:cow_management/screens/cow_list/cow_detailed_records_page.dart';
 
 class CowDetailPage extends StatefulWidget {
@@ -252,15 +251,15 @@ class _CowDetailPageState extends State<CowDetailPage> {
 
   Future<bool> deleteCow(BuildContext context, String cowId) async {
     final dio = Dio();
-    final String? apiUrl = dotenv.env['API_BASE_URL'];
+    final String apiUrl = ApiConfig.baseUrl;
     final token = await Provider.of<UserProvider>(context, listen: false)
         .loadTokenFromStorage();
 
-    if (apiUrl == null || token == null) {
-      CowDetailPage._logger.severe("API 주소 또는 토큰 없음");
+    if (token == null) {
+      CowDetailPage._logger.severe("토큰 없음");
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('설정 오류: API 주소 또는 인증 토큰이 없습니다')),
+          const SnackBar(content: Text('설정 오류: 인증 토큰이 없습니다')),
         );
       }
       return false;

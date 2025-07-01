@@ -4,14 +4,13 @@ import 'package:provider/provider.dart';
 import 'package:cow_management/providers/user_provider.dart';
 import 'package:cow_management/providers/cow_provider.dart';
 import 'package:cow_management/widgets/modern_card.dart';
-import 'package:cow_management/widgets/loading_widget.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:cow_management/utils/api_config.dart';
+import 'package:cow_management/utils/error_utils.dart';
 import 'package:logging/logging.dart';
 import 'dart:math';
 import 'find_user_id_page.dart' show FindUserIdPage;
 import 'find_password_page.dart' show FindPasswordPage;
 import '../../services/auth/google_auth_service.dart';
-import '../../services/auth/token_manager.dart';
 import 'package:flutter/foundation.dart';
 
 class LoginPage extends StatefulWidget {
@@ -54,10 +53,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   @override
   void initState() {
     super.initState();
-    baseUrl = dotenv.env['API_BASE_URL'] ?? '';
-    if (baseUrl.isEmpty) {
-      _logger.warning('경고: API_BASE_URL이 설정되지 않았습니다. .env 파일을 확인해주세요.');
-    }
+    baseUrl = ApiConfig.baseUrl;
     
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 1000),
@@ -433,42 +429,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
     if (result.errorType == LoginErrorType.serverError || 
         result.errorType == LoginErrorType.timeout ||
         result.errorType == LoginErrorType.unknown) {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Row(
-            children: [
-              const Icon(Icons.error_outline, color: Colors.red),
-              const SizedBox(width: 8),
-              const Expanded(child: Text('서버 연결 오류')),
-            ],
-          ),
-          content: const Text('서버에 연결할 수 없습니다.\n잠시 후 다시 시도해주세요.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('확인'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                await Clipboard.setData(const ClipboardData(text: 'support@blackcowsdairy.com'));
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('개발자 이메일이 클립보드에 복사되었습니다.'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                }
-                Navigator.of(context).pop();
-              },
-              child: const Text('개발자 문의'),
-            ),
-          ],
-        ),
-      );
+      ErrorUtils.showServerErrorDialog(context, customMessage: result.message);
       return;
     }
     // 일반 오류는 기존처럼 AlertDialog 사용

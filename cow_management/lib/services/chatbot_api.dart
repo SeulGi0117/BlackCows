@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cow_management/services/dio_client.dart';
 
 // DioClient 사용하도록 변경

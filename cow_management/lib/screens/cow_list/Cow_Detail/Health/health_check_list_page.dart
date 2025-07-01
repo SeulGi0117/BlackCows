@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cow_management/providers/DetailPage/Health/health_check_provider.dart';
 import 'package:cow_management/providers/user_provider.dart';
-import 'package:cow_management/models/Detail/Health/health_check_record.dart';
 import 'package:cow_management/screens/cow_list/Cow_Detail/Health/health_check_detail_page.dart';
 
 class HealthCheckListPage extends StatefulWidget {

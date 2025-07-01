@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:cow_management/models/Detail/breeding_record.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:cow_management/utils/api_config.dart';
 
 class BreedingRecordProvider with ChangeNotifier {
   final List<BreedingRecord> _records = [];
@@ -9,7 +9,7 @@ class BreedingRecordProvider with ChangeNotifier {
   List<BreedingRecord> get records => List.unmodifiable(_records);
 
   final Dio _dio = Dio();
-  final String baseUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
+  final String baseUrl = ApiConfig.baseUrl;
 
   Future<void> fetchRecords(String cowId, String token) async {
     try {

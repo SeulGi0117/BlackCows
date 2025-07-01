@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:dio/dio.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:cow_management/utils/api_config.dart';
 import 'package:cow_management/providers/user_provider.dart';
 
 class MilkingRecordPage extends StatefulWidget {
@@ -121,9 +121,10 @@ class _MilkingRecordPageState extends State<MilkingRecordPage> {
 
     final token = Provider.of<UserProvider>(context, listen: false).accessToken;
     final dio = Dio();
-    final apiUrl = dotenv.env['API_BASE_URL'];
+    final String apiUrl = ApiConfig.baseUrl;
+    
 
-    if (token == null || apiUrl == null) {
+    if (token == null) {
       setState(() {
         _isLoading = false;
       });

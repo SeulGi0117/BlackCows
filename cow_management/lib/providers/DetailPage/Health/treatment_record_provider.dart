@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cow_management/models/Detail/Health/treatment_record.model.dart';
+import 'package:cow_management/utils/api_config.dart';
 
 class TreatmentRecordProvider with ChangeNotifier {
   final List<TreatmentRecord> _records = [];
@@ -10,12 +10,7 @@ class TreatmentRecordProvider with ChangeNotifier {
 
   Future<void> fetchRecords(String cowId, String token) async {
     final dio = Dio();
-    final baseUrl = dotenv.env['API_BASE_URL'];
-
-    if (baseUrl == null) {
-      print('⚠️ API_BASE_URL이 설정되지 않았습니다.');
-      return;
-    }
+    final baseUrl = ApiConfig.baseUrl;
 
     try {
       print('🔄 치료 기록 조회 시작: $baseUrl/records/cow/$cowId/health-records');
@@ -100,7 +95,7 @@ class TreatmentRecordProvider with ChangeNotifier {
 
   Future<bool> addRecord(TreatmentRecord record, String token) async {
     final dio = Dio();
-    final baseUrl = dotenv.env['API_BASE_URL'];
+    final baseUrl = ApiConfig.baseUrl;
 
     try {
       final response = await dio.post(

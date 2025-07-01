@@ -6,8 +6,6 @@ import 'package:cow_management/providers/user_provider.dart';
 import 'package:cow_management/widgets/modern_card.dart';
 import 'package:cow_management/widgets/loading_widget.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:dio/dio.dart';
 import 'package:cow_management/models/cow.dart';
 import 'package:logging/logging.dart';
 import 'package:cow_management/utils/error_utils.dart';

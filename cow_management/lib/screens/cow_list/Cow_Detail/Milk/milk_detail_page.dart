@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:cow_management/utils/api_config.dart';
 import 'package:cow_management/providers/user_provider.dart';
 
 class MilkingRecordDetailPage extends StatefulWidget {
@@ -32,9 +32,9 @@ class _MilkingRecordDetailPageState extends State<MilkingRecordDetailPage> {
       final String recordId = arguments['recordId'] as String;
       
       final token = Provider.of<UserProvider>(context, listen: false).accessToken;
-      final baseUrl = dotenv.env['API_BASE_URL'];
+      final baseUrl = ApiConfig.baseUrl;
       
-      if (token == null || baseUrl == null) {
+      if (token == null) {
         throw Exception('인증 정보가 없습니다');
       }
 

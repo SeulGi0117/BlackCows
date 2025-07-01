@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 import 'package:cow_management/models/Detail/Health/weight_record_model.dart';
+import 'package:cow_management/utils/api_config.dart';
 
 class WeightRecordProvider with ChangeNotifier {
   List<WeightRecord> _records = [];
@@ -10,12 +11,7 @@ class WeightRecordProvider with ChangeNotifier {
 
   Future<List<WeightRecord>> fetchRecords(String cowId, String token) async {
     final dio = Dio();
-    final baseUrl = dotenv.env['API_BASE_URL'];
-
-    if (baseUrl == null) {
-      print('⚠️ API_BASE_URL이 설정되지 않았습니다.');
-      return [];
-    }
+    final baseUrl = ApiConfig.baseUrl;
 
     try {
       print('요청 데이터: $baseUrl/records/cow/$cowId/weight-records');
@@ -73,9 +69,7 @@ class WeightRecordProvider with ChangeNotifier {
 
   Future<bool> addRecord(WeightRecord record, String token) async {
     final dio = Dio();
-    final baseUrl = dotenv.env['API_BASE_URL'];
-
-    if (baseUrl == null) return false;
+    final baseUrl = ApiConfig.baseUrl;
 
     try {
       print('요청 데이터: $baseUrl/records/weight');

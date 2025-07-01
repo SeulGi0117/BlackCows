@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cow_management/models/Detail/Reproduction/calving_record.dart';
+import 'package:cow_management/utils/api_config.dart';
 
 class CalvingRecordProvider with ChangeNotifier {
   List<CalvingRecord> _records = [];
@@ -10,9 +10,7 @@ class CalvingRecordProvider with ChangeNotifier {
 
   Future<List<CalvingRecord>> fetchRecords(String cowId, String token) async {
     final dio = Dio();
-    final baseUrl = dotenv.env['API_BASE_URL'];
-
-    if (baseUrl == null) return [];
+    final baseUrl = ApiConfig.baseUrl;
 
     try {
       print('요청 데이터: $baseUrl/records/cow/$cowId/breeding-records');
@@ -59,9 +57,7 @@ class CalvingRecordProvider with ChangeNotifier {
 
   Future<bool> addCalvingRecord(CalvingRecord record, String token) async {
     final dio = Dio();
-    final baseUrl = dotenv.env['API_BASE_URL'];
-
-    if (baseUrl == null) return false;
+    final baseUrl = ApiConfig.baseUrl;
 
     try {
       print('요청 데이터: $baseUrl/records/calving');
@@ -81,9 +77,7 @@ class CalvingRecordProvider with ChangeNotifier {
 
   Future<bool> updateRecord(String recordId, CalvingRecord record, String token) async {
     final dio = Dio();
-    final baseUrl = dotenv.env['API_BASE_URL'];
-
-    if (baseUrl == null) return false;
+    final baseUrl = ApiConfig.baseUrl;
 
     try {
       print('요청 데이터: $baseUrl/records/$recordId');
@@ -103,9 +97,7 @@ class CalvingRecordProvider with ChangeNotifier {
 
   Future<bool> deleteRecord(String recordId, String token) async {
     final dio = Dio();
-    final baseUrl = dotenv.env['API_BASE_URL'];
-
-    if (baseUrl == null) return false;
+    final baseUrl = ApiConfig.baseUrl;
 
     try {
       print('요청 데이터: $baseUrl/records/$recordId');

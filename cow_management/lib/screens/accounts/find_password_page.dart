@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:logging/logging.dart';
-import 'package:flutter/foundation.dart';
+import 'package:cow_management/utils/api_config.dart';
 
 class FindPasswordPage extends StatefulWidget {
   const FindPasswordPage({super.key});
@@ -45,10 +44,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
   @override
   void initState() {
     super.initState();
-    baseUrl = dotenv.env['API_BASE_URL'] ?? '';
-    if (baseUrl.isEmpty) {
-      _logger.warning('경고: API_BASE_URL이 설정되지 않았습니다. .env 파일을 확인해주세요.');
-    }
+    baseUrl = ApiConfig.baseUrl;
   }
 
   // 1단계: 사용자 정보 확인 및 재설정 토큰 요청
