@@ -46,6 +46,7 @@ Flutter + FastAPI 기반의 **낙농 데이터 관리 & AI 분석 서비스** �
 ---
 
 ## 🗂️ 프로젝트 구조
+```
 lib/
 ├── models/ # 데이터 모델 클래스
 ├── providers/ # 상태 관리 및 API 통신
@@ -53,7 +54,7 @@ lib/
 ├── services/ # API 호출 및 에러 처리
 ├── widgets/ # 공통 위젯 (카드, 로딩 등)
 └── main.dart # 앱 진입점
-
+```
 
 
 ---
