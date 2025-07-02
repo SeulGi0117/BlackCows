@@ -90,30 +90,37 @@ class GoogleAuthService {
       // ID 토큰 가져오기
       final idToken = await user.getIdToken();
       
-      // BlackCows 서버로 로그인 요청 (백엔드 스펙에 맞춤)
+      // BlackCows 서버로 로그인 요청
       final response = await dioClient.dio.post(
         '/sns/google/login',
         data: {
           'id_token': idToken,
           'farm_nickname': '${user.displayName ?? "사용자"}님의 목장',
         },
-        options: Options(
-          contentType: 'application/x-www-form-urlencoded',
-        ),
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 && response.data != null) {
         final data = response.data;
-        return BlackCowsAuthResult(
-          success: true,
-          message: '서버 인증 성공',
-          accessToken: data['accessToken'],
-          refreshToken: data['refreshToken'],
-        );
+        
+        if (data['accessToken'] != null && data['refreshToken'] != null) {
+          return BlackCowsAuthResult(
+            success: true,
+            message: '서버 인증 성공',
+            accessToken: data['accessToken'],
+            refreshToken: data['refreshToken'],
+          );
+        } else {
+          _logger.warning('서버 응답에 토큰이 없음: $data');
+          return BlackCowsAuthResult(
+            success: false,
+            message: '서버 응답 형식이 올바르지 않습니다.',
+          );
+        }
       } else {
+        _logger.warning('서버 응답 실패: ${response.statusCode}');
         return BlackCowsAuthResult(
           success: false,
-          message: '서버 인증에 실패했습니다.',
+          message: '서버 인증에 실패했습니다. (${response.statusCode})',
         );
       }
     } catch (e) {
