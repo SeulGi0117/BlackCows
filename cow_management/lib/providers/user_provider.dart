@@ -691,7 +691,7 @@ class UserProvider with ChangeNotifier {
         '$baseUrl/auth/delete-account',
         data: {
           'password': password,
-          'confirmation': 'DELETE_CONFIRM',
+          'confirmation': 'DELETE',
         },
         options: Options(
           headers: {'Authorization': 'Bearer $_accessToken'},
