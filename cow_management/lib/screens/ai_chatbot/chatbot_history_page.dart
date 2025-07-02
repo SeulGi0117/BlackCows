@@ -245,229 +245,236 @@ class _ChatbotHistoryPageState extends State<ChatbotHistoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("소담이 채팅 기록"),
-        actions: [
-          // 사이드바 토글 버튼
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: IconButton(
-              icon: Icon(_isSidebarVisible ? Icons.menu_open : Icons.menu),
-              tooltip: _isSidebarVisible ? "채팅방 목록 숨기기" : "채팅방 목록 보이기",
-              onPressed: _toggleSidebar,
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+        return false;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("AI 챗봇 소담이"),
+          automaticallyImplyLeading: false,  // 뒤로가기 버튼 제거
+          actions: [
+            // 사이드바 토글 버튼
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: IconButton(
+                icon: Icon(_isSidebarVisible ? Icons.menu_open : Icons.menu),
+                tooltip: _isSidebarVisible ? "채팅방 목록 숨기기" : "채팅방 목록 보이기",
+                onPressed: _toggleSidebar,
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: IconButton(
-              icon: const Icon(Icons.add_comment_outlined),
-              tooltip: "새 채팅 시작",
-              onPressed: _createNewChatRoom,
+            Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: IconButton(
+                icon: const Icon(Icons.add_comment_outlined),
+                tooltip: "새 채팅 시작",
+                onPressed: _createNewChatRoom,
+              ),
             ),
-          ),
-        ],
-      ),
-      body: Row(
-        children: [
-          // 🟦 왼쪽 채팅방 목록 (조건부 렌더링)
-          if (_isSidebarVisible) ...[
-            Container(
-              width: _sidebarWidth,
-              color: Colors.grey[50],
-              child: Column(
-                children: [
-                  // 헤더 영역
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border(
-                        bottom: BorderSide(color: Colors.grey.shade200),
+          ],
+        ),
+        body: Row(
+          children: [
+            // 🟦 왼쪽 채팅방 목록 (조건부 렌더링)
+            if (_isSidebarVisible) ...[
+              Container(
+                width: _sidebarWidth,
+                color: Colors.grey[50],
+                child: Column(
+                  children: [
+                    // 헤더 영역
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border(
+                          bottom: BorderSide(color: Colors.grey.shade200),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          const Text(
+                            '채팅 기록',
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          const Spacer(),
+                          // 사이드바 크기 조절 버튼
+                          IconButton(
+                            icon: const Icon(Icons.drag_handle, size: 20),
+                            tooltip: "크기 조절",
+                            onPressed: () {
+                              // 크기 조절 모드 토글
+                              setState(() {
+                                _isResizing = !_isResizing;
+                              });
+                            },
+                          ),
+                        ],
                       ),
                     ),
-                    child: Row(
-                      children: [
-                        const Text(
-                          '채팅 기록',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        const Spacer(),
-                        // 사이드바 크기 조절 버튼
-                        IconButton(
-                          icon: const Icon(Icons.drag_handle, size: 20),
-                          tooltip: "크기 조절",
-                          onPressed: () {
-                            // 크기 조절 모드 토글
-                            setState(() {
-                              _isResizing = !_isResizing;
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  // 채팅방 목록
-                  Expanded(
-                    child: _isLoading
-                        ? const Center(child: CircularProgressIndicator())
-                        : _chatRooms.isEmpty
-                            ? const Center(child: Text("채팅방이 없습니다"))
-                            : ListView.builder(
-                                padding: const EdgeInsets.all(12),
-                                itemCount: _chatRooms.length,
-                                itemBuilder: (context, index) {
-                                  final chat = _chatRooms[index];
-                                  final chatId = chat['chat_id'];
-                                  final createdAt = _formatDate(chat['created_at']);
-                                  final chatName = _getChatRoomName(chat);
-                                  
-                                  return Container(
-                                    margin: const EdgeInsets.only(bottom: 8),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                        color: _selectedChatId == chatId 
-                                            ? Colors.blue.shade300 
-                                            : Colors.grey.shade200,
-                                        width: _selectedChatId == chatId ? 2 : 1,
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.05),
-                                          blurRadius: 4,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ],
-                                    ),
-                                    child: ListTile(
-                                      contentPadding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
-                                      title: Text(
-                                        chatName,
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
+                    // 채팅방 목록
+                    Expanded(
+                      child: _isLoading
+                          ? const Center(child: CircularProgressIndicator())
+                          : _chatRooms.isEmpty
+                              ? const Center(child: Text("채팅방이 없습니다"))
+                              : ListView.builder(
+                                  padding: const EdgeInsets.all(12),
+                                  itemCount: _chatRooms.length,
+                                  itemBuilder: (context, index) {
+                                    final chat = _chatRooms[index];
+                                    final chatId = chat['chat_id'];
+                                    final createdAt = _formatDate(chat['created_at']);
+                                    final chatName = _getChatRoomName(chat);
+                                    
+                                    return Container(
+                                      margin: const EdgeInsets.only(bottom: 8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
                                           color: _selectedChatId == chatId 
-                                              ? Colors.blue.shade700 
-                                              : Colors.grey.shade800,
+                                              ? Colors.blue.shade300 
+                                              : Colors.grey.shade200,
+                                          width: _selectedChatId == chatId ? 2 : 1,
                                         ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.05),
+                                            blurRadius: 4,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
                                       ),
-                                      subtitle: Padding(
-                                        padding: const EdgeInsets.only(top: 4),
-                                        child: Text(
-                                          createdAt,
+                                      child: ListTile(
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+                                        title: Text(
+                                          chatName,
                                           style: TextStyle(
-                                            fontSize: 8,
-                                            color: Colors.grey.shade600,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                            color: _selectedChatId == chatId 
+                                                ? Colors.blue.shade700 
+                                                : Colors.grey.shade800,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        subtitle: Padding(
+                                          padding: const EdgeInsets.only(top: 4),
+                                          child: Text(
+                                            createdAt,
+                                            style: TextStyle(
+                                              fontSize: 8,
+                                              color: Colors.grey.shade600,
+                                            ),
+                                          ),
+                                        ),
+                                        selected: _selectedChatId == chatId,
+                                        onTap: () => setState(() => _selectedChatId = chatId),
+                                        trailing: Container(
+                                          margin: const EdgeInsets.only(left: 2),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              IconButton(
+                                                icon: Icon(
+                                                  Icons.edit, 
+                                                  size: 14,
+                                                  color: Colors.grey.shade600,
+                                                ),
+                                                tooltip: "이름 변경",
+                                                onPressed: () => _renameChatRoom(chatId, chatName),
+                                              ),
+                                              IconButton(
+                                                icon: Icon(
+                                                  Icons.delete, 
+                                                  size: 14,
+                                                  color: Colors.red.shade400,
+                                                ),
+                                                tooltip: "삭제",
+                                                onPressed: () => _deleteChatRoom(chatId),
+                                              ),
+                                            ],
                                           ),
                                         ),
                                       ),
-                                      selected: _selectedChatId == chatId,
-                                      onTap: () => setState(() => _selectedChatId = chatId),
-                                      trailing: Container(
-                                        margin: const EdgeInsets.only(left: 2),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            IconButton(
-                                              icon: Icon(
-                                                Icons.edit, 
-                                                size: 14,
-                                                color: Colors.grey.shade600,
-                                              ),
-                                              tooltip: "이름 변경",
-                                              onPressed: () => _renameChatRoom(chatId, chatName),
-                                            ),
-                                            IconButton(
-                                              icon: Icon(
-                                                Icons.delete, 
-                                                size: 14,
-                                                color: Colors.red.shade400,
-                                              ),
-                                              tooltip: "삭제",
-                                              onPressed: () => _deleteChatRoom(chatId),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                  ),
-                ],
+                                    );
+                                  },
+                                ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            // 크기 조절 핸들
-            if (_isResizing)
-              GestureDetector(
-                onHorizontalDragUpdate: (details) {
-                  setState(() {
-                    _sidebarWidth += details.delta.dx;
-                    if (_sidebarWidth < _minSidebarWidth) {
-                      _sidebarWidth = _minSidebarWidth;
-                    } else if (_sidebarWidth > _maxSidebarWidth) {
-                      _sidebarWidth = _maxSidebarWidth;
-                    }
-                  });
-                },
-                child: Container(
-                  width: 4,
-                  color: Colors.grey.shade400,
-                  child: const Center(
-                    child: Icon(
-                      Icons.drag_handle,
-                      color: Colors.grey,
-                      size: 16,
+              // 크기 조절 핸들
+              if (_isResizing)
+                GestureDetector(
+                  onHorizontalDragUpdate: (details) {
+                    setState(() {
+                      _sidebarWidth += details.delta.dx;
+                      if (_sidebarWidth < _minSidebarWidth) {
+                        _sidebarWidth = _minSidebarWidth;
+                      } else if (_sidebarWidth > _maxSidebarWidth) {
+                        _sidebarWidth = _maxSidebarWidth;
+                      }
+                    });
+                  },
+                  child: Container(
+                    width: 4,
+                    color: Colors.grey.shade400,
+                    child: const Center(
+                      child: Icon(
+                        Icons.drag_handle,
+                        color: Colors.grey,
+                        size: 16,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            const VerticalDivider(width: 1),
-          ],
+              const VerticalDivider(width: 1),
+            ],
 
-          // 🟨 오른쪽 챗봇 대화 영역
-          Expanded(
-            child: _selectedChatId == null
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.chat_bubble_outline,
-                          size: 64,
-                          color: Colors.grey.shade400,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          _isSidebarVisible 
-                              ? "채팅방을 선택하거나 새로 시작해보세요!"
-                              : "채팅방 목록을 열어서 대화를 시작해보세요!",
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey.shade600,
+            // 🟨 오른쪽 챗봇 대화 영역
+            Expanded(
+              child: _selectedChatId == null
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.chat_bubble_outline,
+                            size: 64,
+                            color: Colors.grey.shade400,
                           ),
-                        ),
-                        if (!_isSidebarVisible) ...[
                           const SizedBox(height: 16),
-                          ElevatedButton.icon(
-                            onPressed: _toggleSidebar,
-                            icon: const Icon(Icons.menu),
-                            label: const Text("채팅방 목록 열기"),
+                          Text(
+                            _isSidebarVisible 
+                                ? "채팅방을 선택하거나 새로 시작해보세요!"
+                                : "채팅방 목록을 열어서 대화를 시작해보세요!",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey.shade600,
+                            ),
                           ),
+                          if (!_isSidebarVisible) ...[
+                            const SizedBox(height: 16),
+                            ElevatedButton.icon(
+                              onPressed: _toggleSidebar,
+                              icon: const Icon(Icons.menu),
+                              label: const Text("채팅방 목록 열기"),
+                            ),
+                          ],
                         ],
-                      ],
+                      ),
+                    )
+                  : ChatbotQuickCore(
+                      key: ValueKey(_selectedChatId),
+                      chatId: _selectedChatId!,
                     ),
-                  )
-                : ChatbotQuickCore(
-                    key: ValueKey(_selectedChatId),
-                    chatId: _selectedChatId!,
-                  ),
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }

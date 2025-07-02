@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:cow_management/models/cow.dart';
 import 'package:logging/logging.dart';
 import 'package:cow_management/utils/error_utils.dart';
+import 'cow_registration_flow_page.dart';
 
 class CowListPage extends StatefulWidget {
   const CowListPage({super.key});
@@ -72,73 +73,79 @@ class _CowListPageState extends State<CowListPage>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      appBar: ModernAppBar(
-        title: '내 소 목록',
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: _showSearchBottomSheet,
-          ),
-          IconButton(
-            icon: const Icon(Icons.filter_list),
-            onPressed: _showFilterBottomSheet,
-          ),
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert),
-            onSelected: (value) {
-              switch (value) {
-                case 'refresh':
-                  _refreshCowList();
-                  break;
-                case 'sort':
-                  _showSortBottomSheet();
-                  break;
-              }
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'refresh',
-                child: Row(
-                  children: [
-                    Icon(Icons.refresh, color: Color(0xFF4CAF50)),
-                    SizedBox(width: 8),
-                    Text('새로고침'),
-                  ],
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+        return false;
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF8F9FA),
+        appBar: ModernAppBar(
+          title: '내 소 목록',
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: _showSearchBottomSheet,
+            ),
+            IconButton(
+              icon: const Icon(Icons.filter_list),
+              onPressed: _showFilterBottomSheet,
+            ),
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert),
+              onSelected: (value) {
+                switch (value) {
+                  case 'refresh':
+                    _refreshCowList();
+                    break;
+                  case 'sort':
+                    _showSortBottomSheet();
+                    break;
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'refresh',
+                  child: Row(
+                    children: [
+                      Icon(Icons.refresh, color: Color(0xFF4CAF50)),
+                      SizedBox(width: 8),
+                      Text('새로고침'),
+                    ],
+                  ),
                 ),
-              ),
-              const PopupMenuItem(
-                value: 'sort',
-                child: Row(
-                  children: [
-                    Icon(Icons.sort, color: Color(0xFF4CAF50)),
-                    SizedBox(width: 8),
-                    Text('정렬'),
-                  ],
+                const PopupMenuItem(
+                  value: 'sort',
+                  child: Row(
+                    children: [
+                      Icon(Icons.sort, color: Color(0xFF4CAF50)),
+                      SizedBox(width: 8),
+                      Text('정렬'),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
-      ),
-      body: FadeTransition(
-        opacity: _fadeAnimation,
-        child: Column(
-          children: [
-            _buildHeader(),
-            _buildStatusFilter(),
-            Expanded(child: _buildCowList()),
+              ],
+            ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddCowOptions(context),
-        backgroundColor: const Color(0xFF4CAF50),
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
-        label: const Text('소 등록'),
-        elevation: 4,
+        body: FadeTransition(
+          opacity: _fadeAnimation,
+          child: Column(
+            children: [
+              _buildHeader(),
+              _buildStatusFilter(),
+              Expanded(child: _buildCowList()),
+            ],
+          ),
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () => _showAddCowOptions(context),
+          backgroundColor: const Color(0xFF4CAF50),
+          foregroundColor: Colors.white,
+          icon: const Icon(Icons.add),
+          label: const Text('소 등록'),
+          elevation: 4,
+        ),
       ),
     );
   }
@@ -842,7 +849,9 @@ class _CowListPageState extends State<CowListPage>
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const CowRegistrationFlowPage(),
+                      builder: (context) => const CowRegistrationFlowPage(
+                        initialMethod: CowRegistrationMethod.manual,
+                      ),
                     ),
                   );
                 },

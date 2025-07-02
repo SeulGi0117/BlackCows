@@ -9,6 +9,7 @@ import 'package:cow_management/utils/api_config.dart';
 import 'package:provider/provider.dart';
 import 'package:cow_management/providers/cow_provider.dart';
 import 'package:cow_management/main.dart';  // navigatorKey를 위한 import
+import 'package:cow_management/services/auth/token_manager.dart';
 
 // 로그인 에러 타입 정의
 enum LoginErrorType {
@@ -751,5 +752,43 @@ class UserProvider with ChangeNotifier {
       _secureLog('회원 탈퇴 실패: 예상치 못한 오류', isError: true);
       throw '예상치 못한 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
     }
+  }
+
+  // 로그인 상태 설정
+  Future<void> setLoginState({
+    required User user,
+    required String accessToken,
+    required String refreshToken,
+  }) async {
+    _currentUser = user;
+    _accessToken = accessToken;
+    _refreshToken = refreshToken;
+    await TokenManager.saveTokens(
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+    );
+    notifyListeners();
+  }
+
+  // 토큰 갱신
+  Future<void> updateTokens({
+    required String accessToken,
+    required String refreshToken,
+  }) async {
+    _accessToken = accessToken;
+    _refreshToken = refreshToken;
+    await TokenManager.saveTokens(
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+    );
+    notifyListeners();
+  }
+
+  // 앱 시작시 토큰 복원
+  Future<void> restoreTokens() async {
+    final tokens = await TokenManager.getTokens();
+    _accessToken = tokens['accessToken'];
+    _refreshToken = tokens['refreshToken'];
+    notifyListeners();
   }
 }

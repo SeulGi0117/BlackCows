@@ -10,8 +10,10 @@ import 'package:logging/logging.dart';
 import 'dart:math';
 import 'find_user_id_page.dart' show FindUserIdPage;
 import 'find_password_page.dart' show FindPasswordPage;
-import '../../services/auth/google_auth_service.dart';
 import 'package:flutter/foundation.dart';
+import 'package:cow_management/services/auth/blackcows_auth_service.dart';
+import 'package:cow_management/services/auth/google_auth_service.dart';
+import 'package:cow_management/services/auth/token_manager.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -69,6 +71,20 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
     );
     
     _animationController.forward();
+    _checkLoginStatus();
+  }
+
+  Future<void> _checkLoginStatus() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final hasValidTokens = await TokenManager.hasValidTokens();
+    
+    if (hasValidTokens && userProvider.isLoggedIn) {
+      // 이미 로그인된 상태라면 홈으로 이동
+      Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+    } else {
+      // 토큰이 없거나 유효하지 않다면 토큰 삭제
+      await userProvider.logout();
+    }
   }
 
   @override

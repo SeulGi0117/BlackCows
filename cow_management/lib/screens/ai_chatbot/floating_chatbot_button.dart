@@ -12,7 +12,7 @@ class FloatingChatbotButton extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => ChatbotScreen()),
+          MaterialPageRoute(builder: (_) => const ChatbotQuickPage()),
         );
       },
       child: Stack(

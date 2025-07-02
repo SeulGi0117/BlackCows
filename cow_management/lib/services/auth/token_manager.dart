@@ -73,4 +73,27 @@ class TokenManager {
     await prefs.remove(_userInfoKey);
     await prefs.remove(_loginTimestampKey);
   }
+
+  // 토큰 가져오기
+  static Future<Map<String, String?>> getTokens() async {
+    final prefs = await SharedPreferences.getInstance();
+    return {
+      'accessToken': prefs.getString(_accessTokenKey),
+      'refreshToken': prefs.getString(_refreshTokenKey),
+    };
+  }
+
+  // 토큰 삭제
+  static Future<void> clearTokens() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_accessTokenKey);
+    await prefs.remove(_refreshTokenKey);
+    await prefs.clear(); // 모든 저장된 데이터 삭제
+  }
+
+  // 토큰 존재 여부 확인
+  static Future<bool> hasValidTokens() async {
+    final tokens = await getTokens();
+    return tokens['accessToken'] != null && tokens['refreshToken'] != null;
+  }
 } 
