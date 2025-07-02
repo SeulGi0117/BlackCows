@@ -10,9 +10,11 @@ class FloatingChatbotButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
+        // 현재 스택을 모두 제거하고 ChatbotQuickPage로 이동
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => const ChatbotQuickPage()),
+          (route) => false,
         );
       },
       child: Stack(
@@ -28,7 +30,7 @@ class FloatingChatbotButton extends StatelessWidget {
                 BoxShadow(
                   color: Colors.black26,
                   blurRadius: 10,
-                  offset: Offset(0, 0),
+                  offset: const Offset(0, 0),
                 ),
               ],
             ),
