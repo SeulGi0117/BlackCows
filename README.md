@@ -50,12 +50,10 @@ lib/
 ├── models/ # 데이터 모델 클래스
 ├── providers/ # 상태 관리 및 API 통신
 ├── screens/ # 각 기능별 UI 화면
-│ ├── cow_list/ # 젖소 목록 및 등록
-│ ├── cow_detail/ # 상세 및 기록 섹션
-│ └── ai_chatbot/ # 챗봇 UI
 ├── services/ # API 호출 및 에러 처리
 ├── widgets/ # 공통 위젯 (카드, 로딩 등)
 └── main.dart # 앱 진입점
+
 
 
 ---
