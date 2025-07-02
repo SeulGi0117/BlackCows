@@ -66,5 +66,3 @@ lib/
 - Flutter ↔ FastAPI 간 **FAST API 통신**
 - AI 분석 모델은 별도 서버에서 예측 결과 반환
 
--
-
