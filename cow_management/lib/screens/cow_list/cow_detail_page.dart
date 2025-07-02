@@ -8,6 +8,7 @@ import 'package:cow_management/screens/cow_list/cow_edit_page.dart';
 import 'package:cow_management/providers/user_provider.dart';
 import 'package:cow_management/utils/error_utils.dart';
 import 'package:cow_management/screens/cow_list/cow_detailed_records_page.dart';
+import 'package:cow_management/providers/cow_provider.dart';
 
 class CowDetailPage extends StatefulWidget {
   final Cow cow;
@@ -250,10 +251,9 @@ class _CowDetailPageState extends State<CowDetailPage> {
   }
 
   Future<bool> deleteCow(BuildContext context, String cowId) async {
-    final dio = Dio();
-    final String apiUrl = ApiConfig.baseUrl;
-    final token = await Provider.of<UserProvider>(context, listen: false)
-        .loadTokenFromStorage();
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final cowProvider = Provider.of<CowProvider>(context, listen: false);
+    final token = userProvider.accessToken;
 
     if (token == null) {
       CowDetailPage._logger.severe("토큰 없음");
@@ -266,16 +266,8 @@ class _CowDetailPageState extends State<CowDetailPage> {
     }
 
     try {
-      final response = await dio.delete(
-        '$apiUrl/cows/$cowId',
-        options: Options(
-          headers: {
-            'Authorization': 'Bearer $token',
-          },
-        ),
-      );
-
-      return response.statusCode == 200 || response.statusCode == 204;
+      await cowProvider.deleteCow(cowId, token);
+      return true;
     } catch (e) {
       CowDetailPage._logger.severe("삭제 중 오류 발생: $e");
 

@@ -20,8 +20,18 @@ enum RegistrationStep {
   manualInput,          // 수동 입력 단계
 }
 
+enum CowRegistrationMethod {
+  traceSync,
+  manual,
+}
+
 class CowRegistrationFlowPage extends StatefulWidget {
-  const CowRegistrationFlowPage({super.key});
+  final CowRegistrationMethod initialMethod;
+
+  const CowRegistrationFlowPage({
+    super.key,
+    required this.initialMethod,
+  });
 
   @override
   State<CowRegistrationFlowPage> createState() => _CowRegistrationFlowPageState();
@@ -997,8 +1007,6 @@ class _CowRegistrationFlowPageState extends State<CowRegistrationFlowPage> {
           ),
         ),
         const SizedBox(height: 16),
-
-
 
         // 건강 상태
         const Text('건강 상태', style: TextStyle(fontWeight: FontWeight.w600)),

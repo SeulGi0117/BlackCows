@@ -772,57 +772,82 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
 
   void _showDeleteAccountDialog(UserProvider userProvider) {
     final passwordController = TextEditingController();
+    bool localObscurePassword = true;
+    String? errorMessage;
     
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          '계정 삭제',
-          style: TextStyle(color: Colors.red),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              '계정을 삭제하면 이 계정에 등록된 모든 정보가 즉시 파기되고 복구할 수 없습니다:\n\n• 젖소 목록 및 상세 기록\n• 할일 관리 데이터\n• 챗봇 대화 내용\n• AI 분석 서비스 내용\n• 기타 모든 개인정보\n\n이 작업은 되돌릴 수 없습니다.',
-              style: TextStyle(color: Colors.red),
-            ),
-            const SizedBox(height: 16),
-            ModernTextField(
-              controller: passwordController,
-              hint: '비밀번호를 입력하세요',
-              obscureText: _obscureDeletePassword,
-              prefixIcon: const Icon(Icons.lock, color: Colors.red),
-              suffixIcon: IconButton(
-                icon: Icon(
-                  _obscureDeletePassword ? Icons.visibility : Icons.visibility_off,
-                  color: Colors.grey,
-                ),
-                onPressed: () {
-                  setState(() {
-                    _obscureDeletePassword = !_obscureDeletePassword;
-                  });
-                },
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text(
+            '계정 삭제',
+            style: TextStyle(color: Colors.red),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                '계정을 삭제하면 이 계정에 등록된 모든 정보가 즉시 파기되고 복구할 수 없습니다:\n\n• 젖소 목록 및 상세 기록\n• 할일 관리 데이터\n• 챗봇 대화 내용\n• AI 분석 서비스 내용\n• 기타 모든 개인정보\n\n이 작업은 되돌릴 수 없습니다.',
+                style: TextStyle(color: Colors.red),
               ),
+              const SizedBox(height: 16),
+              ModernTextField(
+                controller: passwordController,
+                hint: '비밀번호를 입력하세요',
+                obscureText: localObscurePassword,
+                prefixIcon: const Icon(Icons.lock, color: Colors.red),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    localObscurePassword ? Icons.visibility : Icons.visibility_off,
+                    color: Colors.grey,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      localObscurePassword = !localObscurePassword;
+                    });
+                  },
+                ),
+              ),
+              if (errorMessage != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    errorMessage!,
+                    style: const TextStyle(color: Colors.red, fontSize: 12),
+                  ),
+                ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('취소'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                try {
+                  await userProvider.deleteAccount(
+                    password: passwordController.text,
+                  );
+                  
+                  // 계정 삭제 성공 시 로그인 페이지로 이동
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AuthSelectionPage()),
+                    (route) => false,
+                  );
+                } catch (e) {
+                  setState(() {
+                    errorMessage = e.toString();
+                  });
+                }
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text('삭제'),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('취소'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              // 계정 삭제 로직
-              Navigator.pop(context);
-              _showComingSoonSnackBar('계정 삭제');
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('삭제'),
-          ),
-        ],
       ),
     );
   }

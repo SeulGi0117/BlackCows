@@ -330,4 +330,36 @@ class CowProvider with ChangeNotifier {
       throw e; // 에러를 다시 던져서 호출하는 곳에서 처리할 수 있게 함
     }
   }
+
+  // 젖소 삭제 기능
+  Future<void> deleteCow(String cowId, String token) async {
+    final dio = Dio();
+    final apiUrl = ApiConfig.baseUrl;
+
+    try {
+      final response = await dio.delete(
+        '$apiUrl/cows/$cowId',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        // 로컬 목록에서도 삭제
+        removeCow(cowId);
+        _logger.info('소 삭제 성공: $cowId');
+        
+        // 소 목록 새로고침
+        await fetchCowsFromBackend(token, forceRefresh: true);
+      } else {
+        throw Exception('소 삭제 실패: ${response.statusCode}');
+      }
+    } catch (e) {
+      _logger.severe('소 삭제 API 오류: $e');
+      throw Exception('소 삭제 실패: $e');
+    }
+  }
 }

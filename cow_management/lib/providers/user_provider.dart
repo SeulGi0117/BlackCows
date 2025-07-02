@@ -6,6 +6,9 @@ import 'package:cow_management/services/dio_client.dart';
 import 'package:logging/logging.dart';
 import 'dart:convert';
 import 'package:cow_management/utils/api_config.dart';
+import 'package:provider/provider.dart';
+import 'package:cow_management/providers/cow_provider.dart';
+import 'package:cow_management/main.dart';  // navigatorKey를 위한 import
 
 // 로그인 에러 타입 정의
 enum LoginErrorType {
@@ -252,14 +255,29 @@ class UserProvider with ChangeNotifier {
   }
 
   // 로그아웃 처리
-  void logout() async {
-    _currentUser = null;
-    _accessToken = null;
-    _refreshToken = null;
-    _shouldShowWelcome = false;
-    await _clearTokensFromStorage();
-    notifyListeners();
-    _logger.info('로그아웃: 모든 데이터 삭제됨');
+  Future<void> logout() async {
+    try {
+      _secureLog('로그아웃 시작');
+      
+      // 토큰 삭제
+      await _clearTokensFromStorage();
+      _accessToken = null;
+      _refreshToken = null;
+
+      // 사용자 정보 삭제
+      clearUser();
+      
+      // Provider 초기화
+      if (navigatorKey.currentContext != null) {
+        Provider.of<CowProvider>(navigatorKey.currentContext!, listen: false).clearAll();
+      }
+      
+      _secureLog('로그아웃 완료');
+      notifyListeners();
+    } catch (e) {
+      _secureLog('로그아웃 중 오류 발생: $e', isError: true);
+      rethrow;
+    }
   }
 
   // 토큰 저장 (access token과 refresh token 모두)
@@ -642,64 +660,96 @@ class UserProvider with ChangeNotifier {
     }
   }
 
+  // 로깅 설정
+  void _secureLog(String message, {bool isError = false}) {
+    assert(() {
+      // 개발 모드에서만 로깅
+      if (isError) {
+        _logger.severe(message);
+      } else {
+        _logger.info(message);
+      }
+      return true;
+    }());
+  }
+
   // 회원 탈퇴
-  Future<bool> deleteAccount(String password) async {
+  Future<void> deleteAccount({required String password}) async {
     if (_accessToken == null) {
-      _logger.warning('회원 탈퇴 실패: 로그인되지 않음');
-      return false;
+      _secureLog('회원 탈퇴 실패: 인증 필요', isError: true);
+      throw '로그인이 필요합니다.';
     }
 
     try {
       final baseUrl = ApiConfig.baseUrl;
       final dio = DioClient().dio;
       
-      _logger.info('=== 회원 탈퇴 요청 시작 ===');
-      _logger.info('요청 데이터: password=[HIDDEN], confirmation=DELETE');
+      _secureLog('회원 탈퇴 프로세스 시작');
 
       final response = await dio.delete(
         '$baseUrl/auth/delete-account',
         data: {
           'password': password,
-          'confirmation': 'DELETE',
+          'confirmation': 'DELETE_CONFIRM',
         },
         options: Options(
           headers: {'Authorization': 'Bearer $_accessToken'},
         ),
       );
 
-      _logger.info('=== 서버 응답 ===');
-      _logger.info('상태 코드: ${response.statusCode}');
-      _logger.info('응답 데이터: ${response.data}');
-
-      if (response.statusCode == 200) {
-        final data = response.data;
-        _logger.info('success 값: ${data['success']}');
-        
-        if (data['success'] == true) {
-          // 모든 사용자 데이터 삭제
-          clearUser();
-          await _clearTokensFromStorage();
-          _logger.info('회원 탈퇴 성공');
-          return true;
-        } else {
-          _logger.warning('탈퇴 실패: success=${data['success']}');
-          return false;
-        }
+      final data = response.data;
+      
+      switch (response.statusCode) {
+        case 200:
+          if (data['success'] == true) {
+            _secureLog('회원 탈퇴 성공');
+            // 모든 사용자 데이터 삭제
+            clearUser();
+            await _clearTokensFromStorage();
+            return;
+          }
+          throw '서버에서 계정 삭제를 완료하지 못했습니다.';
+          
+        case 400:
+          _secureLog('회원 탈퇴 실패: 잘못된 요청', isError: true);
+          throw data['message'] ?? '잘못된 요청입니다.';
+          
+        case 401:
+          _secureLog('회원 탈퇴 실패: 인증 실패', isError: true);
+          throw '비밀번호가 올바르지 않습니다.';
+          
+        case 403:
+          _secureLog('회원 탈퇴 실패: 권한 없음', isError: true);
+          throw '이 작업을 수행할 권한이 없습니다.';
+          
+        case 404:
+          _secureLog('회원 탈퇴 실패: 계정 없음', isError: true);
+          throw '해당 계정을 찾을 수 없습니다.';
+          
+        case 429:
+          _secureLog('회원 탈퇴 실패: 너무 많은 요청', isError: true);
+          throw '잠시 후 다시 시도해주세요.';
+          
+        default:
+          _secureLog('회원 탈퇴 실패: 알 수 없는 오류 (${response.statusCode})', isError: true);
+          throw '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
       }
       
-      _logger.warning('회원 탈퇴 실패: ${response.statusCode} - ${response.data}');
-      return false;
     } on DioException catch (e) {
-      _logger.severe('=== 회원 탈퇴 Dio 에러 ===');
-      _logger.severe('에러 타입: ${e.type}');
-      _logger.severe('에러 메시지: ${e.message}');
-      _logger.severe('응답 상태코드: ${e.response?.statusCode}');
-      _logger.severe('응답 데이터: ${e.response?.data}');
-      return false;
+      _secureLog('회원 탈퇴 실패: 네트워크 오류 (${e.type})', isError: true);
+      
+      final errorMessage = switch (e.type) {
+        DioExceptionType.connectionTimeout => '서버 연결 시간이 초과되었습니다.',
+        DioExceptionType.receiveTimeout => '서버 응답 시간이 초과되었습니다.',
+        DioExceptionType.connectionError => '네트워크 연결을 확인해주세요.',
+        _ => '서버와 통신 중 오류가 발생했습니다.'
+      };
+      
+      throw errorMessage;
+      
     } catch (e) {
-      _logger.severe('=== 회원 탈퇴 예상치 못한 에러 ===');
-      _logger.severe('에러: $e');
-      return false;
+      _secureLog('회원 탈퇴 실패: 예상치 못한 오류', isError: true);
+      throw '예상치 못한 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
     }
   }
 }

@@ -6,6 +6,8 @@ import 'package:cow_management/widgets/modern_card.dart';
 import 'package:cow_management/widgets/loading_widget.dart';
 import 'package:cow_management/screens/notifications/notification_page.dart';
 import 'package:cow_management/screens/todo/todo_page.dart';
+import 'package:cow_management/screens/ai_chatbot/chatbot_quick_page.dart';
+import 'package:cow_management/screens/cow_list/cow_registration_flow_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -282,10 +284,33 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   Widget _buildQuickActions() {
     final actions = [
-      {'icon': Icons.add_circle_outline, 'title': '소 등록', 'color': const Color(0xFF4CAF50), 'route': '/cows'},
-      {'icon': Icons.analytics_outlined, 'title': 'AI 분석', 'color': const Color(0xFF2196F3), 'route': '/analysis'},
-      {'icon': Icons.list_alt_rounded, 'title': '소 목록', 'color': const Color(0xFFFF9800), 'route': '/cows'},
-      {'icon': Icons.chat_bubble_outline, 'title': 'AI 상담', 'color': const Color(0xFF9C27B0), 'route': '/'},
+      {
+        'icon': Icons.add_circle_outline,
+        'title': '소 등록',
+        'color': const Color(0xFF4CAF50),
+        'onTap': () => _showCowRegistrationDialog(context),
+      },
+      {
+        'icon': Icons.analytics_outlined,
+        'title': 'AI 분석',
+        'color': const Color(0xFF2196F3),
+        'onTap': () => Navigator.pushNamed(context, '/analysis'),
+      },
+      {
+        'icon': Icons.list_alt_rounded,
+        'title': '소 목록',
+        'color': const Color(0xFFFF9800),
+        'onTap': () => Navigator.pushNamed(context, '/cows'),
+      },
+      {
+        'icon': Icons.chat_bubble_outline,
+        'title': 'AI 챗봇',
+        'color': const Color(0xFF9C27B0),
+        'onTap': () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ChatbotQuickPage()),
+        ),
+      },
     ];
 
     return Column(
@@ -317,7 +342,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 child: ModernCard(
                   padding: const EdgeInsets.all(12),
                   margin: EdgeInsets.zero,
-                  onTap: () => Navigator.pushNamed(context, action['route'] as String),
+                  onTap: action['onTap'] as void Function(),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -352,6 +377,68 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           ),
         ),
       ],
+    );
+  }
+
+  void _showCowRegistrationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('소 등록 방법 선택'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF4CAF50).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.sync, color: Color(0xFF4CAF50)),
+              ),
+              title: const Text('축산물 이력제 연동'),
+              subtitle: const Text('이력제에 등록된 소를 가져옵니다'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CowRegistrationFlowPage(
+                      initialMethod: CowRegistrationMethod.traceSync,
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 8),
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2196F3).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.edit, color: Color(0xFF2196F3)),
+              ),
+              title: const Text('직접 입력'),
+              subtitle: const Text('소의 정보를 직접 입력합니다'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CowRegistrationFlowPage(
+                      initialMethod: CowRegistrationMethod.manual,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -761,6 +848,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 title: '새로운 소 등록',
                 subtitle: '소 관리를 시작해보세요',
                 color: const Color(0xFF4CAF50),
+                onTap: () => _showCowRegistrationDialog(context),
               ),
               const Divider(height: 24),
               _buildTodoSummaryItem(),
@@ -770,13 +858,18 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 title: 'AI 분석 서비스',
                 subtitle: '데이터 기반 농장 관리',
                 color: const Color(0xFF2196F3),
+                onTap: () => Navigator.pushNamed(context, '/analysis'),
               ),
               const Divider(height: 24),
               _buildActivityItem(
                 icon: Icons.chat_bubble_outline,
-                title: 'AI 상담 서비스',
+                title: 'AI 챗봇 서비스',
                 subtitle: '궁금한 점을 언제든 물어보세요',
                 color: const Color(0xFF9C27B0),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ChatbotQuickPage()),
+                ),
               ),
             ],
           ),
@@ -871,48 +964,51 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     required String title,
     required String subtitle,
     required Color color,
+    VoidCallback? onTap,
   }) {
-    return Row(
-      children: [
-        Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
+    return InkWell(
+      onTap: onTap,
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: color, size: 24),
           ),
-          child: Icon(icon, color: color, size: 24),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2E3A59),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF2E3A59),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey.shade600,
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade600,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        Icon(
-          Icons.arrow_forward_ios_rounded,
-          color: Colors.grey.shade400,
-          size: 16,
-        ),
-      ],
+          Icon(
+            Icons.arrow_forward_ios,
+            color: Colors.grey.shade400,
+            size: 16,
+          ),
+        ],
+      ),
     );
   }
 

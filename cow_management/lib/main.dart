@@ -70,6 +70,7 @@ import 'screens/cow_list/Cow_Detail//Insemination/insemination_list_page.dart';
 
 import 'screens/cow_list/Cow_Detail/Breeding/breeding_add_page.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -121,6 +122,7 @@ class SoDamApp extends StatelessWidget {
     return Consumer<ThemeProvider>(
       builder: (context, themeProvider, _) {
         return MaterialApp(
+          navigatorKey: navigatorKey,
           title: 'BlackCows 젖소 관리',
           debugShowCheckedModeBanner: false,
           locale: const Locale('ko', 'KR'),
@@ -402,7 +404,7 @@ class _MainScaffoldState extends State<MainScaffold> {
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: '홈'),
             BottomNavigationBarItem(icon: Icon(Icons.list), label: '젖소 관리'),
-            BottomNavigationBarItem(icon: Icon(Icons.analytics), label: 'AI예측'),
+            BottomNavigationBarItem(icon: Icon(Icons.analytics), label: 'AI 분석'),
             BottomNavigationBarItem(
                 icon: Icon(Icons.chat_bubble_outline), label: '챗봇'),
             BottomNavigationBarItem(icon: Icon(Icons.person), label: '내 정보'),
