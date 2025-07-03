@@ -167,4 +167,44 @@ class DioClient {
       attempts++;
     }
   }
+
+  Future<Response> get(String path, {Map<String, dynamic>? queryParameters}) async {
+    try {
+      return await dio.get(path, queryParameters: queryParameters);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<Response> post(String path, {dynamic data}) async {
+    try {
+      return await dio.post(path, data: data);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<Response> put(String path, {dynamic data}) async {
+    try {
+      return await dio.put(path, data: data);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<Response> patch(String path, {dynamic data}) async {
+    try {
+      return await dio.patch(path, data: data);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<Response> delete(String path) async {
+    try {
+      return await dio.delete(path);
+    } catch (e) {
+      rethrow;
+    }
+  }
 }
