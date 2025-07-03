@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cow_management/services/auth/google_auth_service.dart';
 
 class SocialLoginButtons extends StatefulWidget {
   final VoidCallback? onLoginSuccess;
@@ -40,43 +41,52 @@ class _SocialLoginButtonsState extends State<SocialLoginButtons> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Kakao 로그인 버튼
-        // SizedBox(
-        //   width: double.infinity,
-        //   height: 50,
-        //   child: ElevatedButton.icon(
-        //     onPressed: _isLoading ? null : () => _handleLogin(
-        //       'Kakao',
-        //       KakaoAuthService.signInWithKakao,
-        //     ),
-        //     icon: Container(
-        //       width: 24,
-        //       height: 24,
-        //       decoration: BoxDecoration(
-        //         color: Colors.black87,
-        //         borderRadius: BorderRadius.circular(4),
-        //       ),
-        //       child: const Center(
-        //         child: Text(
-        //           'K',
-        //           style: TextStyle(
-        //             color: Color(0xFFFFE812),
-        //             fontSize: 16,
-        //             fontWeight: FontWeight.bold,
-        //           ),
-        //         ),
-        //       ),
-        //     ),
-        //     label: const Text('카카오로 로그인'),
-        //     style: ElevatedButton.styleFrom(
-        //       backgroundColor: const Color(0xFFFFE812),
-        //       foregroundColor: Colors.black87,
-        //       shape: RoundedRectangleBorder(
-        //         borderRadius: BorderRadius.circular(8),
-        //       ),
-        //     ),
-        //   ),
-        // ),
+        // Google 로그인 버튼
+        SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: Stack(
+            children: [
+              ElevatedButton.icon(
+                onPressed: null, // 버튼 비활성화
+                icon: Image.asset(
+                  'assets/images/google_logo.png',
+                  width: 24,
+                  height: 24,
+                ),
+                label: const Text('Google'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red.shade400,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  disabledBackgroundColor: Colors.red.shade200,
+                  disabledForegroundColor: Colors.white70,
+                ),
+              ),
+              Positioned(
+                right: 8,
+                top: 4,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Text(
+                    '준비 중',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
         
         if (_isLoading)
           const Padding(
