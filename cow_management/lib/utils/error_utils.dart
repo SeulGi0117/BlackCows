@@ -79,6 +79,33 @@ class ErrorUtils {
   static void showNetworkErrorDialog(BuildContext context, {String? customMessage, dynamic error}) {
     if (!context.mounted) return;
     
+    // 인증 오류(401/307) 안내 메시지 추가
+    if (error is DioException && (error.response?.statusCode == 401 || error.response?.statusCode == 307)) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Row(
+              children: [
+                const Icon(Icons.lock_outline, color: Colors.red, size: 28),
+                const SizedBox(width: 8),
+                const Expanded(child: Text('인증 오류')),
+              ],
+            ),
+            content: const Text('로그인이 만료되었습니다.\n다시 로그인 해주세요.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('닫기'),
+              ),
+            ],
+          );
+        },
+      );
+      return;
+    }
+    
     // 오류 타입 분석
     String errorType = '네트워크 연결 오류';
     List<String> possibleCauses = [];

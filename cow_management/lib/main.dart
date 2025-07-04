@@ -133,7 +133,7 @@ class SoDamApp extends StatelessWidget {
     return Consumer<ThemeProvider>(
       builder: (context, themeProvider, _) {
         return MaterialApp(
-          navigatorKey: navigatorKey,
+          navigatorKey: DioClient.navigatorKey,
           title: 'BlackCows 젖소 관리',
           debugShowCheckedModeBanner: false,
           locale: const Locale('ko', 'KR'),

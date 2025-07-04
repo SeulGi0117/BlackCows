@@ -10,8 +10,8 @@ class TodoService {
   // 할일 생성
   Future<Todo> createTodo(Map<String, dynamic> todoData) async {
     try {
-      final response = await _dioClient.post('/api/todos', data: todoData);
-      return Todo.fromJson(response.data['data']);
+      final response = await _dioClient.post('/api/todos/create', data: todoData);
+      return Todo.fromJson(response.data);
     } catch (e) {
       rethrow;
     }
@@ -25,36 +25,15 @@ class TodoService {
   }) async {
     try {
       final Map<String, dynamic> queryParams = {};
-      if (status != null) queryParams['status_filter'] = status;
+      if (status != null && status.isNotEmpty) queryParams['status_filter'] = status;
       if (priority != null) queryParams['priority_filter'] = priority;
       if (category != null) queryParams['category_filter'] = category;
 
       final response = await _dioClient.get('/api/todos', queryParameters: queryParams);
-      return (response.data['data'] as List)
-          .map((json) => Todo.fromJson(json))
-          .toList();
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  // 오늘의 할일 조회
-  Future<List<Todo>> getTodayTodos() async {
-    try {
-      final response = await _dioClient.get('/api/todos/today');
-      return (response.data['data'] as List)
-          .map((json) => Todo.fromJson(json))
-          .toList();
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  // 지연된 할일 조회
-  Future<List<Todo>> getOverdueTodos() async {
-    try {
-      final response = await _dioClient.get('/api/todos/overdue');
-      return (response.data['data'] as List)
+      if (response.data is! List) {
+        return [];
+      }
+      return (response.data as List)
           .map((json) => Todo.fromJson(json))
           .toList();
     } catch (e) {
@@ -87,7 +66,7 @@ class TodoService {
       );
 
       Map<DateTime, List<Todo>> result = {};
-      (response.data as Map<String, dynamic>).forEach((key, value) {
+      (response.data['dates'] as Map<String, dynamic>).forEach((key, value) {
         final date = DateTime.parse(key);
         result[date] = (value as List)
             .map((json) => Todo.fromJson(json))
@@ -112,8 +91,8 @@ class TodoService {
   // 할일 수정
   Future<Todo> updateTodo(String taskId, Map<String, dynamic> todoData) async {
     try {
-      final response = await _dioClient.put('/api/todos/$taskId', data: todoData);
-      return Todo.fromJson(response.data['data']);
+      final response = await _dioClient.put('/api/todos/$taskId/update', data: todoData);
+      return Todo.fromJson(response.data);
     } catch (e) {
       rethrow;
     }
@@ -126,8 +105,8 @@ class TodoService {
       if (completionNotes != null) {
         data['completion_notes'] = completionNotes;
       }
-      final response = await _dioClient.put('/api/todos/$taskId/complete', data: data);
-      return Todo.fromJson(response.data['data']);
+      final response = await _dioClient.patch('/api/todos/$taskId/complete', data: data);
+      return Todo.fromJson(response.data);
     } catch (e) {
       rethrow;
     }

@@ -4,6 +4,9 @@ import '../../models/todo.dart';
 import '../../providers/todo_provider.dart';
 import '../../widgets/loading_widget.dart';
 import '../../utils/error_utils.dart';
+import '../../providers/cow_provider.dart';
+import '../../models/cow.dart';
+import '../../providers/user_provider.dart';
 
 class TodoAddPage extends StatefulWidget {
   const TodoAddPage({Key? key}) : super(key: key);
@@ -22,7 +25,22 @@ class _TodoAddPageState extends State<TodoAddPage> {
   String _selectedCategory = TodoCategory.milking;
   final List<String> _selectedTags = [];
   final List<String> _selectedCows = [];
+  Cow? _selectedCow;
+  List<Cow> _cowList = [];
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // 실제 젖소 목록 불러오기
+    Future.microtask(() async {
+      final cowProvider = context.read<CowProvider>();
+      await cowProvider.fetchCowsFromBackend(context.read<UserProvider>().accessToken ?? '');
+      setState(() {
+        _cowList = cowProvider.cows;
+      });
+    });
+  }
 
   @override
   void dispose() {
@@ -66,6 +84,12 @@ class _TodoAddPageState extends State<TodoAddPage> {
       );
       return;
     }
+    if (_selectedPriority.isEmpty || _selectedCategory.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('우선순위와 카테고리를 선택해주세요')),
+      );
+      return;
+    }
 
     _formKey.currentState!.save();
     
@@ -81,6 +105,8 @@ class _TodoAddPageState extends State<TodoAddPage> {
         'priority': _selectedPriority,
         'category': _selectedCategory,
         'status': TodoStatus.pending,
+        'task_type': 'personal',
+        if (_selectedCow != null) 'related_cows': [_selectedCow!.id],
       });
 
       if (success != null && mounted) {
@@ -91,7 +117,10 @@ class _TodoAddPageState extends State<TodoAddPage> {
       }
     } catch (e) {
       if (mounted) {
-        ErrorUtils.showNetworkErrorDialog(context, error: e);
+        // ErrorUtils.showNetworkErrorDialog(context, error: e);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.')),
+        );
       }
     }
   }
@@ -224,6 +253,21 @@ class _TodoAddPageState extends State<TodoAddPage> {
                 if (value != null) {
                   setState(() => _selectedCategory = value);
                 }
+              },
+            ),
+            const SizedBox(height: 16.0),
+            DropdownButtonFormField<Cow>(
+              value: _selectedCow,
+              decoration: const InputDecoration(
+                labelText: '소 선택',
+                border: OutlineInputBorder(),
+              ),
+              items: _cowList.map((cow) => DropdownMenuItem(
+                value: cow,
+                child: Text('${cow.name} (${cow.earTagNumber})'),
+              )).toList(),
+              onChanged: (value) {
+                setState(() => _selectedCow = value);
               },
             ),
           ],

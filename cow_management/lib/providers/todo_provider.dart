@@ -5,22 +5,23 @@ import '../services/todo_service.dart';
 class TodoProvider extends ChangeNotifier {
   final TodoService _todoService;
   List<Todo> _todos = [];
-  List<Todo> _todayTodos = [];
-  List<Todo> _overdueTodos = [];
   Map<DateTime, List<Todo>> _calendarTodos = {};
   Map<String, dynamic> _statistics = {};
   bool _isLoading = false;
   String? _error;
+  String _currentStatusFilter = '';
 
   TodoProvider(this._todoService);
 
   List<Todo> get todos => _todos;
-  List<Todo> get todayTodos => _todayTodos;
-  List<Todo> get overdueTodos => _overdueTodos;
   Map<DateTime, List<Todo>> get calendarTodos => _calendarTodos;
   Map<String, dynamic> get statistics => _statistics;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  String get currentStatusFilter => _currentStatusFilter;
+  List<Todo> get filteredTodos => _currentStatusFilter.isEmpty
+      ? _todos
+      : _todos.where((t) => t.status == _currentStatusFilter).toList();
 
   Future<void> loadTodos({
     String? status,
@@ -32,45 +33,12 @@ class TodoProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      _currentStatusFilter = status ?? '';
       _todos = await _todoService.getTodos(
         status: status,
         priority: priority,
         category: category,
       );
-      notifyListeners();
-    } catch (e) {
-      _error = e.toString();
-      notifyListeners();
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  Future<void> loadTodayTodos() async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-
-    try {
-      _todayTodos = await _todoService.getTodayTodos();
-      notifyListeners();
-    } catch (e) {
-      _error = e.toString();
-      notifyListeners();
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  Future<void> loadOverdueTodos() async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-
-    try {
-      _overdueTodos = await _todoService.getOverdueTodos();
       notifyListeners();
     } catch (e) {
       _error = e.toString();
@@ -126,8 +94,6 @@ class TodoProvider extends ChangeNotifier {
     try {
       final todo = await _todoService.updateTodo(taskId, todoData);
       _todos = _todos.map((t) => t.id == taskId ? todo : t).toList();
-      _todayTodos = _todayTodos.map((t) => t.id == taskId ? todo : t).toList();
-      _overdueTodos = _overdueTodos.map((t) => t.id == taskId ? todo : t).toList();
       notifyListeners();
       return todo;
     } catch (e) {
@@ -148,8 +114,6 @@ class TodoProvider extends ChangeNotifier {
     try {
       await _todoService.deleteTodo(taskId);
       _todos = _todos.where((t) => t.id != taskId).toList();
-      _todayTodos = _todayTodos.where((t) => t.id != taskId).toList();
-      _overdueTodos = _overdueTodos.where((t) => t.id != taskId).toList();
       notifyListeners();
       return true;
     } catch (e) {
@@ -170,8 +134,6 @@ class TodoProvider extends ChangeNotifier {
     try {
       final todo = await _todoService.completeTodo(taskId, completionNotes: completionNotes);
       _todos = _todos.map((t) => t.id == taskId ? todo : t).toList();
-      _todayTodos = _todayTodos.map((t) => t.id == taskId ? todo : t).toList();
-      _overdueTodos = _overdueTodos.map((t) => t.id == taskId ? todo : t).toList();
       notifyListeners();
       return todo;
     } catch (e) {
