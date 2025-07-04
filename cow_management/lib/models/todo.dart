@@ -40,38 +40,46 @@ class Todo {
   });
 
   factory Todo.fromJson(Map<String, dynamic> json) {
-    final dueDateTime = DateTime.parse(json['due_date'] as String);
+    final dueDateTime = json['due_date'] != null && json['due_date'] != ''
+        ? DateTime.tryParse(json['due_date']) ?? DateTime.now()
+        : DateTime.now();
     TimeOfDay? dueTime;
-    if (json['due_time'] != null) {
+    if (json['due_time'] != null && json['due_time'] != '') {
       final timeParts = (json['due_time'] as String).split(':');
-      dueTime = TimeOfDay(
-        hour: int.parse(timeParts[0]),
-        minute: int.parse(timeParts[1]),
-      );
+      if (timeParts.length >= 2) {
+        dueTime = TimeOfDay(
+          hour: int.tryParse(timeParts[0]) ?? 0,
+          minute: int.tryParse(timeParts[1]) ?? 0,
+        );
+      }
     }
 
     return Todo(
-      id: json['id'] as String,
-      title: json['title'] as String,
-      description: json['description'] as String,
+      id: json['id'] as String? ?? '',
+      title: json['title'] as String? ?? '',
+      description: json['description'] as String? ?? '',
       dueDate: dueDateTime,
       dueTime: dueTime,
-      priority: json['priority'] as String,
-      category: json['category'] as String,
-      status: json['status'] as String,
-      assignedTo: List<String>.from(json['assigned_to'] as List),
-      relatedCows: List<String>.from(json['related_cows'] as List),
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
-      createdBy: json['created_by'] as String,
-      completionDate: json['completion_date'] != null
-          ? DateTime.parse(json['completion_date'] as String)
+      priority: json['priority'] as String? ?? '',
+      category: json['category'] as String? ?? '',
+      status: json['status'] as String? ?? '',
+      assignedTo: List<String>.from(json['assigned_to'] ?? []),
+      relatedCows: List<String>.from(json['related_cows'] ?? []),
+      createdAt: json['created_at'] != null && json['created_at'] != ''
+          ? DateTime.tryParse(json['created_at']) ?? DateTime.now()
+          : DateTime.now(),
+      updatedAt: json['updated_at'] != null && json['updated_at'] != ''
+          ? DateTime.tryParse(json['updated_at']) ?? DateTime.now()
+          : DateTime.now(),
+      createdBy: json['created_by'] as String? ?? '',
+      completionDate: json['completion_date'] != null && json['completion_date'] != ''
+          ? DateTime.tryParse(json['completion_date'])
           : null,
       completionNotes: json['completion_notes'] as String?,
-      attachments: (json['attachments'] as List)
+      attachments: (json['attachments'] as List? ?? [])
           .map((attachment) => TodoAttachment.fromJson(attachment as Map<String, dynamic>))
           .toList(),
-      tags: List<String>.from(json['tags'] as List),
+      tags: List<String>.from(json['tags'] ?? []),
     );
   }
 
@@ -144,6 +152,7 @@ class TodoStatus {
   static const String inProgress = 'in_progress';
   static const String completed = 'completed';
   static const String cancelled = 'cancelled';
+  static const String overdue = 'overdue';
 }
 
 // 할일 카테고리 상수

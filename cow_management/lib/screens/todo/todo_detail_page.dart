@@ -294,7 +294,15 @@ class _TodoDetailPageState extends State<TodoDetailPage> {
             ),
             const SizedBox(height: 16.0),
             DropdownButtonFormField<String>(
-              value: _selectedStatus,
+              value: [
+                TodoStatus.pending,
+                TodoStatus.inProgress,
+                TodoStatus.completed,
+                TodoStatus.cancelled,
+                TodoStatus.overdue,
+              ].contains(_selectedStatus)
+                  ? _selectedStatus
+                  : TodoStatus.pending,
               decoration: const InputDecoration(
                 labelText: '상태',
                 border: OutlineInputBorder(),
@@ -315,6 +323,10 @@ class _TodoDetailPageState extends State<TodoDetailPage> {
                 DropdownMenuItem(
                   value: TodoStatus.cancelled,
                   child: const Text('취소'),
+                ),
+                DropdownMenuItem(
+                  value: TodoStatus.overdue,
+                  child: const Text('지연'),
                 ),
               ],
               onChanged: (value) {

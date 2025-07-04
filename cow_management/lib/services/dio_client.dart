@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cow_management/utils/api_config.dart';
 import 'package:logging/logging.dart';
+import 'package:flutter/material.dart';
 
 class DioClient {
   static final DioClient _instance = DioClient._internal();
@@ -11,6 +12,9 @@ class DioClient {
   final _logger = Logger('DioClient');
   bool _isRefreshing = false;
   final List<RequestOptions> _pendingRequests = [];
+
+  // navigatorKey를 앱 전체에서 사용할 수 있도록 선언
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   DioClient._internal() {
     final baseUrl = ApiConfig.baseUrl;
@@ -76,11 +80,15 @@ class DioClient {
               } else {
                 _logger.warning('토큰 갱신 실패 - 로그아웃 처리 필요');
                 await _clearTokens();
+                // 강제 로그아웃 및 로그인 화면 이동
+                navigatorKey.currentState?.pushNamedAndRemoveUntil('/login', (route) => false);
               }
             } catch (refreshError) {
               _isRefreshing = false;
               _logger.severe('토큰 갱신 중 에러 발생: $refreshError');
               await _clearTokens();
+              // 강제 로그아웃 및 로그인 화면 이동
+              navigatorKey.currentState?.pushNamedAndRemoveUntil('/login', (route) => false);
             }
           } else {
             await _waitForRefresh();
@@ -92,6 +100,9 @@ class DioClient {
               e.requestOptions.headers['Authorization'] = 'Bearer $newToken';
               final response = await dio.fetch(e.requestOptions);
               return handler.resolve(response);
+            } else {
+              // 강제 로그아웃 및 로그인 화면 이동
+              navigatorKey.currentState?.pushNamedAndRemoveUntil('/login', (route) => false);
             }
           }
         }
