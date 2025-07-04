@@ -2,21 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:dio/dio.dart';
 
-import 'package:cow_management/models/Detail/feeding_record.dart';
+import 'package:cow_management/models/Detail/Reproduction/pregnancy_check_record.dart';
 import 'package:cow_management/providers/user_provider.dart';
 import 'package:cow_management/utils/api_config.dart';
 
-class FeedDetailPage extends StatefulWidget {
+class PregnancyCheckDetailPage extends StatefulWidget {
   final String recordId;
 
-  const FeedDetailPage({super.key, required this.recordId});
+  const PregnancyCheckDetailPage({super.key, required this.recordId});
 
   @override
-  State<FeedDetailPage> createState() => _FeedDetailPageState();
+  State<PregnancyCheckDetailPage> createState() =>
+      _PregnancyCheckDetailPageState();
 }
 
-class _FeedDetailPageState extends State<FeedDetailPage> {
-  FeedRecord? _record;
+class _PregnancyCheckDetailPageState extends State<PregnancyCheckDetailPage> {
+  PregnancyCheckRecord? _record;
   bool _isLoading = true;
   String? _error;
 
@@ -40,7 +41,7 @@ class _FeedDetailPageState extends State<FeedDetailPage> {
       if (response.statusCode == 200) {
         final data = response.data;
         setState(() {
-          _record = FeedRecord.fromJson(data);
+          _record = PregnancyCheckRecord.fromJson(data);
           _isLoading = false;
         });
       } else {
@@ -61,8 +62,8 @@ class _FeedDetailPageState extends State<FeedDetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('사료급여 상세 정보'),
-        backgroundColor: Colors.orange.shade400,
+        title: const Text('임신감정 상세 정보'),
+        backgroundColor: const Color(0xFF4CAF50),
         foregroundColor: Colors.white,
       ),
       body: _isLoading
@@ -75,43 +76,26 @@ class _FeedDetailPageState extends State<FeedDetailPage> {
                       padding: const EdgeInsets.all(16),
                       child: ListView(
                         children: [
-                          _buildItem('급여일', _record?.recordDate),
-                          _buildItem('급여 시간', _record?.feedTime),
-                          _buildItem('사료 종류', _record?.feedType),
+                          _buildItem('감정일', _record?.recordDate),
+                          _buildItem('감정 방법', _record?.checkMethod),
+                          _buildItem('감정 결과', _record?.checkResult),
                           _buildItem(
-                            '급여량',
-                            _record!.feedAmount > 0
-                                ? '${_record!.feedAmount.toStringAsFixed(1)} kg'
+                            '임신 단계',
+                            (_record!.pregnancyStage > 0)
+                                ? '${_record!.pregnancyStage}일차'
+                                : '정보 없음',
+                          ),
+                          _buildItem('태아 상태', _record?.fetusCondition),
+                          _buildItem('분만 예정일', _record?.expectedCalvingDate),
+                          _buildItem('수의사명', _record?.veterinarian),
+                          _buildItem(
+                            '감정 비용',
+                            (_record!.checkCost > 0)
+                                ? '${_record!.checkCost} 원'
                                 : '미입력',
                           ),
-                          _buildItem('사료 품질', _record?.feedQuality),
-                          _buildItem('보충제 종류', _record?.supplementType),
-                          _buildItem(
-                            '보충제 급여량',
-                            _record!.supplementAmount > 0
-                                ? '${_record!.supplementAmount.toStringAsFixed(1)} kg'
-                                : '미입력',
-                          ),
-                          _buildItem(
-                            '음수량',
-                            _record!.waterConsumption > 0
-                                ? '${_record!.waterConsumption.toStringAsFixed(1)} L'
-                                : '미입력',
-                          ),
-                          _buildItem('섭취 상태', _record?.appetiteCondition),
-                          _buildItem(
-                            '사료 효율',
-                            _record!.feedEfficiency > 0
-                                ? _record!.feedEfficiency.toStringAsFixed(2)
-                                : '미입력',
-                          ),
-                          _buildItem(
-                            '사료 단가',
-                            _record!.costPerFeed > 0
-                                ? '${_record!.costPerFeed.toStringAsFixed(0)} 원'
-                                : '미입력',
-                          ),
-                          _buildItem('급여자', _record?.fedBy),
+                          _buildItem('다음 감정일', _record?.nextCheckDate),
+                          _buildItem('추가 관리사항', _record?.additionalCare),
                           _buildItem('메모', _record?.notes),
                         ],
                       ),

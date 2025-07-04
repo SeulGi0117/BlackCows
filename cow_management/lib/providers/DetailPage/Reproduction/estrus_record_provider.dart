@@ -68,7 +68,6 @@ class EstrusRecordProvider with ChangeNotifier {
     final dio = Dio();
     final baseUrl = ApiConfig.baseUrl;
 
-
     try {
       final requestData = {
         'cow_id': record.cowId,

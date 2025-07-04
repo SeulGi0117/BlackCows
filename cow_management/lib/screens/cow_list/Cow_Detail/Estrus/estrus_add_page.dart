@@ -22,7 +22,7 @@ class EstrusAddPage extends StatefulWidget {
 class _EstrusAddPageState extends State<EstrusAddPage> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
-  
+
   // 컨트롤러들
   final _startTimeController = TextEditingController();
   final _durationController = TextEditingController();
@@ -30,7 +30,7 @@ class _EstrusAddPageState extends State<EstrusAddPage> {
   final _visualSignsController = TextEditingController();
   final _detectedByController = TextEditingController();
   final _notesController = TextEditingController();
-  
+
   // 상태 변수들
   DateTime _selectedDate = DateTime.now();
   TimeOfDay? _selectedTime;
@@ -72,7 +72,8 @@ class _EstrusAddPageState extends State<EstrusAddPage> {
     if (picked != null) {
       setState(() {
         _selectedTime = picked;
-        _startTimeController.text = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}:00';
+        _startTimeController.text =
+            '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}:00';
       });
     }
   }
@@ -80,7 +81,8 @@ class _EstrusAddPageState extends State<EstrusAddPage> {
   Future<void> _selectNextEstrusDate() async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: _nextExpectedEstrus ?? DateTime.now().add(const Duration(days: 21)),
+      initialDate:
+          _nextExpectedEstrus ?? DateTime.now().add(const Duration(days: 21)),
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
@@ -93,7 +95,7 @@ class _EstrusAddPageState extends State<EstrusAddPage> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     setState(() {
       _isLoading = true;
     });
@@ -109,26 +111,34 @@ class _EstrusAddPageState extends State<EstrusAddPage> {
     final record = EstrusRecord(
       cowId: widget.cowId,
       recordDate: DateFormat('yyyy-MM-dd').format(_selectedDate),
-      estrusStartTime: _startTimeController.text.isNotEmpty ? _startTimeController.text : null,
+      estrusStartTime: _startTimeController.text.isNotEmpty
+          ? _startTimeController.text
+          : null,
       estrusIntensity: _estrusIntensity,
       estrusDuration: int.tryParse(_durationController.text),
-      behaviorSigns: _behaviorSignsController.text.isNotEmpty 
-          ? _behaviorSignsController.text.split(',').map((e) => e.trim()).toList()
+      behaviorSigns: _behaviorSignsController.text.isNotEmpty
+          ? _behaviorSignsController.text
+              .split(',')
+              .map((e) => e.trim())
+              .toList()
           : null,
-      visualSigns: _visualSignsController.text.isNotEmpty 
+      visualSigns: _visualSignsController.text.isNotEmpty
           ? _visualSignsController.text.split(',').map((e) => e.trim()).toList()
           : null,
-      detectedBy: _detectedByController.text.isNotEmpty ? _detectedByController.text : null,
+      detectedBy: _detectedByController.text.isNotEmpty
+          ? _detectedByController.text
+          : null,
       detectionMethod: _detectionMethod,
-      nextExpectedEstrus: _nextExpectedEstrus != null 
+      nextExpectedEstrus: _nextExpectedEstrus != null
           ? DateFormat('yyyy-MM-dd').format(_nextExpectedEstrus!)
           : null,
       breedingPlanned: _breedingPlanned,
       notes: _notesController.text.isNotEmpty ? _notesController.text : null,
     );
 
-    final success = await Provider.of<EstrusRecordProvider>(context, listen: false)
-        .addEstrusRecord(record, token);
+    final success =
+        await Provider.of<EstrusRecordProvider>(context, listen: false)
+            .addEstrusRecord(record, token);
 
     setState(() {
       _isLoading = false;
@@ -182,17 +192,18 @@ class _EstrusAddPageState extends State<EstrusAddPage> {
             // 💕 기본 정보 섹션
             Card(
               elevation: 2,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    const Row(
                       children: [
-                        const Icon(Icons.favorite, color: Colors.pink, size: 24),
-                        const SizedBox(width: 8),
-                        const Text(
+                        Icon(Icons.favorite, color: Colors.pink, size: 24),
+                        SizedBox(width: 8),
+                        Text(
                           '기본 정보',
                           style: TextStyle(
                             fontSize: 18,
@@ -203,7 +214,7 @@ class _EstrusAddPageState extends State<EstrusAddPage> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // 발정 날짜
                     InkWell(
                       onTap: _selectDate,
@@ -220,7 +231,7 @@ class _EstrusAddPageState extends State<EstrusAddPage> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // 발정 시작 시간
                     TextFormField(
                       controller: _startTimeController,
@@ -234,7 +245,7 @@ class _EstrusAddPageState extends State<EstrusAddPage> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // 발정 강도
                     DropdownButtonFormField<String>(
                       value: _estrusIntensity,
@@ -248,10 +259,11 @@ class _EstrusAddPageState extends State<EstrusAddPage> {
                           child: Text(level),
                         );
                       }).toList(),
-                      onChanged: (val) => setState(() => _estrusIntensity = val),
+                      onChanged: (val) =>
+                          setState(() => _estrusIntensity = val),
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // 발정 지속시간
                     TextFormField(
                       controller: _durationController,
@@ -271,17 +283,18 @@ class _EstrusAddPageState extends State<EstrusAddPage> {
             // 🔍 발정 징후 섹션
             Card(
               elevation: 2,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    const Row(
                       children: [
-                        const Icon(Icons.visibility, color: Colors.orange, size: 24),
-                        const SizedBox(width: 8),
-                        const Text(
+                        Icon(Icons.visibility, color: Colors.orange, size: 24),
+                        SizedBox(width: 8),
+                        Text(
                           '발정 징후',
                           style: TextStyle(
                             fontSize: 18,
@@ -292,7 +305,7 @@ class _EstrusAddPageState extends State<EstrusAddPage> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // 행동 징후
                     TextFormField(
                       controller: _behaviorSignsController,
@@ -304,7 +317,7 @@ class _EstrusAddPageState extends State<EstrusAddPage> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // 육안 관찰 사항
                     TextFormField(
                       controller: _visualSignsController,
@@ -324,17 +337,18 @@ class _EstrusAddPageState extends State<EstrusAddPage> {
             // 👤 발견 정보 섹션
             Card(
               elevation: 2,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    const Row(
                       children: [
-                        const Icon(Icons.person_search, color: Colors.blue, size: 24),
-                        const SizedBox(width: 8),
-                        const Text(
+                        Icon(Icons.person_search, color: Colors.blue, size: 24),
+                        SizedBox(width: 8),
+                        Text(
                           '발견 정보',
                           style: TextStyle(
                             fontSize: 18,
@@ -345,7 +359,7 @@ class _EstrusAddPageState extends State<EstrusAddPage> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // 발견자
                     TextFormField(
                       controller: _detectedByController,
@@ -356,7 +370,7 @@ class _EstrusAddPageState extends State<EstrusAddPage> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // 발견 방법
                     DropdownButtonFormField<String>(
                       value: _detectionMethod,
@@ -370,7 +384,8 @@ class _EstrusAddPageState extends State<EstrusAddPage> {
                           child: Text(method),
                         );
                       }).toList(),
-                      onChanged: (val) => setState(() => _detectionMethod = val),
+                      onChanged: (val) =>
+                          setState(() => _detectionMethod = val),
                     ),
                   ],
                 ),
@@ -381,17 +396,18 @@ class _EstrusAddPageState extends State<EstrusAddPage> {
             // 📅 계획 및 예측 섹션
             Card(
               elevation: 2,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    const Row(
                       children: [
-                        const Icon(Icons.schedule, color: Colors.green, size: 24),
-                        const SizedBox(width: 8),
-                        const Text(
+                        Icon(Icons.schedule, color: Colors.green, size: 24),
+                        SizedBox(width: 8),
+                        Text(
                           '계획 및 예측',
                           style: TextStyle(
                             fontSize: 18,
@@ -402,7 +418,7 @@ class _EstrusAddPageState extends State<EstrusAddPage> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // 다음 발정 예상일
                     InkWell(
                       onTap: _selectNextEstrusDate,
@@ -413,24 +429,28 @@ class _EstrusAddPageState extends State<EstrusAddPage> {
                           suffixIcon: Icon(Icons.calendar_today),
                         ),
                         child: Text(
-                          _nextExpectedEstrus != null 
-                              ? DateFormat('yyyy-MM-dd').format(_nextExpectedEstrus!)
+                          _nextExpectedEstrus != null
+                              ? DateFormat('yyyy-MM-dd')
+                                  .format(_nextExpectedEstrus!)
                               : '날짜를 선택하세요',
                           style: TextStyle(
                             fontSize: 16,
-                            color: _nextExpectedEstrus != null ? Colors.black : Colors.grey,
+                            color: _nextExpectedEstrus != null
+                                ? Colors.black
+                                : Colors.grey,
                           ),
                         ),
                       ),
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // 교배 계획
                     SwitchListTile(
                       title: const Text('교배 계획 있음'),
                       subtitle: const Text('이번 발정에 교배를 계획하고 있습니까?'),
                       value: _breedingPlanned,
-                      onChanged: (val) => setState(() => _breedingPlanned = val),
+                      onChanged: (val) =>
+                          setState(() => _breedingPlanned = val),
                       activeColor: Colors.pink,
                     ),
                   ],
@@ -442,17 +462,18 @@ class _EstrusAddPageState extends State<EstrusAddPage> {
             // 📝 추가 정보 섹션
             Card(
               elevation: 2,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    const Row(
                       children: [
-                        const Icon(Icons.note_alt, color: Colors.purple, size: 24),
-                        const SizedBox(width: 8),
-                        const Text(
+                        Icon(Icons.note_alt, color: Colors.purple, size: 24),
+                        SizedBox(width: 8),
+                        Text(
                           '추가 정보',
                           style: TextStyle(
                             fontSize: 18,
@@ -463,7 +484,7 @@ class _EstrusAddPageState extends State<EstrusAddPage> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // 메모
                     TextFormField(
                       controller: _notesController,
@@ -503,7 +524,8 @@ class _EstrusAddPageState extends State<EstrusAddPage> {
                             height: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           ),
                           SizedBox(width: 12),
@@ -512,7 +534,8 @@ class _EstrusAddPageState extends State<EstrusAddPage> {
                       )
                     : const Text(
                         '발정 기록 저장',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
                       ),
               ),
             ),

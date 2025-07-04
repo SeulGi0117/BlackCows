@@ -1,24 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:cow_management/models/Detail/feeding_record.dart';
 import 'package:cow_management/providers/DetailPage/feeding_record_provider.dart';
 import 'package:cow_management/providers/user_provider.dart';
-import 'package:cow_management/models/Detail/feeding_record.dart';
+import 'package:cow_management/screens/cow_list/Cow_Detail/Feeding/feeding_add_page.dart';
+import 'package:cow_management/screens/cow_list/Cow_Detail/Feeding/feeding_detail_page.dart';
 
-class FeedingRecordListPage extends StatefulWidget {
+class FeedListPage extends StatefulWidget {
   final String cowId;
   final String cowName;
 
-  const FeedingRecordListPage({
+  const FeedListPage({
     super.key,
     required this.cowId,
     required this.cowName,
   });
 
   @override
-  State<FeedingRecordListPage> createState() => _FeedingRecordListPageState();
+  State<FeedListPage> createState() => _FeedListPageState();
 }
 
-class _FeedingRecordListPageState extends State<FeedingRecordListPage> {
+class _FeedListPageState extends State<FeedListPage> {
   bool _isLoading = true;
   bool _hasError = false;
   String _errorMessage = '';
@@ -37,33 +39,36 @@ class _FeedingRecordListPageState extends State<FeedingRecordListPage> {
         _errorMessage = '';
       });
 
-      final token = Provider.of<UserProvider>(context, listen: false).accessToken;
-      await Provider.of<FeedingRecordProvider>(context, listen: false)
-          .fetchRecords(widget.cowId, token!);
-      
+      final token =
+          Provider.of<UserProvider>(context, listen: false).accessToken;
+      if (token == null || token.isEmpty) {
+        throw Exception('토큰이 유효하지 않습니다.');
+      }
+
+      await Provider.of<FeedRecordProvider>(context, listen: false)
+          .fetchRecords(widget.cowId, token);
+
       setState(() {
         _isLoading = false;
       });
     } catch (e) {
-      print('사료급여 기록 목록 로딩 오류: $e');
+      print('사료급여 기록 로딩 오류: $e');
       setState(() {
         _isLoading = false;
         _hasError = true;
-        _errorMessage = e.toString().contains('500')
-            ? '서버에 일시적인 문제가 있습니다.\n잠시 후 다시 시도해주세요.'
-            : '사료급여 기록을 불러오는 중 오류가 발생했습니다.';
+        _errorMessage = '기록을 불러오는 중 오류가 발생했습니다.';
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final records = Provider.of<FeedingRecordProvider>(context).records;
+    final records = Provider.of<FeedRecordProvider>(context).records;
 
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.cowName} 사료급여 기록'),
-        backgroundColor: const Color(0xFF4CAF50),
+        backgroundColor: Colors.orange.shade400,
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -79,28 +84,29 @@ class _FeedingRecordListPageState extends State<FeedingRecordListPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.pushNamed(
+          Navigator.push(
             context,
-            '/feeding-record/add',
-            arguments: {
-              'cowId': widget.cowId,
-              'cowName': widget.cowName,
-            },
+            MaterialPageRoute(
+              builder: (_) => FeedAddPage(
+                cowId: widget.cowId,
+                cowName: widget.cowName,
+              ),
+            ),
           ).then((_) => _loadRecords());
         },
-        backgroundColor: const Color(0xFF4CAF50),
+        backgroundColor: Colors.orange.shade400,
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
 
-  Widget _buildBody(List<FeedingRecord> records) {
+  Widget _buildBody(List<FeedRecord> records) {
     if (_isLoading) {
       return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(color: Color(0xFF4CAF50)),
+            CircularProgressIndicator(color: Colors.orange),
             SizedBox(height: 16),
             Text('사료급여 기록을 불러오는 중...'),
           ],
@@ -113,19 +119,12 @@ class _FeedingRecordListPageState extends State<FeedingRecordListPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.red,
-            ),
+            const Icon(Icons.error_outline, size: 64, color: Colors.red),
             const SizedBox(height: 16),
             Text(
               _errorMessage,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Colors.black87,
-              ),
+              style: const TextStyle(fontSize: 16, color: Colors.black87),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
@@ -133,7 +132,7 @@ class _FeedingRecordListPageState extends State<FeedingRecordListPage> {
               icon: const Icon(Icons.refresh),
               label: const Text('다시 시도'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4CAF50),
+                backgroundColor: Colors.orange,
                 foregroundColor: Colors.white,
               ),
             ),
@@ -143,17 +142,13 @@ class _FeedingRecordListPageState extends State<FeedingRecordListPage> {
     }
 
     if (records.isEmpty) {
-      return Center(
+      return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.grass_outlined,
-              size: 64,
-              color: Colors.grey,
-            ),
-            const SizedBox(height: 16),
-            const Text(
+            Icon(Icons.rice_bowl, size: 64, color: Colors.grey),
+            SizedBox(height: 16),
+            Text(
               '사료급여 기록이 없습니다',
               style: TextStyle(
                 fontSize: 18,
@@ -161,13 +156,10 @@ class _FeedingRecordListPageState extends State<FeedingRecordListPage> {
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const SizedBox(height: 8),
-            const Text(
+            SizedBox(height: 8),
+            Text(
               '아래 + 버튼을 눌러 첫 번째 기록을 추가해보세요',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey),
             ),
           ],
         ),
@@ -175,82 +167,30 @@ class _FeedingRecordListPageState extends State<FeedingRecordListPage> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
       itemCount: records.length,
       itemBuilder: (context, index) {
         final record = records[index];
+
         return Card(
-          margin: const EdgeInsets.only(bottom: 12),
-          elevation: 2,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: ListTile(
-            leading: CircleAvatar(
-              backgroundColor: Color(0xFF4CAF50).withOpacity(0.1),
-              child: const Icon(
-                Icons.grass,
-                color: Color(0xFF4CAF50),
-              ),
+            title: Text('급여일: ${record.recordDate}'),
+            subtitle: Text(
+              '사료 종류: ${record.feedType.isNotEmpty ? record.feedType : '-'} | '
+              '급여량: ${(record.feedAmount).toStringAsFixed(1)}kg',
             ),
-            title: Text(
-              (record.feedType.isNotEmpty) ? record.feedType : '사료',
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
-                    const SizedBox(width: 4),
-                    Text('${record.feedingDate}'),
-                    if (record.feedTime.isNotEmpty) ...[
-                      const SizedBox(width: 8),
-                      const Icon(Icons.access_time, size: 14, color: Colors.grey),
-                      const SizedBox(width: 4),
-                      Text('${record.feedTime}'),
-                    ],
-                  ],
-                ),
-                const SizedBox(height: 2),
-                Row(
-                  children: [
-                    const Icon(Icons.scale, size: 14, color: Colors.green),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${record.amount}kg',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w500,
-                        color: Colors.green,
-                      ),
-                    ),
-                    if (record.notes != null && record.notes!.isNotEmpty) ...[
-                      const SizedBox(width: 8),
-                      const Icon(Icons.note, size: 14, color: Colors.orange),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          record.notes!,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.orange,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ],
-            ),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            trailing: const Icon(Icons.arrow_forward_ios),
             onTap: () {
-              Navigator.pushNamed(
-                context,
-                '/feeding-record/detail',
-                arguments: record,
-              );
+              if (record.id != null) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => FeedDetailPage(recordId: record.id!),
+                  ),
+                );
+              } else {
+                print('⚠️ record.id가 null입니다');
+              }
             },
           ),
         );

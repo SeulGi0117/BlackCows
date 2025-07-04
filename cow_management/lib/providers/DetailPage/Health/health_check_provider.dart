@@ -57,35 +57,35 @@ class HealthCheckProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> fetchFilteredRecords(
-      String cowId, String token, String recordType) async {
-    try {
-      final dio = Dio();
-      dio.options.headers['Authorization'] = 'Bearer $token';
-      final apiUrl = ApiConfig.baseUrl;
+  // Future<void> fetchFilteredRecords(
+  //     String cowId, String token, String recordType) async {
+  //   try {
+  //     final dio = Dio();
+  //     dio.options.headers['Authorization'] = 'Bearer $token';
+  //     final apiUrl = ApiConfig.baseUrl;
 
-      print('요청 데이터: $apiUrl/records/cow/$cowId');
-      final response = await dio.get(
-        '$apiUrl/records/cow/$cowId',
-        queryParameters: {'record_type': recordType},
-      );
-      print('✅ 건강검진 기록 필터링 조회 성공: ${response.data}');
-      if (response.statusCode == 200) {
-        final data = response.data as List;
-        _records = data.map((json) {
-          // 전체 JSON을 그대로 전달
-          return HealthCheckRecord.fromJson(json);
-        }).toList();
+  //     print('요청 데이터: $apiUrl/records/cow/$cowId');
+  //     final response = await dio.get(
+  //       '$apiUrl/records/cow/$cowId',
+  //       queryParameters: {'record_type': recordType},
+  //     );
+  //     print('✅ 건강검진 기록 필터링 조회 성공: ${response.data}');
+  //     if (response.statusCode == 200) {
+  //       final data = response.data as List;
+  //       _records = data.map((json) {
+  //         // 전체 JSON을 그대로 전달
+  //         return HealthCheckRecord.fromJson(json);
+  //       }).toList();
 
-        notifyListeners();
-      } else {
-        throw Exception('서버 응답 오류: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('건강검진 기록 불러오기 오류: $e');
-      rethrow;
-    }
-  }
+  //       notifyListeners();
+  //     } else {
+  //       throw Exception('서버 응답 오류: ${response.statusCode}');
+  //     }
+  //   } catch (e) {
+  //     print('건강검진 기록 불러오기 오류: $e');
+  //     rethrow;
+  //   }
+  // }
 
   Future<bool> addRecord(HealthCheckRecord record, String token) async {
     final dio = Dio();

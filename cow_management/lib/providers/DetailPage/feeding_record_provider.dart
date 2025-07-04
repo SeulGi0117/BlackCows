@@ -1,164 +1,108 @@
+// providers/DetailPage/Feeding/feed_record_provider.dart
+
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:logging/logging.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cow_management/models/Detail/feeding_record.dart';
-import 'package:cow_management/utils/api_config.dart';
 
-class FeedingRecordProvider with ChangeNotifier {
-  List<FeedingRecord> _records = [];
+class FeedRecordProvider with ChangeNotifier {
+  final Logger _logger = Logger('FeedRecordProvider');
+  final List<FeedRecord> _records = [];
 
-  List<FeedingRecord> get records => _records;
+  List<FeedRecord> get records => _records;
+
+  final Dio _dio = Dio();
 
   Future<void> fetchRecords(String cowId, String token) async {
-    final dio = Dio();
-    final baseUrl = ApiConfig.baseUrl;
+    final baseUrl = dotenv.env['BASE_URL'] ?? '';
 
     try {
-      print('🔄 사료급여 기록 조회 시작: $baseUrl/records/cow/$cowId/feed-records');
-      
-      final response = await dio.get(
-        '$baseUrl/records/cow/$cowId/feed-records',
+      final response = await _dio.get(
+        '$baseUrl/cow/$cowId/feed-records',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
-      print('✅ 사료급여 기록 조회 응답: ${response.statusCode}');
-      print('📄 응답 데이터: ${response.data}');
-
       if (response.statusCode == 200) {
+        final data = response.data;
         _records.clear();
-        
-        if (response.data == null) {
-          print('⚠️ 응답 데이터가 null입니다.');
-          notifyListeners();
-          return;
-        }
-
-        if (response.data is! List) {
-          print('⚠️ 응답 데이터가 List 형태가 아닙니다: ${response.data.runtimeType}');
-          notifyListeners();
-          return;
-        }
-
-        final List<dynamic> dataList = response.data as List<dynamic>;
-        print('📊 사료급여 기록 수: ${dataList.length}');
-
-        int feedingCount = 0;
-        for (var item in dataList) {
-          if (item is Map<String, dynamic>) {
-            try {
-              // 전체 JSON을 그대로 전달 (key_values 포함)
-              _records.add(FeedingRecord.fromJson(Map<String, dynamic>.from(item)));
-              feedingCount++;
-            } catch (e) {
-              print('! 사료급여 기록 파싱 오류: $e');
-              print('📄 문제가 된 데이터: $item');
-            }
+        for (var item in data) {
+          try {
+            final record = FeedRecord.fromJson(item);
+            _records.add(record);
+          } catch (e) {
+            _logger.warning('❌ 파싱 실패: $e');
           }
         }
-        
-        print('✅ 사료급여 기록 필터링 완료: $feedingCount개');
         notifyListeners();
       } else {
-        print('❌ 예상치 못한 응답 코드: ${response.statusCode}');
-        throw Exception('사료급여 기록 조회 실패: HTTP ${response.statusCode}');
+        _logger.warning('❌ 조회 실패: ${response.statusCode}');
       }
-    } on DioException catch (e) {
-      print('🚨 Dio 오류 발생:');
-      print('   - 오류 타입: ${e.type}');
-      print('   - 상태 코드: ${e.response?.statusCode}');
-      print('   - 오류 메시지: ${e.message}');
-      
-      if (e.response?.statusCode == 500) {
-        print('🚨 서버 내부 오류 (500): 백엔드 서버에 문제가 있습니다.');
-        print('서버 응답: ${e.response?.data}');
-        
-        // 500 오류 시에도 빈 목록으로 처리하여 앱이 크래시되지 않도록 함
-        _records.clear();
-        notifyListeners();
-        return;
-      }
-      
-      if (e.response?.statusCode == 404) {
-        print('📭 사료급여 기록이 없습니다 (404)');
-        _records.clear();
-        notifyListeners();
-        return;
-      }
-      
-      throw Exception('사료급여 기록 불러오기 실패: $e');
     } catch (e) {
-      print('❌ 일반 오류: $e');
-      throw Exception('사료급여 기록 불러오기 실패: $e');
+      _logger.severe('🚨 예외 발생: $e');
+      _records.clear();
+      notifyListeners();
     }
   }
 
-  Future<bool> addRecord(FeedingRecord record, String token) async {
-    final dio = Dio();
-    final baseUrl = ApiConfig.baseUrl;
+  Future<bool> addRecord(FeedRecord record, String token) async {
+    final baseUrl = dotenv.env['BASE_URL'] ?? '';
 
     try {
-      final response = await dio.post(
+      final response = await _dio.post(
         '$baseUrl/records/feed',
         data: record.toJson(),
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       if (response.statusCode == 201) {
-        _records.add(FeedingRecord.fromJson(response.data));
+        final added = FeedRecord.fromJson(response.data);
+        _records.add(added);
         notifyListeners();
         return true;
       }
     } catch (e) {
-      print('사료 기록 추가 오류: $e');
+      _logger.severe('❌ 추가 실패: $e');
     }
+
     return false;
   }
 
-  Future<bool> deleteRecord(String id, String token) async {
-    final dio = Dio();
-    final baseUrl = ApiConfig.baseUrl;
+  Future<FeedRecord?> fetchFeedRecordDetail(
+      String recordId, String token) async {
+    final baseUrl = dotenv.env['BASE_URL'] ?? ''; // ✅ 함수 안에서 안전하게 호출
 
     try {
-      final response = await dio.delete(
-        '$baseUrl/records/$id',  // 수정: 통일된 패턴 사용
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
-      );
-
-      if (response.statusCode == 200 || response.statusCode == 204) {
-        _records.removeWhere((r) => r.id == id);
-        notifyListeners();
-        return true;
-      }
-    } catch (e) {
-      print('사료 기록 삭제 오류: $e');
-    }
-    return false;
-  }
-
-  Future<bool> updateRecord(String id, FeedingRecord updated, String token) async {
-    final dio = Dio();
-    final baseUrl = ApiConfig.baseUrl;
-
-    try {
-      final response = await dio.put(
-        '$baseUrl/records/$id',  // 수정: 통일된 패턴 사용
-        data: {
-          'record_date': updated.feedingDate,  // 수정: recordDate → feedingDate
-          'record_data': updated.toJson(),
-        },
+      final response = await _dio.get(
+        '$baseUrl/records/$recordId',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       if (response.statusCode == 200) {
-        final index = _records.indexWhere((r) => r.id == id);
-        if (index != -1) {
-          _records[index] = updated;
-          notifyListeners();
-        }
-        return true;
+        return FeedRecord.fromJson(response.data);
       }
     } catch (e) {
-      print('사료급여 기록 수정 오류: $e');
+      _logger.severe('❌ 사료급여 단건 조회 실패: $e');
     }
-    return false;
+
+    return null;
+  }
+
+  Future<bool> updateFeedRecord(
+      String recordId, Map<String, dynamic> updateData, String token) async {
+    final baseUrl = dotenv.env['BASE_URL'] ?? ''; // ✅ 함수 안에서 선언
+
+    try {
+      final response = await _dio.put(
+        '$baseUrl/records/$recordId',
+        data: updateData,
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      _logger.severe('❌ 사료급여 기록 수정 실패: $e');
+      return false;
+    }
   }
 }
