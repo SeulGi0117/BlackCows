@@ -57,7 +57,12 @@ class FeedRecord {
     if (safeJson['key_values'] != null) {
       data.addAll(Map<String, dynamic>.from(safeJson['key_values']));
     }
-
+    if (data.containsKey('amount') && !data.containsKey('feed_amount')) {
+      data['feed_amount'] = _parseDouble(data['amount']);
+    }
+    if (data.containsKey('type') && !data.containsKey('feed_type')) {
+      data['feed_type'] = data['type'].toString();
+    }
     data['cow_id'] = safeJson['cow_id'];
     data['record_date'] = safeJson['record_date'];
 

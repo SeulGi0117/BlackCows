@@ -5,6 +5,8 @@ import 'package:dio/dio.dart';
 import 'package:cow_management/models/Detail/feeding_record.dart';
 import 'package:cow_management/providers/user_provider.dart';
 import 'package:cow_management/utils/api_config.dart';
+import 'package:cow_management/providers/DetailPage/feeding_record_provider.dart';
+import 'package:cow_management/screens/cow_list/Cow_Detail/Feeding/feeding_edit_page.dart';
 
 class FeedDetailPage extends StatefulWidget {
   final String recordId;
@@ -64,6 +66,18 @@ class _FeedDetailPageState extends State<FeedDetailPage> {
         title: const Text('사료급여 상세 정보'),
         backgroundColor: Colors.orange.shade400,
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            tooltip: '수정',
+            onPressed: _record == null ? null : _editRecord,
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete),
+            tooltip: '삭제',
+            onPressed: _record == null ? null : _confirmDelete,
+          ),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -138,5 +152,62 @@ class _FeedDetailPageState extends State<FeedDetailPage> {
         ],
       ),
     );
+  }
+
+  Future<void> _confirmDelete() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('기록 삭제'),
+        content: const Text('이 사료급여 기록을 삭제하시겠습니까?'),
+        actions: [
+          TextButton(
+            child: const Text('취소'),
+            onPressed: () => Navigator.pop(context, false),
+          ),
+          TextButton(
+            child: const Text('삭제'),
+            onPressed: () => Navigator.pop(context, true),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      final token =
+          Provider.of<UserProvider>(context, listen: false).accessToken;
+      final provider = Provider.of<FeedRecordProvider>(context, listen: false);
+
+      await provider.deleteRecord(widget.recordId, token!);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('삭제가 완료되었습니다.')),
+        );
+        Navigator.pop(context); // 삭제 후 뒤로 가기
+      }
+    }
+  }
+
+  void _editRecord() async {
+    if (_record == null) return;
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FeedEditPage(
+          record: _record!,
+        ),
+      ),
+    );
+
+    // 수정 후 돌아왔을 때 새로고침
+    if (result == true) {
+      await _fetchRecord();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('기록이 수정되었습니다.')),
+        );
+      }
+    }
   }
 }
