@@ -59,6 +59,23 @@ class _FeedDetailPageState extends State<FeedDetailPage> {
     }
   }
 
+  Widget _buildCard(String title, String? content) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      child: ListTile(
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        subtitle: Text(content != null && content.isNotEmpty ? content : '없음'),
+      ),
+    );
+  }
+
+  Widget _buildCardNumber(String title, num? value, {String? unit}) {
+    return _buildCard(
+      title,
+      (value != null && value > 0) ? '${value.toString()}${unit ?? ''}' : '미입력',
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -67,16 +84,16 @@ class _FeedDetailPageState extends State<FeedDetailPage> {
         backgroundColor: Colors.orange.shade400,
         foregroundColor: Colors.white,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            tooltip: '수정',
-            onPressed: _record == null ? null : _editRecord,
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete),
-            tooltip: '삭제',
-            onPressed: _record == null ? null : _confirmDelete,
-          ),
+          if (_record != null)
+            IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: _editRecord,
+            ),
+          if (_record != null)
+            IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: _confirmDelete,
+            ),
         ],
       ),
       body: _isLoading
@@ -85,72 +102,28 @@ class _FeedDetailPageState extends State<FeedDetailPage> {
               ? Center(child: Text(_error!))
               : _record == null
                   ? const Center(child: Text('기록이 존재하지 않습니다.'))
-                  : Padding(
+                  : ListView(
                       padding: const EdgeInsets.all(16),
-                      child: ListView(
-                        children: [
-                          _buildItem('급여일', _record?.recordDate),
-                          _buildItem('급여 시간', _record?.feedTime),
-                          _buildItem('사료 종류', _record?.feedType),
-                          _buildItem(
-                            '급여량',
-                            _record!.feedAmount > 0
-                                ? '${_record!.feedAmount.toStringAsFixed(1)} kg'
-                                : '미입력',
-                          ),
-                          _buildItem('사료 품질', _record?.feedQuality),
-                          _buildItem('보충제 종류', _record?.supplementType),
-                          _buildItem(
-                            '보충제 급여량',
-                            _record!.supplementAmount > 0
-                                ? '${_record!.supplementAmount.toStringAsFixed(1)} kg'
-                                : '미입력',
-                          ),
-                          _buildItem(
-                            '음수량',
-                            _record!.waterConsumption > 0
-                                ? '${_record!.waterConsumption.toStringAsFixed(1)} L'
-                                : '미입력',
-                          ),
-                          _buildItem('섭취 상태', _record?.appetiteCondition),
-                          _buildItem(
-                            '사료 효율',
-                            _record!.feedEfficiency > 0
-                                ? _record!.feedEfficiency.toStringAsFixed(2)
-                                : '미입력',
-                          ),
-                          _buildItem(
-                            '사료 단가',
-                            _record!.costPerFeed > 0
-                                ? '${_record!.costPerFeed.toStringAsFixed(0)} 원'
-                                : '미입력',
-                          ),
-                          _buildItem('급여자', _record?.fedBy),
-                          _buildItem('메모', _record?.notes),
-                        ],
-                      ),
+                      children: [
+                        _buildCard('급여일', _record?.recordDate),
+                        _buildCard('급여 시간', _record?.feedTime),
+                        _buildCard('사료 종류', _record?.feedType),
+                        _buildCardNumber('급여량', _record?.feedAmount,
+                            unit: ' kg'),
+                        _buildCard('사료 품질', _record?.feedQuality),
+                        _buildCard('보충제 종류', _record?.supplementType),
+                        _buildCardNumber('보충제 급여량', _record?.supplementAmount,
+                            unit: ' kg'),
+                        _buildCardNumber('음수량', _record?.waterConsumption,
+                            unit: ' L'),
+                        _buildCard('섭취 상태', _record?.appetiteCondition),
+                        _buildCardNumber('사료 효율', _record?.feedEfficiency),
+                        _buildCardNumber('사료 단가', _record?.costPerFeed,
+                            unit: ' 원'),
+                        _buildCard('급여자', _record?.fedBy),
+                        _buildCard('메모', _record?.notes),
+                      ],
                     ),
-    );
-  }
-
-  Widget _buildItem(String label, String? value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '$label: ',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-          Expanded(
-            child: Text(
-              (value != null && value.isNotEmpty) ? value : '없음',
-              style: const TextStyle(fontSize: 16),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -162,13 +135,11 @@ class _FeedDetailPageState extends State<FeedDetailPage> {
         content: const Text('이 사료급여 기록을 삭제하시겠습니까?'),
         actions: [
           TextButton(
-            child: const Text('취소'),
-            onPressed: () => Navigator.pop(context, false),
-          ),
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('취소')),
           TextButton(
-            child: const Text('삭제'),
-            onPressed: () => Navigator.pop(context, true),
-          ),
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('삭제')),
         ],
       ),
     );
@@ -184,7 +155,7 @@ class _FeedDetailPageState extends State<FeedDetailPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('삭제가 완료되었습니다.')),
         );
-        Navigator.pop(context); // 삭제 후 뒤로 가기
+        Navigator.pop(context, true);
       }
     }
   }
@@ -193,21 +164,8 @@ class _FeedDetailPageState extends State<FeedDetailPage> {
     if (_record == null) return;
     final result = await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => FeedEditPage(
-          record: _record!,
-        ),
-      ),
+      MaterialPageRoute(builder: (context) => FeedEditPage(record: _record!)),
     );
-
-    // 수정 후 돌아왔을 때 새로고침
-    if (result == true) {
-      await _fetchRecord();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('기록이 수정되었습니다.')),
-        );
-      }
-    }
+    if (result == true) await _fetchRecord();
   }
 }

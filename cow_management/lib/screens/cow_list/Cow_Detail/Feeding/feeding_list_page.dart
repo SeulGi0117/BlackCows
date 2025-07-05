@@ -180,14 +180,18 @@ class _FeedListPageState extends State<FeedListPage> {
               '급여량: ${(record.feedAmount).toStringAsFixed(1)}kg',
             ),
             trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: () {
+            onTap: () async {
               if (record.id != null) {
-                Navigator.push(
+                final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (_) => FeedDetailPage(recordId: record.id!),
                   ),
                 );
+
+                if (result == true) {
+                  _loadRecords(); // ✅ 삭제된 경우 목록 갱신
+                }
               } else {
                 print('⚠️ record.id가 null입니다');
               }

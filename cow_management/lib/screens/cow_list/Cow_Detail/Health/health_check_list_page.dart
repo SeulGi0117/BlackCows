@@ -173,33 +173,33 @@ class _HealthCheckListPageState extends State<HealthCheckListPage> {
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             child: ListTile(
-              leading: const CircleAvatar(
-                backgroundColor: Color(0xFF4CAF50),
-                child: Icon(Icons.monitor_heart, color: Colors.white),
-              ),
-              title: Text(
-                record.recordDate,
-                style:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              subtitle: Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Text(
-                  notesText,
-                  style: const TextStyle(fontSize: 14, color: Colors.grey),
+                leading: const CircleAvatar(
+                  backgroundColor: Color(0xFF4CAF50),
+                  child: Icon(Icons.monitor_heart, color: Colors.white),
                 ),
-              ),
-              trailing:
-                  const Icon(Icons.arrow_forward_ios, color: Color(0xFF4CAF50)),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => HealthCheckDetailPage(record: record),
+                title: Text(
+                  record.recordDate,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                subtitle: Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    notesText,
+                    style: const TextStyle(fontSize: 14, color: Colors.grey),
                   ),
-                );
-              },
-            ),
+                ),
+                trailing: const Icon(Icons.arrow_forward_ios,
+                    color: Color(0xFF4CAF50)),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => HealthCheckDetailPage(
+                          recordId: record.id!), // 🔁 ID만 넘김
+                    ),
+                  );
+                }),
           );
         },
       ),

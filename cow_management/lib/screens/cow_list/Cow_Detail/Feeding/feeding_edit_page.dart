@@ -14,6 +14,7 @@ class FeedEditPage extends StatefulWidget {
 }
 
 class _FeedEditPageState extends State<FeedEditPage> {
+  final _formKey = GlobalKey<FormState>();
   late TextEditingController recordDateController;
   late TextEditingController feedTimeController;
   late TextEditingController feedTypeController;
@@ -27,6 +28,7 @@ class _FeedEditPageState extends State<FeedEditPage> {
   late TextEditingController costPerFeedController;
   late TextEditingController fedByController;
   late TextEditingController notesController;
+  bool _isSubmitting = false;
 
   @override
   void initState() {
@@ -70,9 +72,10 @@ class _FeedEditPageState extends State<FeedEditPage> {
     super.dispose();
   }
 
-  Future<void> _saveChanges() async {
-    final token = Provider.of<UserProvider>(context, listen: false).accessToken;
-    final provider = Provider.of<FeedRecordProvider>(context, listen: false);
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isSubmitting = true);
 
     final updatedData = {
       'record_date': recordDateController.text,
@@ -95,27 +98,33 @@ class _FeedEditPageState extends State<FeedEditPage> {
       }
     };
 
+    final token = Provider.of<UserProvider>(context, listen: false).accessToken;
+    final provider = Provider.of<FeedRecordProvider>(context, listen: false);
     await provider.updateRecord(widget.record.id!, updatedData, token!);
+
+    setState(() => _isSubmitting = false);
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('기록이 수정되었습니다.')),
       );
-      Navigator.pop(context); // 이전 페이지로
+      Navigator.pop(context, true);
     }
   }
 
   Widget _buildTextField(String label, TextEditingController controller,
-      {TextInputType inputType = TextInputType.text}) {
+      {TextInputType inputType = TextInputType.text,
+      String? Function(String?)? validator}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
-      child: TextField(
+      child: TextFormField(
         controller: controller,
         keyboardType: inputType,
         decoration: InputDecoration(
           labelText: label,
           border: const OutlineInputBorder(),
         ),
+        validator: validator,
       ),
     );
   }
@@ -127,37 +136,54 @@ class _FeedEditPageState extends State<FeedEditPage> {
         title: const Text('사료급여 기록 수정'),
         backgroundColor: Colors.orange.shade400,
         foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.check),
-            onPressed: _saveChanges,
-            tooltip: '저장',
-          ),
-        ],
       ),
-      body: SingleChildScrollView(
+      body: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            _buildTextField('기록 날짜 (YYYY-MM-DD)', recordDateController),
-            _buildTextField('급여 시간', feedTimeController),
-            _buildTextField('사료 종류', feedTypeController),
-            _buildTextField('급여량 (kg)', feedAmountController,
-                inputType: TextInputType.number),
-            _buildTextField('사료 품질', feedQualityController),
-            _buildTextField('보충제 종류', supplementTypeController),
-            _buildTextField('보충제 급여량 (kg)', supplementAmountController,
-                inputType: TextInputType.number),
-            _buildTextField('음수량 (L)', waterConsumptionController,
-                inputType: TextInputType.number),
-            _buildTextField('섭취 상태', appetiteConditionController),
-            _buildTextField('사료 효율', feedEfficiencyController,
-                inputType: TextInputType.number),
-            _buildTextField('사료 단가 (원)', costPerFeedController,
-                inputType: TextInputType.number),
-            _buildTextField('급여자', fedByController),
-            _buildTextField('메모', notesController),
-          ],
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            children: [
+              _buildTextField('기록 날짜 (YYYY-MM-DD)', recordDateController,
+                  validator: (v) =>
+                      v == null || v.isEmpty ? '날짜를 입력해주세요' : null),
+              _buildTextField('급여 시간', feedTimeController),
+              _buildTextField('사료 종류', feedTypeController,
+                  validator: (v) =>
+                      v == null || v.trim().isEmpty ? '사료 종류는 필수입니다' : null),
+              _buildTextField('급여량 (kg)', feedAmountController,
+                  inputType: TextInputType.number, validator: (v) {
+                if (v == null || v.trim().isEmpty) return '급여량은 필수입니다';
+                final parsed = double.tryParse(v);
+                if (parsed == null) return '숫자를 입력해주세요';
+                return null;
+              }),
+              _buildTextField('사료 품질', feedQualityController),
+              _buildTextField('보충제 종류', supplementTypeController),
+              _buildTextField('보충제 급여량 (kg)', supplementAmountController,
+                  inputType: TextInputType.number),
+              _buildTextField('음수량 (L)', waterConsumptionController,
+                  inputType: TextInputType.number),
+              _buildTextField('섭취 상태', appetiteConditionController),
+              _buildTextField('사료 효율', feedEfficiencyController,
+                  inputType: TextInputType.number),
+              _buildTextField('사료 단가 (원)', costPerFeedController,
+                  inputType: TextInputType.number),
+              _buildTextField('급여자', fedByController),
+              _buildTextField('메모', notesController),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: _isSubmitting ? null : _submit,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                child: _isSubmitting
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text('저장'),
+              ),
+            ],
+          ),
         ),
       ),
     );

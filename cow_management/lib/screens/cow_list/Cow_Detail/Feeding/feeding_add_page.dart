@@ -106,21 +106,40 @@ class _FeedAddPageState extends State<FeedAddPage> {
     );
   }
 
-  Widget _buildTextField(String label, String key,
-      {TextInputType keyboardType = TextInputType.text}) {
+  Widget _buildTextField(String label, String key, {bool isRequired = false}) {
     return TextFormField(
-      decoration:
-          InputDecoration(labelText: label, border: const OutlineInputBorder()),
-      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+      ),
+      validator: isRequired
+          ? (val) {
+              if (val == null || val.trim().isEmpty) {
+                return '필수 항목입니다';
+              }
+              return null;
+            }
+          : null,
       onSaved: (val) => _formData[key] = val?.trim(),
     );
   }
 
-  Widget _buildNumberField(String label, String key) {
+  Widget _buildNumberField(String label, String key,
+      {bool isRequired = false}) {
     return TextFormField(
-      decoration:
-          InputDecoration(labelText: label, border: const OutlineInputBorder()),
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+      ),
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      validator: (val) {
+        if (isRequired && (val == null || val.trim().isEmpty)) {
+          return '필수 항목입니다';
+        }
+        final parsed = double.tryParse(val!);
+        if (parsed == null) return '숫자를 입력해주세요';
+        return null;
+      },
       onSaved: (val) => _formData[key] = double.tryParse(val ?? ''),
     );
   }
@@ -150,9 +169,11 @@ class _FeedAddPageState extends State<FeedAddPage> {
                           children: [
                             _buildTextField('급여 시간', 'feed_time'),
                             const SizedBox(height: 10),
-                            _buildTextField('사료 종류', 'feed_type'),
+                            _buildTextField('사료 종류', 'feed_type',
+                                isRequired: true),
                             const SizedBox(height: 10),
-                            _buildNumberField('급여량(kg)', 'feed_amount'),
+                            _buildNumberField('급여량(kg)', 'feed_amount',
+                                isRequired: true),
                             const SizedBox(height: 10),
                             _buildTextField('사료 품질', 'feed_quality'),
                           ],

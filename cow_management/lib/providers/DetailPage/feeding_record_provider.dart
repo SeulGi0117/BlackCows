@@ -98,10 +98,8 @@ class FeedRecordProvider with ChangeNotifier {
 
   Future<void> updateRecord(
       String recordId, Map<String, dynamic> updatedData, String token) async {
-    final baseUrl = dotenv.env['BASE_URL'] ?? '';
-
     // GET과 동일하게 recordId를 URL에 사용
-    final url = '$baseUrl/records/$recordId';
+    final url = '${ApiConfig.baseUrl}/records/$recordId';
 
     // 서버가 요구하는 구조로 payload 생성
     final payload = <String, dynamic>{
@@ -118,6 +116,8 @@ class FeedRecordProvider with ChangeNotifier {
     };
 
     try {
+      _logger.info('📡 요청 URL: $url');
+      _logger.info('📦 요청 데이터: $payload');
       final response = await _dio.put(
         url,
         data: payload,
@@ -135,14 +135,12 @@ class FeedRecordProvider with ChangeNotifier {
   }
 
   Future<void> deleteRecord(String recordId, String token) async {
-    final baseUrl = dotenv.env['BASE_URL'] ?? '';
-
+    final url = '${ApiConfig.baseUrl}/records/$recordId';
     try {
       final response = await _dio.delete(
-        '$baseUrl/records/$recordId',
+        url,
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
-
       if (response.statusCode == 200) {
         _logger.info('✅ 삭제 성공: $recordId');
         // 목록 새로고침 등 후처리
