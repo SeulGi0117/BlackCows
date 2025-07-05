@@ -19,10 +19,11 @@ class FeedRecordProvider with ChangeNotifier {
 
     try {
       final response = await _dio.get(
-        '$baseUrl/cow/$cowId/feed-records',
+        '$baseUrl/records/cow/$cowId/feed-records',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
-
+      print('📡 응답 타입: ${response.headers['content-type']}');
+      print('📡 응답 내용: ${response.data}');
       if (response.statusCode == 200) {
         final data = response.data;
         _records.clear();
