@@ -213,7 +213,7 @@ class _WeightListPageState extends State<WeightListPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => WeightDetailPage(record: record),
+                  builder: (context) => WeightDetailPage(recordId: record.id!),
                 ),
               );
             },

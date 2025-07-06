@@ -14,7 +14,7 @@ class HealthCheckProvider with ChangeNotifier {
 
   Future<bool> fetchRecords(String cowId, String token) async {
     final dio = Dio();
-
+    print('요청 데이터: $baseUrl/records/cow/$cowId/health-records');
     try {
       final response = await dio.get(
         '$baseUrl/records/cow/$cowId/health-records',

@@ -270,8 +270,6 @@ class SoDamApp extends StatelessWidget {
                 cowName: args['cowName'],
               );
             },
-            '/milking-record-detail': (context) =>
-                const MilkingRecordDetailPage(),
             '/breeding-record': (context) {
               final args = ModalRoute.of(context)!.settings.arguments
                   as Map<String, String>;

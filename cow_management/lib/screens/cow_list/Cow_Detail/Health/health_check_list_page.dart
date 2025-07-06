@@ -196,7 +196,7 @@ class _HealthCheckListPageState extends State<HealthCheckListPage> {
                     context,
                     MaterialPageRoute(
                       builder: (_) => HealthCheckDetailPage(
-                          recordId: record.id!), // 🔁 ID만 넘김
+                          recordId: record.id!),
                     ),
                   );
                 }),
