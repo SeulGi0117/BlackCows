@@ -27,7 +27,13 @@ class _ChatbotHistoryPageState extends State<ChatbotHistoryPage> {
   @override
   void initState() {
     super.initState();
-    _fetchChatRooms();
+    _initializeChatbot();
+  }
+
+  Future<void> _initializeChatbot() async {
+    // 만료된 채팅방 자동 삭제 후 채팅방 목록 불러오기
+    await deleteExpiredChatRooms();
+    await _fetchChatRooms();
   }
 
   Future<void> _fetchChatRooms() async {
@@ -232,9 +238,18 @@ class _ChatbotHistoryPageState extends State<ChatbotHistoryPage> {
       return name;
     }
     
-    // 기본 이름: "채팅 N" 형태
+    // 기본 이름: 생성 날짜 기반으로 생성
+    final createdAt = chat['created_at'];
+    if (createdAt != null) {
+      final date = DateTime.parse(createdAt);
+      final formattedDate = '${date.month}/${date.day}';
+      final formattedTime = '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+      return "채팅 $formattedDate $formattedTime";
+    }
+    
+    // 최후의 수단: 인덱스 기반
     final index = _chatRooms.indexOf(chat);
-    return "채팅 ${_chatRooms.length - index}";
+    return "채팅 ${index + 1}";
   }
 
   void _toggleSidebar() {
