@@ -42,6 +42,10 @@ Future<String?> sendChatbotMessage({
       'question': question,
     });
     print('🔥 챗봇 응답: ${response.data}');
+    // answer가 에러 안내 메시지일 때 상세 에러 print
+    if (response.data['answer'] != null && response.data['answer'].toString().contains('일시적인 오류')) {
+      print('🔥 서버에서 받은 상세 에러: ${response.data}');
+    }
     return response.data['answer'];
   } catch (e) {
     print('❌ 챗봇 질문 실패: $e');
