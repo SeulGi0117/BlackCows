@@ -29,6 +29,37 @@ class EstrusRecord {
     this.breedingPlanned,
     this.notes,
   });
+  EstrusRecord copyWith({
+    String? id,
+    String? cowId,
+    String? recordDate,
+    String? estrusStartTime,
+    String? detectedBy,
+    String? detectionMethod,
+    String? estrusIntensity,
+    int? estrusDuration,
+    List<String>? behaviorSigns,
+    List<String>? visualSigns,
+    String? nextExpectedEstrus,
+    bool? breedingPlanned,
+    String? notes,
+  }) {
+    return EstrusRecord(
+      id: id ?? this.id,
+      cowId: cowId ?? this.cowId,
+      recordDate: recordDate ?? this.recordDate,
+      estrusStartTime: estrusStartTime ?? this.estrusStartTime,
+      detectedBy: detectedBy ?? this.detectedBy,
+      detectionMethod: detectionMethod ?? this.detectionMethod,
+      estrusIntensity: estrusIntensity ?? this.estrusIntensity,
+      estrusDuration: estrusDuration ?? this.estrusDuration,
+      behaviorSigns: behaviorSigns ?? this.behaviorSigns,
+      visualSigns: visualSigns ?? this.visualSigns,
+      nextExpectedEstrus: nextExpectedEstrus ?? this.nextExpectedEstrus,
+      breedingPlanned: breedingPlanned ?? this.breedingPlanned,
+      notes: notes ?? this.notes,
+    );
+  }
 
   static int? _parseInt(dynamic value) {
     if (value == null) return null;

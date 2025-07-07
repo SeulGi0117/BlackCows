@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:logging/logging.dart';
 import 'dart:io' show Platform;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart'; // 삭제
 import 'package:firebase_core/firebase_core.dart';
@@ -74,10 +75,21 @@ import 'screens/cow_list/Cow_Detail//Insemination/insemination_list_page.dart';
 
 import 'screens/cow_list/Cow_Detail/Breeding/breeding_add_page.dart';
 
+import 'screens/cow_list/Cow_Detail/Pregnancy/pregnancy_check_add_page.dart';
+import 'screens/cow_list/Cow_Detail/Pregnancy/pregnancy_check_list_page.dart';
+
+import 'screens/cow_list/Cow_Detail//Calving/calving_record_add_page.dart';
+import 'screens/cow_list/Cow_Detail/Calving/calving_record_list_page.dart';
+
+import 'screens/cow_list/Cow_Detail/Feeding/feeding_list_page.dart';
+import 'screens/cow_list/Cow_Detail/Feeding/feeding_add_page.dart';
+
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await dotenv.load(fileName: "assets/config/.env");
 
   // Windows가 아니면 Firebase 초기화
   if (!kIsWeb && !Platform.isWindows) {
@@ -113,12 +125,13 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => VaccinationRecordProvider()),
         ChangeNotifierProvider(create: (_) => WeightRecordProvider()),
         ChangeNotifierProvider(create: (_) => BreedingRecordProvider()),
-        ChangeNotifierProvider(create: (_) => FeedingRecordProvider()),
+        ChangeNotifierProvider(create: (_) => FeedRecordProvider()),
         ChangeNotifierProvider(create: (_) => MilkingRecordProvider()),
         ChangeNotifierProvider(create: (_) => CalvingRecordProvider()),
         ChangeNotifierProvider(create: (_) => EstrusRecordProvider()),
         ChangeNotifierProvider(create: (_) => InseminationRecordProvider()),
         ChangeNotifierProvider(create: (_) => PregnancyCheckProvider()),
+        ChangeNotifierProvider(create: (_) => CalvingRecordProvider()),
       ],
       child: const SoDamApp(),
     ),
@@ -174,7 +187,7 @@ class SoDamApp extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               ),
             ),
-            cardTheme: CardTheme(
+            cardTheme: CardThemeData(
               color: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(
@@ -268,8 +281,6 @@ class SoDamApp extends StatelessWidget {
                 cowName: args['cowName'],
               );
             },
-            '/milking-record-detail': (context) =>
-                const MilkingRecordDetailPage(),
             '/breeding-record': (context) {
               final args = ModalRoute.of(context)!.settings.arguments
                   as Map<String, String>;
@@ -369,6 +380,54 @@ class SoDamApp extends StatelessWidget {
                 cowName: args['cowName']!,
               );
             },
+            '/pregnancy-check/add': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments
+                  as Map<String, dynamic>;
+              return PregnancyCheckAddPage(
+                cowId: args['cowId'],
+                cowName: args['cowName'],
+              );
+            },
+            '/pregnancy-check/list': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments
+                  as Map<String, dynamic>;
+              return PregnancyCheckListPage(
+                cowId: args['cowId'],
+                cowName: args['cowName'],
+              );
+            },
+            '/calving-record/add': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments
+                  as Map<String, dynamic>;
+              return CalvingAddPage(
+                cowId: args['cowId'],
+                cowName: args['cowName'],
+              );
+            },
+            '/calving-record/list': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments
+                  as Map<String, dynamic>;
+              return CalvingListPage(
+                cowId: args['cowId'],
+                cowName: args['cowName'],
+              );
+            },
+            '/feeding-record/add': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments
+                  as Map<String, dynamic>;
+              return FeedAddPage(
+                cowId: args['cowId'],
+                cowName: args['cowName'],
+              );
+            },
+            '/feeding-record/list': (context) {
+              final args = ModalRoute.of(context)!.settings.arguments
+                  as Map<String, dynamic>;
+              return FeedListPage(
+                cowId: args['cowId'],
+                cowName: args['cowName'],
+              );
+            },
           },
         );
       },
@@ -415,7 +474,8 @@ class _MainScaffoldState extends State<MainScaffold> {
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: '홈'),
             BottomNavigationBarItem(icon: Icon(Icons.list), label: '젖소 관리'),
-            BottomNavigationBarItem(icon: Icon(Icons.analytics), label: 'AI 분석'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.analytics), label: 'AI 분석'),
             BottomNavigationBarItem(
                 icon: Icon(Icons.chat_bubble_outline), label: '챗봇'),
             BottomNavigationBarItem(icon: Icon(Icons.person), label: '내 정보'),

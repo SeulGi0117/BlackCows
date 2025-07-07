@@ -2,105 +2,136 @@ class CalvingRecord {
   final String? id;
   final String cowId;
   final String recordDate;
-  final String? calvingTime;
+
+  final String? calvingStartTime;
+  final String? calvingEndTime;
   final String? calvingDifficulty;
-  final String? assistanceProvided;
   final int? calfCount;
-  final String? calfGender;
-  final double? calfWeight;
-  final String? calfHealth;
-  final String? placentaExpulsion;
-  final String? complications;
-  final String? veterinarian;
-  final double? cost;
+  final List<String>? calfGender;
+  final List<double>? calfWeight;
+  final List<String>? calfHealth;
+  final bool? placentaExpelled;
+  final String? placentaExpulsionTime;
+  final List<String>? complications;
+  final bool? assistanceRequired;
+  final bool? veterinarianCalled;
+  final String? damCondition;
+  final String? lactationStart;
   final String? notes;
 
   CalvingRecord({
     this.id,
     required this.cowId,
     required this.recordDate,
-    this.calvingTime,
+    this.calvingStartTime,
+    this.calvingEndTime,
     this.calvingDifficulty,
-    this.assistanceProvided,
     this.calfCount,
     this.calfGender,
     this.calfWeight,
     this.calfHealth,
-    this.placentaExpulsion,
+    this.placentaExpelled,
+    this.placentaExpulsionTime,
     this.complications,
-    this.veterinarian,
-    this.cost,
+    this.assistanceRequired,
+    this.veterinarianCalled,
+    this.damCondition,
+    this.lactationStart,
     this.notes,
   });
 
-  CalvingRecord copyWith({
-    String? cowId,
-    String? recordDate,
-    String? calvingTime,
-    String? calvingDifficulty,
-    String? assistanceProvided,
-    int? calfCount,
-    String? calfGender,
-    double? calfWeight,
-    String? calfHealth,
-    String? placentaExpulsion,
-    String? complications,
-    String? veterinarian,
-    double? cost,
-    String? notes,
-  }) {
-    return CalvingRecord(
-      cowId: cowId ?? this.cowId,
-      recordDate: recordDate ?? this.recordDate,
-      calvingTime: calvingTime ?? this.calvingTime,
-      calvingDifficulty: calvingDifficulty ?? this.calvingDifficulty,
-      assistanceProvided: assistanceProvided ?? this.assistanceProvided,
-      calfCount: calfCount ?? this.calfCount,
-      calfGender: calfGender ?? this.calfGender,
-      calfWeight: calfWeight ?? this.calfWeight,
-      calfHealth: calfHealth ?? this.calfHealth,
-      placentaExpulsion: placentaExpulsion ?? this.placentaExpulsion,
-      complications: complications ?? this.complications,
-      veterinarian: veterinarian ?? this.veterinarian,
-      cost: cost ?? this.cost,
-      notes: notes ?? this.notes,
-    );
+  static double? _parseDouble(dynamic value) {
+    if (value == null) return null;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) {
+      String clean = value.replaceAll(RegExp(r'[^\d.-]'), '');
+      return double.tryParse(clean);
+    }
+    return null;
+  }
+
+  static int? _parseInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is double) return value.toInt();
+    if (value is String) {
+      String clean = value.replaceAll(RegExp(r'[^\d-]'), '');
+      return int.tryParse(clean);
+    }
+    return null;
+  }
+
+  static List<String>? _parseStringList(dynamic value) {
+    if (value == null) return null;
+    if (value is List) return value.map((e) => e.toString()).toList();
+    if (value is String) return value.split(',').map((e) => e.trim()).toList();
+    return null;
+  }
+
+  static List<double>? _parseDoubleList(dynamic value) {
+    if (value == null) return null;
+    if (value is List) {
+      return value.map((e) => _parseDouble(e) ?? 0.0).toList();
+    }
+    return null;
   }
 
   factory CalvingRecord.fromJson(Map<String, dynamic> json) {
+    final Map<String, dynamic> safeJson = Map<String, dynamic>.from(json);
+    Map<String, dynamic> data = {};
+
+    if (safeJson['record_data'] != null) {
+      data.addAll(Map<String, dynamic>.from(safeJson['record_data']));
+    }
+    if (safeJson['key_values'] != null) {
+      data.addAll(Map<String, dynamic>.from(safeJson['key_values']));
+    }
+
+    data['cow_id'] = safeJson['cow_id'];
+    data['record_date'] = safeJson['record_date'];
+
     return CalvingRecord(
-      id: json['id'],
-      cowId: json['cow_id'],
-      recordDate: json['record_date'],
-      calvingTime: json['calving_time'],
-      calvingDifficulty: json['calving_difficulty'],
-      assistanceProvided: json['assistance_provided'],
-      calfCount: json['calf_count']?.toInt(),
-      calfGender: json['calf_gender'],
-      calfWeight: json['calf_weight']?.toDouble(),
-      calfHealth: json['calf_health'],
-      placentaExpulsion: json['placenta_expulsion'],
-      complications: json['complications'],
-      veterinarian: json['veterinarian'],
-      cost: json['cost']?.toDouble(),
-      notes: json['notes'],
+      id: safeJson['id']?.toString(),
+      cowId: data['cow_id'] ?? '',
+      recordDate: data['record_date'] ?? '',
+      calvingStartTime: data['calving_start_time'],
+      calvingEndTime: data['calving_end_time'],
+      calvingDifficulty: data['calving_difficulty'] ?? data['difficulty'],
+      calfCount: _parseInt(data['calf_count']),
+      calfGender: _parseStringList(data['calf_gender']),
+      calfWeight: _parseDoubleList(data['calf_weight']),
+      calfHealth: _parseStringList(data['calf_health']),
+      placentaExpelled: data['placenta_expelled'],
+      placentaExpulsionTime: data['placenta_expulsion_time'],
+      complications: _parseStringList(data['complications']),
+      assistanceRequired: data['assistance_required'],
+      veterinarianCalled: data['veterinarian_called'],
+      damCondition: data['dam_condition'],
+      lactationStart: data['lactation_start'],
+      notes: data['notes'] ?? safeJson['description'],
     );
   }
 
   Map<String, dynamic> toJson() => {
         'cow_id': cowId,
         'record_date': recordDate,
-        'calving_time': calvingTime,
+        'title': '분만 기록',
+        'description': notes ?? '분만 기록 작성',
+        'calving_start_time': calvingStartTime,
+        'calving_end_time': calvingEndTime,
         'calving_difficulty': calvingDifficulty,
-        'assistance_provided': assistanceProvided,
         'calf_count': calfCount,
         'calf_gender': calfGender,
         'calf_weight': calfWeight,
         'calf_health': calfHealth,
-        'placenta_expulsion': placentaExpulsion,
+        'placenta_expelled': placentaExpelled,
+        'placenta_expulsion_time': placentaExpulsionTime,
         'complications': complications,
-        'veterinarian': veterinarian,
-        'cost': cost,
+        'assistance_required': assistanceRequired,
+        'veterinarian_called': veterinarianCalled,
+        'dam_condition': damCondition,
+        'lactation_start': lactationStart,
         'notes': notes,
       };
-} 
+}

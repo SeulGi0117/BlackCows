@@ -222,7 +222,8 @@ class _TreatmentListPageState extends State<TreatmentListPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => TreatmentDetailPage(record: record),
+                  builder: (context) =>
+                      TreatmentDetailPage(recordId: record.id!),
                 ),
               );
             },

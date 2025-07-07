@@ -183,18 +183,22 @@ class _VaccinationListPageState extends State<VaccinationListPage> {
 
         return Card(
           child: ListTile(
-            title: Text(record.vaccineName ?? '백신명 없음'),
-            subtitle: Text('접종일: ${record.recordDate}'),
-            trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => VaccinationDetailPage(record: record),
-                ),
-              );
-            },
-          ),
+              title: Text(record.vaccineName ?? '백신명 없음'),
+              subtitle: Text('접종일: ${record.recordDate}'),
+              trailing: const Icon(Icons.arrow_forward_ios),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        VaccinationDetailPage(recordId: record.id!),
+                  ),
+                ).then((value) {
+                  if (value == true) {
+                    _loadRecords(); // ✅ 여기서 새로고침!
+                  }
+                });
+              }),
         );
       },
     );

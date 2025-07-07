@@ -29,7 +29,7 @@ class _CowListPageState extends State<CowListPage>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
-  final List<String> _statusFilters = ['전체', '정상', '주의', '이상'];
+  final List<String> _statusFilters = ['전체', '양호', '경고', '위험'];
 
   @override
   void initState() {

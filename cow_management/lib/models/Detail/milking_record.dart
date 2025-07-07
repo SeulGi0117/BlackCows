@@ -56,6 +56,13 @@ class MilkingRecord {
     return 0.0;
   }
 
+  static bool _parseBool(dynamic value) {
+    if (value is bool) return value;
+    if (value is String) return value.toLowerCase() == 'true';
+    if (value is int) return value != 0;
+    return false;
+  }
+
   static int _parseInt(dynamic value) {
     if (value == null) return 0;
     if (value is int) return value;
@@ -69,32 +76,39 @@ class MilkingRecord {
   }
 
   factory MilkingRecord.fromJson(Map<String, dynamic> json) {
-    final data = json['key_values'] ?? {};
-    
+    final safeJson = Map<String, dynamic>.from(json);
+    Map<String, dynamic> data = {};
+
+    // 🔧 핵심: record_data를 먼저 읽고
+    if (safeJson['record_data'] != null) {
+      data.addAll(Map<String, dynamic>.from(safeJson['record_data']));
+    }
+    // 🔧 key_values도 있으면 덮어씌우기
+    if (safeJson['key_values'] != null) {
+      data.addAll(Map<String, dynamic>.from(safeJson['key_values']));
+    }
+
     return MilkingRecord(
-      id: json['id'],
-      cowId: json['cow_id'],
-      recordDate: json['record_date'],
-      // 서버에서 실제로 보내는 필드들
-      milkYield: _parseDouble(data['milk_yield']),
-      milkingSession: _parseInt(data['session']), // 서버: "session"
-      fatPercentage: _parseDouble(data['fat']), // 서버: "fat"
-      
-      // 서버에서 보내지 않는 필드들은 기본값 또는 빈 문자열
+      id: safeJson['id'] ?? '',
+      cowId: data['cow_id'] ?? safeJson['cow_id'] ?? '',
+      recordDate: safeJson['record_date'] ?? '',
+      milkYield: _parseDouble(data['milk_yield'] ?? 0),
+      milkingSession: _parseInt(data['milking_session'] ?? 0),
       milkingStartTime: data['milking_start_time'] ?? '',
       milkingEndTime: data['milking_end_time'] ?? '',
-      conductivity: _parseDouble(data['conductivity']),
-      somaticCellCount: _parseInt(data['somatic_cell_count']),
-      bloodFlowDetected: data['blood_flow_detected'] ?? false,
-      colorValue: data['color_value'] ?? '',
-      temperature: _parseDouble(data['temperature']),
-      proteinPercentage: _parseDouble(data['protein_percentage']),
-      airFlowValue: _parseDouble(data['air_flow_value']),
-      lactationNumber: _parseInt(data['lactation_number']),
-      ruminationTime: _parseInt(data['rumination_time']),
+      conductivity: _parseDouble(data['conductivity'] ?? 0),
+      somaticCellCount: _parseInt(data['somatic_cell_count'] ?? 0),
+      bloodFlowDetected: _parseBool(data['blood_flow_detected']),
+      colorValue: data['color_value']?.toString() ?? '',
+      temperature: _parseDouble(data['temperature'] ?? 0),
+      fatPercentage: _parseDouble(data['fat_percentage'] ?? 0),
+      proteinPercentage: _parseDouble(data['protein_percentage'] ?? 0),
+      airFlowValue: _parseDouble(data['air_flow_value'] ?? 0),
+      lactationNumber: _parseInt(data['lactation_number'] ?? 0),
+      ruminationTime: _parseInt(data['rumination_time'] ?? 0),
       collectionCode: data['collection_code'] ?? '',
-      collectionCount: _parseInt(data['collection_count']),
-      notes: data['notes'] ?? '',
+      collectionCount: _parseInt(data['collection_count'] ?? 0),
+      notes: data['notes'] ?? safeJson['description'] ?? '',
     );
   }
 

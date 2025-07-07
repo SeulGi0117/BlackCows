@@ -190,7 +190,7 @@ class _EstrusRecordListPageState extends State<EstrusRecordListPage> {
           elevation: 2,
           child: ListTile(
             leading: CircleAvatar(
-              backgroundColor: Color(0xFF4CAF50).withOpacity(0.1),
+              backgroundColor: const Color(0xFF4CAF50).withOpacity(0.1),
               child: const Icon(
                 Icons.favorite,
                 color: Color(0xFF4CAF50),
@@ -216,7 +216,7 @@ class _EstrusRecordListPageState extends State<EstrusRecordListPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => EstrusDetailPage(record: record),
+                  builder: (context) => EstrusDetailPage(recordId: record.id!),
                 ),
               );
             },

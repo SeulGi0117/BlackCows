@@ -2,16 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:cow_management/models/Detail/Health/health_check_record.dart';
 import 'package:cow_management/utils/api_config.dart';
+import 'package:logging/logging.dart';
 
 class HealthCheckProvider with ChangeNotifier {
+  final Logger _logger = Logger('HealthCheckProvider');
+  final baseUrl = ApiConfig.baseUrl;
+  final Dio _dio = Dio();
   List<HealthCheckRecord> _records = [];
 
   List<HealthCheckRecord> get records => _records;
 
   Future<bool> fetchRecords(String cowId, String token) async {
     final dio = Dio();
-    final baseUrl = ApiConfig.baseUrl;
-
+    print('요청 데이터: $baseUrl/records/cow/$cowId/health-records');
     try {
       final response = await dio.get(
         '$baseUrl/records/cow/$cowId/health-records',
@@ -45,48 +48,6 @@ class HealthCheckProvider with ChangeNotifier {
     }
   }
 
-  void _handleDioError(DioException e) {
-    if (e.response?.statusCode == 500) {
-      print('🚨 서버 내부 오류 (500)');
-    } else if (e.response?.statusCode == 404) {
-      print('📭 건강검진 기록이 없습니다 (404)');
-    } else {
-      print('❌ 네트워크 오류: ${e.message}');
-    }
-    _records = [];
-    notifyListeners();
-  }
-
-  Future<void> fetchFilteredRecords(
-      String cowId, String token, String recordType) async {
-    try {
-      final dio = Dio();
-      dio.options.headers['Authorization'] = 'Bearer $token';
-      final apiUrl = ApiConfig.baseUrl;
-
-      print('요청 데이터: $apiUrl/records/cow/$cowId');
-      final response = await dio.get(
-        '$apiUrl/records/cow/$cowId',
-        queryParameters: {'record_type': recordType},
-      );
-      print('✅ 건강검진 기록 필터링 조회 성공: ${response.data}');
-      if (response.statusCode == 200) {
-        final data = response.data as List;
-        _records = data.map((json) {
-          // 전체 JSON을 그대로 전달
-          return HealthCheckRecord.fromJson(json);
-        }).toList();
-
-        notifyListeners();
-      } else {
-        throw Exception('서버 응답 오류: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('건강검진 기록 불러오기 오류: $e');
-      rethrow;
-    }
-  }
-
   Future<bool> addRecord(HealthCheckRecord record, String token) async {
     final dio = Dio();
     final baseUrl = ApiConfig.baseUrl;
@@ -113,33 +74,59 @@ class HealthCheckProvider with ChangeNotifier {
     return false;
   }
 
-  Future<bool> updateRecord(
-      String id, HealthCheckRecord updated, String token) async {
-    final dio = Dio();
-    final baseUrl = ApiConfig.baseUrl;
-
+  Future<HealthCheckRecord?> fetchRecordById(
+      String recordId, String token) async {
     try {
-      final response = await dio.put(
-        '$baseUrl/records/$id',
-        data: {
-          'record_date': updated.recordDate,
-          'record_data': updated.toJson(),
-        },
+      final response = await _dio.get(
+        '$baseUrl/records/$recordId',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       if (response.statusCode == 200) {
-        final index = _records.indexWhere((r) => r.id == id);
-        if (index != -1) {
-          _records[index] = updated;
-          notifyListeners();
-        }
-        return true;
+        return HealthCheckRecord.fromJson(response.data);
+      } else {
+        _logger.warning('❌ 단일 조회 실패: ${response.statusCode}');
+        return null;
       }
     } catch (e) {
-      print('건강검진 기록 수정 오류: $e');
+      _logger.severe('🚨 단일 기록 조회 중 오류 발생: $e');
+      return null;
     }
-    return false;
+  }
+
+  Future<bool> updateRecord(
+      String recordId, Map<String, dynamic> updatedData, String token) async {
+    final url = '${ApiConfig.baseUrl}/records/$recordId';
+
+    final payload = <String, dynamic>{
+      if (updatedData['record_date'] != null)
+        'record_date': updatedData['record_date'],
+      if (updatedData['title'] != null) 'title': updatedData['title'],
+      if (updatedData['description'] != null)
+        'description': updatedData['description'],
+      'record_data': updatedData['record_data'] ?? updatedData,
+    };
+
+    try {
+      _logger.info('📡 요청 URL: $url');
+      _logger.info('📦 요청 데이터: $payload');
+      final response = await _dio.put(
+        url,
+        data: payload,
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      if (response.statusCode == 200) {
+        _logger.info('✅ 수정 성공: $recordId');
+        return true;
+      } else {
+        _logger.warning('❌ 수정 실패: ${response.statusCode} - ${response.data}');
+        return false;
+      }
+    } catch (e, s) {
+      _logger.severe('🚨 수정 중 오류 발생: $e', e, s);
+      return false;
+    }
   }
 
   Future<bool> deleteRecord(String id, String token) async {

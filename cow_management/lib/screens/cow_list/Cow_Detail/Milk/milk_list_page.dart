@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cow_management/providers/DetailPage/milking_record_provider.dart';
 import 'package:cow_management/providers/user_provider.dart';
+import 'package:cow_management/screens/cow_list/Cow_Detail/Milk/milk_detail_page.dart';
 
 class MilkingRecordListPage extends StatefulWidget {
   final String cowId;
@@ -53,7 +54,8 @@ class _MilkingRecordListPageState extends State<MilkingRecordListPage> {
         foregroundColor: Colors.white,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF4CAF50)))
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFF4CAF50)))
           : records.isEmpty
               ? const Center(child: Text('착유 기록이 없습니다'))
               : ListView.builder(
@@ -64,10 +66,12 @@ class _MilkingRecordListPageState extends State<MilkingRecordListPage> {
                       title: Text('🍼 ${record.recordDate}'),
                       subtitle: Text('생산량: ${record.milkYield}L'),
                       onTap: () {
-                        Navigator.pushNamed(
+                        Navigator.push(
                           context,
-                          '/milking-record-detail',
-                          arguments: {'recordId': record.id},
+                          MaterialPageRoute(
+                            builder: (_) => MilkingRecordDetailPage(
+                                recordId: record.id), // ← 여기 주의!
+                          ),
                         );
                       },
                     );
