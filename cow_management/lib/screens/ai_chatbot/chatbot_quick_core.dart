@@ -55,12 +55,8 @@ class _ChatbotQuickCoreState extends State<ChatbotQuickCore> {
     });
 
     try {
-      print('🔥 채팅 기록 불러오기 시도: chatId=$_chatId');
       final history = await getChatHistory(_chatId!);
-      print('🔥 채팅 기록 응답: $history');
-
       if (history.isEmpty) {
-        // 기존 메시지가 없으면 환영 메시지 표시
         setState(() {
           _messages.add(_ChatMessage(
             text: "안녕하세요 소담이입니다! 무엇을 도와드릴까요?",
@@ -69,7 +65,6 @@ class _ChatbotQuickCoreState extends State<ChatbotQuickCore> {
           ));
         });
       } else {
-        // 기존 메시지들을 시간순으로 정렬하여 표시
         final sortedHistory = history
             .map((msg) => _ChatMessage(
                   text: msg['content'] ?? msg['message'] ?? '',
@@ -84,7 +79,6 @@ class _ChatbotQuickCoreState extends State<ChatbotQuickCore> {
         });
       }
     } catch (e) {
-      print('❌ 채팅 기록 불러오기 실패: $e');
       setState(() {
         _messages.add(_ChatMessage(
           text: "채팅 기록을 불러올 수 없습니다.",
@@ -111,10 +105,7 @@ class _ChatbotQuickCoreState extends State<ChatbotQuickCore> {
     if (text.isEmpty) return;
 
     final userId = Provider.of<UserProvider>(context, listen: false).currentUser?.userId;
-    if (userId == null) {
-      print("❌ 사용자 ID 없음");
-      return;
-    }
+    if (userId == null) return;
 
     setState(() {
       _messages.add(_ChatMessage(
@@ -170,156 +161,149 @@ class _ChatbotQuickCoreState extends State<ChatbotQuickCore> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        if (_isLoading)
-          const Padding(
-            padding: EdgeInsets.all(16),
-            child: Center(child: CircularProgressIndicator()),
-          ),
-        Expanded(
-          child: ListView.builder(
-            controller: _scrollController,
-            padding: const EdgeInsets.all(16),
-            itemCount: _messages.length,
-            itemBuilder: (context, index) {
-              final msg = _messages[index];
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  mainAxisAlignment: msg.isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (!msg.isUser) ...[
-                      const CircleAvatar(
-                        radius: 18,
-                        backgroundImage: AssetImage('assets/images/chatbot_icon.png'),
-                      ),
-                      const SizedBox(width: 12),
-                    ],
-                    Flexible(
-                      child: Container(
-                        constraints: BoxConstraints(
-                          maxWidth: MediaQuery.of(context).size.width * 0.65,
+    return Container(
+      color: Colors.white,
+      child: Column(
+        children: [
+          if (_isLoading)
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          Expanded(
+            child: ListView.builder(
+              controller: _scrollController,
+              padding: const EdgeInsets.all(16),
+              itemCount: _messages.length,
+              itemBuilder: (context, index) {
+                final msg = _messages[index];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    mainAxisAlignment: msg.isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (!msg.isUser) ...[
+                        const CircleAvatar(
+                          radius: 18,
+                          backgroundImage: AssetImage('assets/images/chatbot_icon.png'),
                         ),
-                        child: Column(
-                          crossAxisAlignment: msg.isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                        const SizedBox(width: 12),
+                      ],
+                      Flexible(
+                        child: Stack(
+                          clipBehavior: Clip.none,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                              margin: EdgeInsets.only(
-                                left: msg.isUser ? 0 : 0,
-                                right: msg.isUser ? 0 : 0,
-                                bottom: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: msg.isUser ? Colors.blue.shade100 : Colors.grey.shade100,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: msg.isUser ? Colors.blue.shade200 : Colors.grey.shade300,
-                                  width: 1,
+                            Align(
+                              alignment: msg.isUser ? Alignment.centerRight : Alignment.centerLeft,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                margin: const EdgeInsets.only(bottom: 4),
+                                decoration: BoxDecoration(
+                                  color: msg.isUser ? Colors.lightGreen.shade100 : Colors.grey.shade200,
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.shade300.withOpacity(0.4),
+                                      offset: const Offset(0, 2),
+                                      blurRadius: 5,
+                                      spreadRadius: 0,
+                                    ),
+                                  ],
                                 ),
-                              ),
-                              child: Text(
-                                msg.text,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: msg.isUser ? Colors.blue.shade800 : Colors.grey.shade800,
+                                child: Text(
+                                  msg.text,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey.shade900,
+                                  ),
                                 ),
                               ),
                             ),
-                            Padding(
-                              padding: EdgeInsets.only(
-                                left: msg.isUser ? 0 : 4,
-                                right: msg.isUser ? 4 : 0,
-                                bottom: 4,
-                              ),
-                              child: Text(
-                                _formatTime(msg.timestamp),
-                                style: TextStyle(
-                                  fontSize: 11, 
-                                  color: Colors.grey.shade500,
+                            Positioned(
+                              top: 10,
+                              right: msg.isUser ? -10 : null,
+                              left: msg.isUser ? null : -10,
+                              child: CustomPaint(
+                                size: const Size(12, 10),
+                                painter: BubbleTailPainter(
+                                  isUser: msg.isUser,
+                                  color: msg.isUser ? Colors.lightGreen.shade100 : Colors.grey.shade200,
                                 ),
                               ),
                             ),
                           ],
                         ),
                       ),
-                    ),
-                    if (msg.isUser) ...[
-                      const SizedBox(width: 12),
-                      const CircleAvatar(
-                        radius: 18,
-                        backgroundColor: Colors.blue,
-                        child: Icon(Icons.person, color: Colors.white, size: 20),
-                      ),
-                    ],
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-        Container(
-          color: Colors.white,
-          padding: const EdgeInsets.all(16),
-          child: SafeArea(
-            top: false,
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    maxLines: null,
-                    textInputAction: TextInputAction.send,
-                    onSubmitted: (_) => _handleSend(),
-                    decoration: InputDecoration(
-                      hintText: "메시지를 입력하세요",
-                      hintStyle: TextStyle(fontSize: 14, color: Colors.grey.shade500),
-                      filled: true,
-                      fillColor: Colors.white,
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide(color: Colors.blue.shade400, width: 2),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                GestureDetector(
-                  onTap: _handleSend,
-                  child: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: Colors.blue,
-                      borderRadius: BorderRadius.circular(22),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.blue.withOpacity(0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
+                      if (msg.isUser) ...[
+                        const SizedBox(width: 12),
+                        CircleAvatar(
+                          radius: 18,
+                          backgroundColor: Colors.lightGreen.shade200,
+                          child: const Icon(Icons.person, color: Colors.white, size: 18),
                         ),
                       ],
-                    ),
-                    child: const Icon(Icons.send, color: Colors.white, size: 20),
+                    ],
                   ),
-                ),
-              ],
+                );
+              },
             ),
           ),
-        ),
-      ],
+          Container(
+            color: Colors.white,
+            padding: const EdgeInsets.all(16),
+            child: SafeArea(
+              top: false,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _controller,
+                      maxLines: null,
+                      textInputAction: TextInputAction.send,
+                      onSubmitted: (_) => _handleSend(),
+                      decoration: InputDecoration(
+                        hintText: "메시지를 입력하세요",
+                        hintStyle: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+                        filled: true,
+                        fillColor: Colors.white,
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                          borderSide: BorderSide(color: Colors.grey.shade300, width: 2),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  GestureDetector(
+                    onTap: _handleSend,
+                    child: Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: Colors.lightGreen.shade200,
+                        borderRadius: BorderRadius.circular(22),
+                        border: Border.all(color: Colors.grey.shade300, width: 1),
+                      ),
+                      child: const Icon(Icons.send, color: Colors.white, size: 18),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -334,4 +318,39 @@ class _ChatMessage {
     required this.isUser,
     required this.timestamp,
   });
+}
+
+class BubbleTailPainter extends CustomPainter {
+  final bool isUser;
+  final Color color;
+
+  BubbleTailPainter({
+    required this.isUser,
+    required this.color,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = Path();
+    if (isUser) {
+      // 사용자 메시지: 오른쪽에 있으므로 꼬리는 왼쪽을 향해야 함
+      path.moveTo(0, 0);
+      path.lineTo(size.width, size.height / 2);
+      path.lineTo(0, size.height);
+    } else {
+      // 봇 메시지: 왼쪽에 있으므로 꼬리는 오른쪽을 향해야 함
+      path.moveTo(size.width, 0);
+      path.lineTo(0, size.height / 2);
+      path.lineTo(size.width, size.height);
+    }
+    path.close();
+
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    canvas.drawPath(path, paint);  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

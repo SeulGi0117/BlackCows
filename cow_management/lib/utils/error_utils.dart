@@ -79,9 +79,37 @@ class ErrorUtils {
   static void showNetworkErrorDialog(BuildContext context, {String? customMessage, dynamic error}) {
     if (!context.mounted) return;
     
+    // 인증 오류(401/307) 안내 메시지 추가
+    if (error is DioException && (error.response?.statusCode == 401 || error.response?.statusCode == 307)) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Row(
+              children: [
+                const Icon(Icons.lock_outline, color: Colors.red, size: 28),
+                const SizedBox(width: 8),
+                const Expanded(child: Text('인증 오류')),
+              ],
+            ),
+            content: const Text('로그인이 만료되었습니다.\n다시 로그인 해주세요.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('닫기'),
+              ),
+            ],
+          );
+        },
+      );
+      return;
+    }
+    
     // 오류 타입 분석
     String errorType = '네트워크 연결 오류';
     List<String> possibleCauses = [];
+    String additionalInfo = '';
     
     if (error is DioException) {
       switch (error.type) {
@@ -109,10 +137,15 @@ class ErrorUtils {
           if (error.response?.statusCode != null) {
             final statusCode = error.response!.statusCode!;
             if (statusCode >= 500) {
-              errorType = '서버 내부 오류 ($statusCode)';
-              possibleCauses = ['서버 장애', '서버 점검 중', '데이터베이스 오류'];
+              errorType = '서버 일시적 오류';
+              possibleCauses = [
+                '서버가 일시적으로 응답할 수 없는 상태입니다',
+                '잠시 후 다시 시도해주세요',
+                '문제가 지속되면 개발팀에 문의해주세요'
+              ];
+              additionalInfo = '현재 서버에 일시적인 문제가 발생했습니다.\n잠시 후 자동으로 복구될 예정이니 잠시만 기다려주세요.';
             } else if (statusCode >= 400) {
-              errorType = '클라이언트 오류 ($statusCode)';
+              errorType = '요청 오류';
               possibleCauses = ['잘못된 요청', '인증 문제', '권한 없음'];
             }
           }
@@ -144,7 +177,7 @@ class ErrorUtils {
         return AlertDialog(
           title: Row(
             children: [
-              const Icon(Icons.wifi_off, color: Colors.red, size: 28),
+              const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
               const SizedBox(width: 8),
               Expanded(child: Text(errorType)),
             ],
@@ -154,24 +187,12 @@ class ErrorUtils {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  '네트워크 연결에 문제가 발생했습니다.',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 12),
-                if (customMessage != null) ...[
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      '오류 상세: $customMessage',
-                      style: const TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'monospace'),
-                    ),
+                if (additionalInfo.isNotEmpty) ...[
+                  Text(
+                    additionalInfo,
+                    style: const TextStyle(fontSize: 16),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                 ],
                 const Text(
                   '가능한 원인:',
@@ -234,24 +255,13 @@ class ErrorUtils {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('나중에'),
-            ),
-            TextButton(
-              onPressed: () async {
-                Navigator.of(context).pop();
-                await _launchContactPage();
-              },
-              child: const Text('문의 페이지'),
+              child: const Text('닫기'),
             ),
             ElevatedButton(
               onPressed: () async {
                 Navigator.of(context).pop();
                 await _copyEmailToClipboard(context);
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
-              ),
               child: const Text('이메일 복사'),
             ),
           ],

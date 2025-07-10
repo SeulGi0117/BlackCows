@@ -15,6 +15,10 @@ import 'models/cow.dart';
 import 'providers/cow_provider.dart';
 import 'providers/user_provider.dart';
 import 'providers/theme_provider.dart';
+import 'providers/todo_provider.dart';
+// Services
+import 'services/todo_service.dart';
+import 'services/dio_client.dart';
 // 상세기록 Providers
 import 'providers/DetailPage/Health/health_check_provider.dart';
 import 'providers/DetailPage/Health/treatment_record_provider.dart';
@@ -102,12 +106,19 @@ Future<void> main() async {
         '${record.time}: ${record.level.name}: ${record.loggerName}: ${record.message}');
   });
 
+  // DioClient 인스턴스 생성
+  final dioClient = DioClient();
+  // TodoService 인스턴스 생성
+  final todoService = TodoService(dioClient);
+
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => CowProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        // TodoProvider 추가
+        ChangeNotifierProvider(create: (_) => TodoProvider(todoService)),
         // 상세기록 Providers
         ChangeNotifierProvider(create: (_) => HealthCheckProvider()),
         ChangeNotifierProvider(create: (_) => TreatmentRecordProvider()),
@@ -135,7 +146,7 @@ class SoDamApp extends StatelessWidget {
     return Consumer<ThemeProvider>(
       builder: (context, themeProvider, _) {
         return MaterialApp(
-          navigatorKey: navigatorKey,
+          navigatorKey: DioClient.navigatorKey,
           title: 'BlackCows 젖소 관리',
           debugShowCheckedModeBanner: false,
           locale: const Locale('ko', 'KR'),
@@ -176,13 +187,13 @@ class SoDamApp extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               ),
             ),
-            cardTheme: CardThemeData(
+            cardTheme: const CardThemeData(
               color: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.all(Radius.circular(16)),
               ),
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             ),
             inputDecorationTheme: InputDecorationTheme(
               filled: true,

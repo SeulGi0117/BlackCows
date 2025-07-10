@@ -1,297 +1,378 @@
 import 'package:flutter/material.dart';
-import '../../widgets/modern_card.dart';
-// 캘린더 패키지 임포트 (예시)
-// import 'package:table_calendar/table_calendar.dart';
+import 'package:provider/provider.dart';
+import '../../models/todo.dart';
+import '../../providers/todo_provider.dart';
+import '../../widgets/loading_widget.dart';
+import '../../utils/error_utils.dart';
+import 'todo_add_page.dart';
+import 'todo_detail_page.dart';
+import '../../providers/cow_provider.dart';
+import '../../models/cow.dart';
 
 class TodoPage extends StatefulWidget {
-  const TodoPage({super.key});
+  const TodoPage({Key? key}) : super(key: key);
 
   @override
   State<TodoPage> createState() => _TodoPageState();
 }
 
-class _TodoPageState extends State<TodoPage> {
-  final List<TodoItem> _todos = [
-    TodoItem(
-      id: '1',
-      title: '소담이 건강검진',
-      description: '정기 건강검진 및 체중 측정',
-      cowName: '소담이 (002123456001)',
-      type: TodoType.health,
-      dueDate: DateTime.now().add(const Duration(days: 1)),
-      isCompleted: false,
-      priority: Priority.high,
-    ),
-    TodoItem(
-      id: '2',
-      title: '꽃분이 분만 준비',
-      description: '분만실 준비 및 분만용품 점검',
-      cowName: '꽃분이 (002123456002)',
-      type: TodoType.breeding,
-      dueDate: DateTime.now().add(const Duration(days: 3)),
-      isCompleted: false,
-      priority: Priority.high,
-    ),
-    TodoItem(
-      id: '3',
-      title: '백신 접종 일정',
-      description: '전체 소 대상 백신 접종',
-      cowName: '전체',
-      type: TodoType.vaccination,
-      dueDate: DateTime.now().add(const Duration(days: 7)),
-      isCompleted: false,
-      priority: Priority.medium,
-    ),
-    TodoItem(
-      id: '4',
-      title: '사료 발주',
-      description: '겨울 사료 발주 및 재고 관리',
-      cowName: '전체',
-      type: TodoType.feeding,
-      dueDate: DateTime.now().add(const Duration(days: 14)),
-      isCompleted: true,
-      priority: Priority.low,
-    ),
-  ];
+class _TodoPageState extends State<TodoPage> with SingleTickerProviderStateMixin {
+  String? _statusFilter;
+  String? _priorityFilter;
+  String? _categoryFilter;
 
-  // 더미 캘린더 일정 데이터
-  final Map<DateTime, List<String>> _dummyEvents = {
-    DateTime.utc(2024, 6, 10): ['백신접종', '건강검진'],
-    DateTime.utc(2024, 6, 12): ['착유'],
-    DateTime.utc(2024, 6, 15): ['사료배급'],
-  };
+  @override
+  void initState() {
+    super.initState();
+    final now = DateTime.now();
+    final startDate = DateTime(now.year, now.month, 1);
+    final endDate = DateTime(now.year, now.month + 1, 0);
+    final todoProvider = context.read<TodoProvider>();
+    todoProvider.loadCalendarTodos(startDate, endDate);
+    todoProvider.loadStatistics();
+    todoProvider.loadTodos();
+  }
 
-  DateTime _selectedDay = DateTime.now();
+  @override
+  void dispose() {
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
         title: const Text('할일 관리'),
-        backgroundColor: const Color(0xFF4CAF50),
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: Column(
-        children: [
-          // 더미 캘린더
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('일정 캘린더', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                const SizedBox(height: 8),
-                // 실제 캘린더 위젯으로 교체 가능
-                SizedBox(
-                  height: 80,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: _dummyEvents.entries.map((entry) {
-                      return Container(
-                        margin: const EdgeInsets.only(right: 12),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.green.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text('${entry.key.month}/${entry.key.day}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                            ...entry.value.map((e) => Text(e, style: const TextStyle(fontSize: 12))).toList(),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // 실제 유저 할일 기반 캘린더 (구조만, 실제 연동은 추후)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('내 할일 캘린더', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                const SizedBox(height: 8),
-                SizedBox(
-                  height: 80,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: _todos.map((todo) {
-                      return Container(
-                        margin: const EdgeInsets.only(right: 12),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.blue.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text('${todo.dueDate.month}/${todo.dueDate.day}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                            Text(todo.title, style: const TextStyle(fontSize: 12)),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
-          _buildTodoSummary(),
-          Expanded(
-            child: _buildTodoItems(),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.filter_list),
+            onPressed: _showFilterDialog,
           ),
         ],
+      ),
+      body: Consumer<TodoProvider>(
+        builder: (context, provider, child) {
+          if (provider.isLoading) {
+            return const LoadingWidget();
+          }
+          if (provider.error != null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              ErrorUtils.showNetworkErrorDialog(
+                context,
+                error: provider.error,
+              );
+              provider.clearError();
+            });
+            return Center(child: Text('오류가 발생했습니다.')); // 간단 처리
+          }
+          return Column(
+            children: [
+              // 상단: 일정 캘린더
+              _CalendarSection(calendarTodos: provider.calendarTodos),
+              const SizedBox(height: 12),
+              // 중간: 상태별 카드
+              _StatusCardSection(
+                statistics: provider.statistics,
+                currentStatus: provider.currentStatusFilter,
+                onStatusSelected: (status) {
+                  provider.loadTodos(status: status);
+                },
+              ),
+              const SizedBox(height: 12),
+              // 하단: 할일 목록
+              Expanded(child: _buildTodoList(provider.filteredTodos)),
+            ],
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // TODO: 새로운 할일 추가 다이얼로그
+        onPressed: () async {
+          try {
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const TodoAddPage(),
+              ),
+            );
+            if (result == true) {
+              final provider = context.read<TodoProvider>();
+              provider.loadStatistics();
+              provider.loadTodos(status: provider.currentStatusFilter);
+              final now = DateTime.now();
+              provider.loadCalendarTodos(DateTime(now.year, now.month, 1), DateTime(now.year, now.month + 1, 0));
+            }
+          } catch (e) {
+            ErrorUtils.showNetworkErrorDialog(context, error: e);
+          }
         },
-        backgroundColor: const Color(0xFF4CAF50),
-        child: const Icon(Icons.add, color: Colors.white),
+        child: const Icon(Icons.add),
       ),
     );
   }
 
-  Widget _buildTodoSummary() {
-    final totalTodos = _todos.length;
-    final completedTodos = _todos.where((todo) => todo.isCompleted).length;
-    final pendingTodos = totalTodos - completedTodos;
-    final todayTodos = _todos.where((todo) => 
-        !todo.isCompleted && 
-        todo.dueDate.difference(DateTime.now()).inDays <= 1).length;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      color: Colors.white,
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildSummaryCard('전체', totalTodos, const Color(0xFF4CAF50), Icons.assignment),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _buildSummaryCard('오늘', todayTodos, const Color(0xFFFF9800), Icons.today),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _buildSummaryCard('대기', pendingTodos, const Color(0xFF2196F3), Icons.pending_actions),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _buildSummaryCard('완료', completedTodos, const Color(0xFF9C27B0), Icons.check_circle),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSummaryCard(String title, int count, Color color, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(height: 8),
-          Text(
-            count.toString(),
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: color,
+  Widget _buildTodoList(List<Todo> todos) {
+    if (todos.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.task_outlined,
+              size: 64,
+              color: Colors.grey[400],
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: color,
+            const SizedBox(height: 16),
+            Text(
+              '할일이 없습니다',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[600],
+              ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
+            const SizedBox(height: 8),
+            Text(
+              '새로운 할일을 추가해보세요!',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[500],
+              ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const TodoAddPage(),
+                  ),
+                );
+                if (result == true) {
+                  final provider = context.read<TodoProvider>();
+                  await provider.loadTodos(status: provider.currentStatusFilter);
+                  await provider.loadStatistics();
+                  await provider.loadCalendarTodos(DateTime(DateTime.now().year, DateTime.now().month, 1), DateTime(DateTime.now().year, DateTime.now().month + 1, 0));
+                }
+              },
+              icon: const Icon(Icons.add),
+              label: const Text('할일 추가하기'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
-  Widget _buildTodoItems() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: _todos.length,
-      itemBuilder: (context, index) {
-        final todo = _todos[index];
-        return _buildTodoItem(todo);
+    return RefreshIndicator(
+      onRefresh: () async {
+        final provider = context.read<TodoProvider>();
+        await provider.loadTodos(status: provider.currentStatusFilter);
+        await provider.loadStatistics();
+        await provider.loadCalendarTodos(DateTime(DateTime.now().year, DateTime.now().month, 1), DateTime(DateTime.now().year, DateTime.now().month + 1, 0));
       },
+      child: ListView.builder(
+        itemCount: todos.length,
+        itemBuilder: (context, index) {
+          final todo = todos[index];
+          return _buildTodoItem(todo);
+        },
+      ),
     );
   }
 
-  Widget _buildTodoItem(TodoItem todo) {
-    final isOverdue = !todo.isCompleted && todo.dueDate.isBefore(DateTime.now());
-    final isToday = !todo.isCompleted && 
-        todo.dueDate.difference(DateTime.now()).inDays == 0;
+  Widget _buildTodoItem(Todo todo) {
+    final cowProvider = context.read<CowProvider>();
+    // 카테고리별 아이콘/색상 매핑 
+    final categoryIconMap = {
+      'milking': Icons.local_drink,
+      'health_check': Icons.health_and_safety,
+      'vaccination': Icons.vaccines,
+      'treatment': Icons.healing,
+      'breeding': Icons.family_restroom,
+      'feeding': Icons.restaurant,
+      'facility': Icons.build,
+    };
+    final categoryColorMap = {
+      'milking': Color(0xFF3CB371), // 진초록
+      'health_check': Color(0xFF3A5BA0), // 파랑
+      'vaccination': Color(0xFFFFA500), // 주황
+      'treatment': Color(0xFF8A2BE2), // 보라
+      'breeding': Color(0xFF8A2BE2), // 보라
+      'feeding': Color(0xFF3CB371), // 진초록
+      'facility': Color(0xFF3A5BA0), // 파랑
+    };
+    final icon = categoryIconMap[todo.category] ?? Icons.task_alt;
+    final iconColor = categoryColorMap[todo.category] ?? Color(0xFF3A5BA0);
 
-    return ModernCard(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+    // 날짜 표시 (오늘/며칠 후/며칠 전)
+    final now = DateTime.now();
+    final due = todo.dueDate;
+    String dateLabel = '';
+    bool isToday = due.year == now.year && due.month == now.month && due.day == now.day;
+    bool isOverdue = due.isBefore(DateTime(now.year, now.month, now.day));
+    if (isToday) {
+      dateLabel = '오늘';
+    } else {
+      final diff = due.difference(now).inDays;
+      if (diff > 0) {
+        dateLabel = '${diff}일 후';
+      } else if (diff < 0) {
+        dateLabel = '${-diff}일 전';
+      } else {
+        dateLabel = '';
+      }
+    }
+
+    // 상태 뱃지
+    String? statusBadge;
+    Color? statusBadgeColor;
+    if (isOverdue) {
+      statusBadge = '지연';
+      statusBadgeColor = Color(0xFFE57373); // 연빨강
+    } else if (isToday) {
+      statusBadge = '오늘';
+      statusBadgeColor = Color(0xFFFFA500); // 주황
+    }
+    // 우선순위 뱃지(첨부 UI)
+    String? priorityBadge;
+    Color? priorityBadgeColor;
+    if (todo.priority == TodoPriority.high) {
+      priorityBadge = '높음';
+      priorityBadgeColor = Color(0xFFFFA500); // 주황
+    }
+
+    // 소 정보 표시 (있으면)
+    String? cowInfo;
+    if (todo.relatedCows.isNotEmpty) {
+      // relatedCows에 id만 있을 경우 이름/이표번호 찾아서 표시
+      final cowId = todo.relatedCows.first;
+      final cow = cowProvider.cows.firstWhere(
+        (c) => c.id == cowId,
+        orElse: () => Cow(
+          id: cowId,
+          name: '',
+          earTagNumber: '',
+          farmId: '',
+          ownerId: '',
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          isActive: true,
+        ),
+      );
+      if (cow.name.isNotEmpty && cow.earTagNumber.isNotEmpty) {
+        cowInfo = '${cow.name} (${cow.earTagNumber})';
+      } else {
+        cowInfo = cowId;
+      }
+    }
+
+    return GestureDetector(
+      onTap: () async {
+        final action = await showModalBottomSheet<String>(
+          context: context,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+          ),
+          builder: (context) {
+            return SafeArea(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.edit),
+                    title: const Text('수정'),
+                    onTap: () => Navigator.pop(context, 'edit'),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.delete),
+                    title: const Text('삭제'),
+                    onTap: () => Navigator.pop(context, 'delete'),
+                  ),
+                  if (todo.status != TodoStatus.completed)
+                    ListTile(
+                      leading: const Icon(Icons.check_circle),
+                      title: const Text('완료'),
+                      onTap: () => Navigator.pop(context, 'complete'),
+                    ),
+                ],
+              ),
+            );
+          },
+        );
+        if (action == 'edit') {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TodoDetailPage(todo: todo),
+            ),
+          );
+          if (result == true) {
+            final provider = context.read<TodoProvider>();
+            await provider.loadTodos(status: provider.currentStatusFilter);
+            await provider.loadStatistics();
+            await provider.loadCalendarTodos(DateTime(DateTime.now().year, DateTime.now().month, 1), DateTime(DateTime.now().year, DateTime.now().month + 1, 0));
+          }
+        } else if (action == 'delete') {
+          final provider = context.read<TodoProvider>();
+          await provider.deleteTodo(todo.id);
+          await provider.loadTodos(status: provider.currentStatusFilter);
+          await provider.loadStatistics();
+          await provider.loadCalendarTodos(DateTime(DateTime.now().year, DateTime.now().month, 1), DateTime(DateTime.now().year, DateTime.now().month + 1, 0));
+        } else if (action == 'complete') {
+          final provider = context.read<TodoProvider>();
+          await provider.completeTodo(todo.id);
+          await provider.loadTodos(status: provider.currentStatusFilter);
+          await provider.loadStatistics();
+          await provider.loadCalendarTodos(DateTime(DateTime.now().year, DateTime.now().month, 1), DateTime(DateTime.now().year, DateTime.now().month + 1, 0));
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: Color(0xFFFFF6E0), 
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.10),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            GestureDetector(
-              onTap: () => _toggleTodoComplete(todo),
-              child: Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: todo.isCompleted 
-                        ? const Color(0xFF4CAF50) 
-                        : Colors.grey.shade400,
-                    width: 2,
-                  ),
-                  color: todo.isCompleted 
-                      ? const Color(0xFF4CAF50) 
-                      : Colors.transparent,
-                ),
-                child: todo.isCompleted 
-                    ? const Icon(
-                        Icons.check,
-                        size: 16,
-                        color: Colors.white,
-                      )
-                    : null,
+            // 라디오 버튼(완료 처리)
+            Padding(
+              padding: const EdgeInsets.only(top: 2, right: 8),
+              child: Radio<bool>(
+                value: true,
+                groupValue: todo.status == TodoStatus.completed,
+                onChanged: todo.status == TodoStatus.completed
+                    ? null
+                    : (val) async {
+                        final provider = context.read<TodoProvider>();
+                        await provider.completeTodo(todo.id);
+                        await provider.loadTodos(status: provider.currentStatusFilter);
+                        await provider.loadStatistics();
+                        await provider.loadCalendarTodos(DateTime(DateTime.now().year, DateTime.now().month, 1), DateTime(DateTime.now().year, DateTime.now().month + 1, 0));
+                      },
+                activeColor: Color(0xFF3CB371),
               ),
             ),
-            const SizedBox(width: 16),
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: _getTodoTypeColor(todo.type).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Icon(
-                _getTodoTypeIcon(todo.type),
-                color: _getTodoTypeColor(todo.type),
-                size: 24,
+            // 카테고리 아이콘
+            Padding(
+              padding: const EdgeInsets.only(top: 2, right: 10),
+              child: CircleAvatar(
+                backgroundColor: Color(0xFFE8F7E5),
+                child: Icon(icon, color: iconColor, size: 22),
+                radius: 18,
               ),
             ),
-            const SizedBox(width: 16),
+            // 메인 정보
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -302,90 +383,79 @@ class _TodoPageState extends State<TodoPage> {
                         child: Text(
                           todo.title,
                           style: TextStyle(
-                            fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: todo.isCompleted 
-                                ? Colors.grey.shade500 
-                                : const Color(0xFF2E3A59),
-                            decoration: todo.isCompleted 
-                                ? TextDecoration.lineThrough 
-                                : null,
+                            fontSize: 16,
+                            color: Colors.black,
+                            decoration: todo.status == TodoStatus.completed ? TextDecoration.lineThrough : null,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (isOverdue)
+                      if (statusBadge != null)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          margin: const EdgeInsets.only(left: 6),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: Colors.red.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12),
+                            color: statusBadgeColor,
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            '지연',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.red.shade600,
-                            ),
-                          ),
-                        ),
-                      if (isToday)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.orange.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            '오늘',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.orange.shade600,
-                            ),
+                            statusBadge,
+                            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
                           ),
                         ),
                     ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    todo.cowName,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade600,
-                      fontWeight: FontWeight.w600,
+                  if (cowInfo != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2, bottom: 2),
+                      child: Text(
+                        cowInfo,
+                        style: const TextStyle(fontSize: 13, color: Colors.black87, fontWeight: FontWeight.w500),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    todo.description,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: todo.isCompleted 
-                          ? Colors.grey.shade500 
-                          : Colors.grey.shade700,
+                  if (todo.description.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 2),
+                      child: Text(
+                        todo.description,
+                        style: const TextStyle(fontSize: 13, color: Colors.black54),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 8),
                   Row(
                     children: [
-                      Icon(
-                        Icons.calendar_today,
-                        size: 16,
-                        color: Colors.grey.shade500,
-                      ),
+                      const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
                       const SizedBox(width: 4),
                       Text(
-                        _formatDate(todo.dueDate),
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey.shade600,
-                        ),
+                        '${todo.dueDate.year}-${todo.dueDate.month.toString().padLeft(2, '0')}-${todo.dueDate.day.toString().padLeft(2, '0')}',
+                        style: const TextStyle(fontSize: 12, color: Colors.grey),
                       ),
-                      const Spacer(),
-                      _buildPriorityChip(todo.priority),
+                      if (dateLabel.isNotEmpty) ...[
+                        const SizedBox(width: 8),
+                        Text(
+                          dateLabel,
+                          style: const TextStyle(fontSize: 12, color: Colors.orange),
+                        ),
+                      ],
+                      if (priorityBadge != null) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: priorityBadgeColor,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            priorityBadge,
+                            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ],
@@ -397,128 +467,355 @@ class _TodoPageState extends State<TodoPage> {
     );
   }
 
-  Widget _buildPriorityChip(Priority priority) {
-    Color color;
-    String text;
-    
-    switch (priority) {
-      case Priority.high:
-        color = Colors.red;
-        text = '높음';
-        break;
-      case Priority.medium:
-        color = Colors.orange;
-        text = '보통';
-        break;
-      case Priority.low:
-        color = Colors.green;
-        text = '낮음';
-        break;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
+  Future<void> _showFilterDialog() async {
+    final result = await showDialog<Map<String, String?>>(
+      context: context,
+      builder: (context) => FilterDialog(
+        initialStatus: _statusFilter,
+        initialPriority: _priorityFilter,
+        initialCategory: _categoryFilter,
+        onFilterChanged: (status, priority, category) {
+          setState(() {
+            _statusFilter = status;
+            _priorityFilter = priority;
+            _categoryFilter = category;
+          });
+        },
       ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
-          color: color,
+    );
+
+    if (result != null) {
+      final provider = context.read<TodoProvider>();
+      await provider.loadTodos(status: _statusFilter);
+      await provider.loadStatistics();
+      await provider.loadCalendarTodos(DateTime(DateTime.now().year, DateTime.now().month, 1), DateTime(DateTime.now().year, DateTime.now().month + 1, 0));
+    }
+  }
+}
+
+class FilterDialog extends StatefulWidget {
+  final String? initialStatus;
+  final String? initialPriority;
+  final String? initialCategory;
+  final Function(String?, String?, String?)? onFilterChanged;
+
+  const FilterDialog({
+    Key? key,
+    this.initialStatus,
+    this.initialPriority,
+    this.initialCategory,
+    this.onFilterChanged,
+  }) : super(key: key);
+
+  @override
+  State<FilterDialog> createState() => _FilterDialogState();
+}
+
+class _FilterDialogState extends State<FilterDialog> {
+  String? _selectedStatus;
+  String? _selectedPriority;
+  String? _selectedCategory;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedStatus = widget.initialStatus;
+    _selectedPriority = widget.initialPriority;
+    _selectedCategory = widget.initialCategory;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('필터'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          DropdownButtonFormField<String?>(
+            value: _selectedStatus,
+            decoration: const InputDecoration(
+              labelText: '상태',
+              border: OutlineInputBorder(),
+            ),
+            items: [
+              const DropdownMenuItem(value: null, child: Text('전체')),
+              DropdownMenuItem(
+                value: TodoStatus.pending,
+                child: const Text('대기'),
+              ),
+              DropdownMenuItem(
+                value: TodoStatus.inProgress,
+                child: const Text('진행 중'),
+              ),
+              DropdownMenuItem(
+                value: TodoStatus.completed,
+                child: const Text('완료'),
+              ),
+              DropdownMenuItem(
+                value: TodoStatus.cancelled,
+                child: const Text('취소'),
+              ),
+            ],
+            onChanged: (value) {
+              setState(() => _selectedStatus = value);
+              widget.onFilterChanged?.call(
+                _selectedStatus,
+                _selectedPriority,
+                _selectedCategory,
+              );
+            },
+          ),
+          const SizedBox(height: 16.0),
+          DropdownButtonFormField<String?>(
+            value: _selectedPriority,
+            decoration: const InputDecoration(
+              labelText: '우선순위',
+              border: OutlineInputBorder(),
+            ),
+            items: [
+              const DropdownMenuItem(value: null, child: Text('전체')),
+              DropdownMenuItem(
+                value: TodoPriority.high,
+                child: const Text('높음'),
+              ),
+              DropdownMenuItem(
+                value: TodoPriority.medium,
+                child: const Text('중간'),
+              ),
+              DropdownMenuItem(
+                value: TodoPriority.low,
+                child: const Text('낮음'),
+              ),
+            ],
+            onChanged: (value) {
+              setState(() => _selectedPriority = value);
+              widget.onFilterChanged?.call(
+                _selectedStatus,
+                _selectedPriority,
+                _selectedCategory,
+              );
+            },
+          ),
+          const SizedBox(height: 16.0),
+          DropdownButtonFormField<String?>(
+            value: _selectedCategory,
+            decoration: const InputDecoration(
+              labelText: '카테고리',
+              border: OutlineInputBorder(),
+            ),
+            items: [
+              const DropdownMenuItem(value: null, child: Text('전체')),
+              DropdownMenuItem(
+                value: TodoCategory.milking,
+                child: const Text('착유'),
+              ),
+              DropdownMenuItem(
+                value: TodoCategory.healthCheck,
+                child: const Text('건강검진'),
+              ),
+              DropdownMenuItem(
+                value: TodoCategory.vaccination,
+                child: const Text('백신접종'),
+              ),
+              DropdownMenuItem(
+                value: TodoCategory.treatment,
+                child: const Text('치료'),
+              ),
+              DropdownMenuItem(
+                value: TodoCategory.breeding,
+                child: const Text('번식'),
+              ),
+              DropdownMenuItem(
+                value: TodoCategory.feeding,
+                child: const Text('사료급여'),
+              ),
+              DropdownMenuItem(
+                value: TodoCategory.facility,
+                child: const Text('시설관리'),
+              ),
+            ],
+            onChanged: (value) {
+              setState(() => _selectedCategory = value);
+              widget.onFilterChanged?.call(
+                _selectedStatus,
+                _selectedPriority,
+                _selectedCategory,
+              );
+            },
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('닫기'),
+        ),
+      ],
+    );
+  }
+}
+
+// 상단 일정 캘린더 위젯
+class _CalendarSection extends StatelessWidget {
+  final Map<DateTime, List<Todo>> calendarTodos;
+  const _CalendarSection({required this.calendarTodos});
+  @override
+  Widget build(BuildContext context) {
+    final items = calendarTodos.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
+    final showItems = items.take(7).toList();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(left: 16, top: 8, bottom: 2),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              '내 할일 캘린더',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: Color(0xFF3A5BA0),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 90,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.only(left: 16, right: 8),
+            children: showItems.map((e) {
+              final dateStr = "${e.key.month}/${e.key.day}";
+              final title = e.value.isNotEmpty ? e.value.first.title : '';
+              return Container(
+                margin: const EdgeInsets.only(right: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Color(0xFFE6F0FA), // 연한 하늘색 카드 배경
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.08),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                width: 90,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(dateStr, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                    const SizedBox(height: 6),
+                    Text(title, style: const TextStyle(fontSize: 13, color: Colors.black87), maxLines: 2, overflow: TextOverflow.ellipsis, textAlign: TextAlign.left),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// 상태별 카드 위젯
+class _StatusCardSection extends StatelessWidget {
+  final Map<String, dynamic> statistics;
+  final String currentStatus;
+  final void Function(String?) onStatusSelected;
+  const _StatusCardSection({required this.statistics, required this.currentStatus, required this.onStatusSelected});
+  @override
+  Widget build(BuildContext context) {
+    // 첨부 이미지 기준 색상/아이콘/글씨/숫자
+    final cards = [
+      {
+        'label': '전체',
+        'status': '',
+        'count': statistics['total_tasks'] ?? 0,
+        'icon': Icons.assignment,
+        'bgColor': Color(0xFFE8F7E5), // 연연두
+        'iconColor': Color(0xFF3CB371), // 진초록
+        'textColor': Color(0xFF3CB371),
+      },
+      {
+        'label': '오늘',
+        'status': 'today',
+        'count': statistics['today_tasks'] ?? 0,
+        'icon': Icons.calendar_today,
+        'bgColor': Color(0xFFFFF6E0), // 연노랑/연주황
+        'iconColor': Color(0xFFFFA500), // 주황
+        'textColor': Color(0xFFFFA500),
+      },
+      {
+        'label': '대기',
+        'status': 'pending',
+        'count': statistics['pending_tasks'] ?? 0,
+        'icon': Icons.assignment_late,
+        'bgColor': Color(0xFFE6F0FA), // 연파랑
+        'iconColor': Color(0xFF3A5BA0), // 파랑
+        'textColor': Color(0xFF3A5BA0),
+      },
+      {
+        'label': '완료',
+        'status': 'completed',
+        'count': statistics['completed_tasks'] ?? 0,
+        'icon': Icons.check_circle,
+        'bgColor': Color(0xFFF1E6FA), // 연보라
+        'iconColor': Color(0xFF8A2BE2), // 보라
+        'textColor': Color(0xFF8A2BE2),
+      },
+    ];
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12, left: 8, right: 8),
+      child: SizedBox(
+        height: 130,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: cards.map((card) {
+            final isSelected = currentStatus == card['status'];
+            return Expanded(
+              child: GestureDetector(
+                onTap: () => onStatusSelected(card['status'] == 'today' ? null : card['status'] as String?),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 0),
+                  decoration: BoxDecoration(
+                    color: card['bgColor'],
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: isSelected ? card['iconColor'] : Colors.transparent, width: 2),
+                    boxShadow: [
+                      if (isSelected)
+                        BoxShadow(
+                          color: (card['iconColor'] as Color).withOpacity(0.10),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Icon(card['icon'], color: card['iconColor'], size: 26),
+                      const SizedBox(height: 4),
+                      Text('${card['count']}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: card['textColor'])),
+                      const SizedBox(height: 2),
+                      Text(card['label']!, style: TextStyle(fontSize: 14, color: card['textColor'], fontWeight: FontWeight.w600)),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
         ),
       ),
     );
   }
-
-  Color _getTodoTypeColor(TodoType type) {
-    switch (type) {
-      case TodoType.health:
-        return const Color(0xFF4CAF50);
-      case TodoType.breeding:
-        return const Color(0xFF2196F3);
-      case TodoType.vaccination:
-        return const Color(0xFF9C27B0);
-      case TodoType.feeding:
-        return const Color(0xFF795548);
-      case TodoType.treatment:
-        return const Color(0xFFE53935);
-    }
-  }
-
-  IconData _getTodoTypeIcon(TodoType type) {
-    switch (type) {
-      case TodoType.health:
-        return Icons.health_and_safety;
-      case TodoType.breeding:
-        return Icons.pregnant_woman;
-      case TodoType.vaccination:
-        return Icons.vaccines;
-      case TodoType.feeding:
-        return Icons.restaurant;
-      case TodoType.treatment:
-        return Icons.medical_services;
-    }
-  }
-
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final difference = date.difference(now).inDays;
-    
-    if (difference == 0) {
-      return '오늘';
-    } else if (difference == 1) {
-      return '내일';
-    } else if (difference == -1) {
-      return '어제';
-    } else if (difference > 0) {
-      return '$difference일 후';
-    } else {
-      return '${difference.abs()}일 전';
-    }
-  }
-
-  void _toggleTodoComplete(TodoItem todo) {
-    setState(() {
-      todo.isCompleted = !todo.isCompleted;
-    });
-  }
-}
-
-class TodoItem {
-  final String id;
-  final String title;
-  final String description;
-  final String cowName;
-  final TodoType type;
-  final DateTime dueDate;
-  bool isCompleted;
-  final Priority priority;
-
-  TodoItem({
-    required this.id,
-    required this.title,
-    required this.description,
-    required this.cowName,
-    required this.type,
-    required this.dueDate,
-    this.isCompleted = false,
-    this.priority = Priority.medium,
-  });
-}
-
-enum TodoType {
-  health,
-  breeding,
-  vaccination,
-  feeding,
-  treatment,
-}
-
-enum Priority {
-  high,
-  medium,
-  low,
 } 

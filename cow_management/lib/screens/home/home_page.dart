@@ -6,8 +6,8 @@ import 'package:cow_management/widgets/modern_card.dart';
 import 'package:cow_management/widgets/loading_widget.dart';
 import 'package:cow_management/screens/notifications/notification_page.dart';
 import 'package:cow_management/screens/todo/todo_page.dart';
-import 'package:cow_management/screens/ai_chatbot/chatbot_quick_page.dart';
 import 'package:cow_management/screens/cow_list/cow_registration_flow_page.dart';
+import 'package:cow_management/screens/ai_chatbot/chatbot_history_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -308,7 +308,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         'color': const Color(0xFF9C27B0),
         'onTap': () => Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const ChatbotQuickPage()),
+          MaterialPageRoute(builder: (context) => const ChatbotHistoryPage()),
         ),
       },
     ];
@@ -868,7 +868,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 color: const Color(0xFF9C27B0),
                 onTap: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const ChatbotQuickPage()),
+                  MaterialPageRoute(builder: (context) => const ChatbotHistoryPage()),
                 ),
               ),
             ],

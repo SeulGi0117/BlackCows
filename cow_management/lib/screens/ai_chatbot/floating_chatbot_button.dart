@@ -1,7 +1,7 @@
 // floating_chatbot_button.dart
 
 import 'package:flutter/material.dart';
-import 'package:cow_management/screens/ai_chatbot/chatbot_quick_page.dart';
+import 'package:cow_management/screens/ai_chatbot/chatbot_quick_core.dart';
 
 class FloatingChatbotButton extends StatelessWidget {
   const FloatingChatbotButton({super.key});
@@ -10,9 +10,58 @@ class FloatingChatbotButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const ChatbotQuickPage()),
+        showDialog(
+          context: context,
+          barrierDismissible: true,
+          builder: (BuildContext context) {
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Container(
+                width: MediaQuery.of(context).size.width * 0.9,
+                height: MediaQuery.of(context).size.height * 0.7,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: Colors.white,
+                ),
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF4CAF50),
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(20),
+                          topRight: Radius.circular(20),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          const Text(
+                            'AI 챗봇 소담이',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const Spacer(),
+                          IconButton(
+                            icon: const Icon(Icons.close, color: Colors.white),
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Expanded(
+                      child: ChatbotQuickCore(),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         );
       },
       child: Stack(
@@ -28,7 +77,7 @@ class FloatingChatbotButton extends StatelessWidget {
                 BoxShadow(
                   color: Colors.black26,
                   blurRadius: 10,
-                  offset: Offset(0, 0),
+                  offset: const Offset(0, 0),
                 ),
               ],
             ),
