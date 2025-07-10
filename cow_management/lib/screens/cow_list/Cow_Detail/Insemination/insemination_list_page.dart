@@ -48,7 +48,8 @@ class _InseminationRecordListPageState
         foregroundColor: Colors.white,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF4CAF50)))
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFF4CAF50)))
           : records.isEmpty
               ? const Center(
                   child: Column(
@@ -73,7 +74,7 @@ class _InseminationRecordListPageState
                         leading: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: Color(0xFF4CAF50).withOpacity(0.1),
+                            color: const Color(0xFF4CAF50).withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child:
@@ -93,11 +94,19 @@ class _InseminationRecordListPageState
                         ),
                         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                         onTap: () {
+                          if (record.id == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('⚠️ 해당 기록에 ID가 없어 열 수 없습니다')),
+                            );
+                            return;
+                          }
+
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => InseminationDetailPage(
-                                record: record,
+                                recordId: record.id!, // 이제 안전하게 사용
                                 cowId: widget.cowId,
                                 cowName: widget.cowName,
                               ),
