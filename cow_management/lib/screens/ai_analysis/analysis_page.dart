@@ -429,7 +429,7 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFFf8fbf2), Color(0xFFf8fbf2)],
+          colors: [Color(0xFFf3f3f3), Color(0xFFf3f3f3)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -450,8 +450,15 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Text(
                   selectedService.icon,
@@ -581,7 +588,7 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                   decoration: BoxDecoration(
                     color: isSelected 
-                        ? const Color(0xFFf8fbf2)
+                        ? const Color(0xFFf3f3f3)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
@@ -600,7 +607,7 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
                       ],
                       Text(
                         service.icon,
-                        style: const TextStyle(fontSize: 16),
+                        style: const TextStyle(fontSize: 14),
                       ),
                       const SizedBox(width: 8),
                       Text(

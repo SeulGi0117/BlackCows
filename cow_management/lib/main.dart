@@ -187,7 +187,7 @@ class SoDamApp extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               ),
             ),
-            cardTheme: const CardTheme(
+            cardTheme: const CardThemeData(
               color: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(
