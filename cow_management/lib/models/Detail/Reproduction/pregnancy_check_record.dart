@@ -77,7 +77,8 @@ class PregnancyCheckRecord {
       cowId: data['cow_id'] ?? '',
       recordDate: data['record_date'] ?? '',
       checkMethod: data['check_method']?.toString() ?? '',
-      checkResult: data['check_result']?.toString() ?? '',
+      checkResult:
+          data['result']?.toString() ?? data['check_result']?.toString() ?? '',
       pregnancyStage: _parseInt(data['pregnancy_stage']),
       fetusCondition: data['fetus_condition']?.toString() ?? '',
       expectedCalvingDate: data['expected_calving_date']?.toString() ?? '',
