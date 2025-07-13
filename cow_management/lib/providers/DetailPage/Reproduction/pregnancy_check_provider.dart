@@ -22,7 +22,7 @@ class PregnancyCheckProvider with ChangeNotifier {
         '$baseUrl/records/cow/$cowId/breeding-records',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
-
+      print('fetchRecords response: ${response.data}');
       if (response.statusCode == 200) {
         _records.clear();
 

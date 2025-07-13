@@ -8,14 +8,13 @@ import '../../utils/error_utils.dart';
 class TodoDetailPage extends StatefulWidget {
   final Todo todo;
 
-  const TodoDetailPage({Key? key, required this.todo}) : super(key: key);
+  const TodoDetailPage({super.key, required this.todo});
 
   @override
   State<TodoDetailPage> createState() => _TodoDetailPageState();
 }
 
 class _TodoDetailPageState extends State<TodoDetailPage> {
-  bool _isLoading = false;
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _titleController;
   late TextEditingController _descriptionController;
@@ -29,8 +28,9 @@ class _TodoDetailPageState extends State<TodoDetailPage> {
   void initState() {
     super.initState();
     _titleController = TextEditingController(text: widget.todo.title);
-    _descriptionController = TextEditingController(text: widget.todo.description);
-    _selectedDate = widget.todo.dueDate;
+    _descriptionController =
+        TextEditingController(text: widget.todo.description);
+    _selectedDate = widget.todo.dueDate ?? DateTime.now();
     _selectedTime = widget.todo.dueTime;
     _selectedPriority = widget.todo.priority;
     _selectedCategory = widget.todo.category;
@@ -44,100 +44,74 @@ class _TodoDetailPageState extends State<TodoDetailPage> {
     super.dispose();
   }
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
+  Future<void> _selectDate() async {
+    final picked = await showDatePicker(
       context: context,
       initialDate: _selectedDate,
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-      });
-    }
+    if (picked != null) setState(() => _selectedDate = picked);
   }
 
-  Future<void> _selectTime(BuildContext context) async {
-    final TimeOfDay? picked = await showTimePicker(
+  Future<void> _selectTime() async {
+    final picked = await showTimePicker(
       context: context,
       initialTime: _selectedTime ?? TimeOfDay.now(),
     );
-    if (picked != null && picked != _selectedTime) {
-      setState(() {
-        _selectedTime = picked;
-      });
-    }
+    if (picked != null) setState(() => _selectedTime = picked);
   }
 
   Future<void> _saveTodo() async {
     if (!_formKey.currentState!.validate()) return;
 
-    _formKey.currentState!.save();
-    
     try {
       final todoProvider = context.read<TodoProvider>();
-      final todo = await todoProvider.updateTodo(
-        widget.todo.id,
-        {
-          'title': _titleController.text,
-          'description': _descriptionController.text,
-          'due_date': _selectedDate.toIso8601String().split('T')[0],
-          'due_time': _selectedTime != null
-              ? '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}'
-              : null,
-          'priority': _selectedPriority,
-          'category': _selectedCategory,
-        },
+      final updatedTodo = widget.todo.copyWith(
+        title: _titleController.text,
+        description: _descriptionController.text,
+        dueDate: _selectedDate,
+        dueTime: _selectedTime,
+        priority: _selectedPriority,
+        category: _selectedCategory,
+        status: _selectedStatus,
+        updatedAt: DateTime.now(),
       );
 
-      if (todo != null && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('할일이 수정되었습니다.')),
-        );
+      final todo = await todoProvider.updateTodo(widget.todo.id, updatedTodo);
+      if (todo != null && mounted)
         Navigator.pop(context, true);
-      }
+      else
+        _showErrorSnackBar('수정에 실패했습니다');
     } catch (e) {
-      if (mounted) {
-        ErrorUtils.showNetworkErrorDialog(context, error: e);
-      }
+      _showErrorSnackBar('에러 발생: $e');
     }
   }
 
   Future<void> _deleteTodo() async {
-    try {
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('할일 삭제'),
-          content: const Text('이 할일을 삭제하시겠습니까?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('취소'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('삭제'),
-            ),
-          ],
-        ),
-      );
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('할일 삭제'),
+        content: const Text('이 할일을 삭제하시겠습니까?'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('취소')),
+          TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('삭제')),
+        ],
+      ),
+    );
 
-      if (confirmed == true) {
+    if (confirmed == true) {
+      try {
         final todoProvider = context.read<TodoProvider>();
         final success = await todoProvider.deleteTodo(widget.todo.id);
-        
-        if (success && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('할일이 삭제되었습니다.')),
-          );
-          Navigator.pop(context, true);
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ErrorUtils.showNetworkErrorDialog(context, error: e);
+        if (success && mounted) Navigator.pop(context, true);
+      } catch (e) {
+        if (mounted) ErrorUtils.showNetworkErrorDialog(context, error: e);
       }
     }
   }
@@ -146,38 +120,26 @@ class _TodoDetailPageState extends State<TodoDetailPage> {
     try {
       final todoProvider = context.read<TodoProvider>();
       final result = await todoProvider.completeTodo(widget.todo.id);
-      
-      if (result != null && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('할일이 완료되었습니다.')),
-        );
-        Navigator.pop(context, true);
-      }
+      if (result != null && mounted) Navigator.pop(context, true);
     } catch (e) {
-      if (mounted) {
-        ErrorUtils.showNetworkErrorDialog(context, error: e);
-      }
+      if (mounted) ErrorUtils.showNetworkErrorDialog(context, error: e);
     }
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const LoadingWidget();
-    }
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('할일 상세'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: _saveTodo,
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete),
-            onPressed: _deleteTodo,
-          ),
+          IconButton(icon: const Icon(Icons.save), onPressed: _saveTodo),
+          IconButton(icon: const Icon(Icons.delete), onPressed: _deleteTodo),
         ],
       ),
       body: Form(
@@ -185,156 +147,47 @@ class _TodoDetailPageState extends State<TodoDetailPage> {
         child: ListView(
           padding: const EdgeInsets.all(16.0),
           children: [
-            TextFormField(
-              controller: _titleController,
-              decoration: const InputDecoration(
-                labelText: '제목',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return '제목을 입력해주세요';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16.0),
-            TextFormField(
-              controller: _descriptionController,
-              decoration: const InputDecoration(
-                labelText: '설명',
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 3,
-            ),
-            const SizedBox(height: 16.0),
-            ListTile(
-              title: const Text('마감일'),
-              subtitle: Text('${_selectedDate.year}-${_selectedDate.month}-${_selectedDate.day}'),
-              trailing: const Icon(Icons.calendar_today),
-              onTap: () => _selectDate(context),
-            ),
-            ListTile(
-              title: const Text('마감 시간'),
-              subtitle: Text(_selectedTime == null
-                  ? '선택해주세요'
-                  : '${_selectedTime!.hour}:${_selectedTime!.minute}'),
-              trailing: const Icon(Icons.access_time),
-              onTap: () => _selectTime(context),
-            ),
-            const SizedBox(height: 16.0),
-            DropdownButtonFormField<String>(
-              value: _selectedPriority,
-              decoration: const InputDecoration(
-                labelText: '우선순위',
-                border: OutlineInputBorder(),
-              ),
-              items: [
-                DropdownMenuItem(
-                  value: TodoPriority.high,
-                  child: const Text('높음'),
-                ),
-                DropdownMenuItem(
-                  value: TodoPriority.medium,
-                  child: const Text('중간'),
-                ),
-                DropdownMenuItem(
-                  value: TodoPriority.low,
-                  child: const Text('낮음'),
-                ),
-              ],
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() => _selectedPriority = value);
-                }
-              },
-            ),
-            const SizedBox(height: 16.0),
-            DropdownButtonFormField<String>(
-              value: _selectedCategory,
-              decoration: const InputDecoration(
-                labelText: '카테고리',
-                border: OutlineInputBorder(),
-              ),
-              items: [
-                DropdownMenuItem(
-                  value: TodoCategory.milking,
-                  child: const Text('착유'),
-                ),
-                DropdownMenuItem(
-                  value: TodoCategory.healthCheck,
-                  child: const Text('건강검진'),
-                ),
-                DropdownMenuItem(
-                  value: TodoCategory.vaccination,
-                  child: const Text('백신접종'),
-                ),
-                DropdownMenuItem(
-                  value: TodoCategory.treatment,
-                  child: const Text('치료'),
-                ),
-                DropdownMenuItem(
-                  value: TodoCategory.breeding,
-                  child: const Text('번식'),
-                ),
-                DropdownMenuItem(
-                  value: TodoCategory.feeding,
-                  child: const Text('사료급여'),
-                ),
-                DropdownMenuItem(
-                  value: TodoCategory.facility,
-                  child: const Text('시설관리'),
-                ),
-              ],
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() => _selectedCategory = value);
-                }
-              },
-            ),
-            const SizedBox(height: 16.0),
-            DropdownButtonFormField<String>(
-              value: [
-                TodoStatus.pending,
-                TodoStatus.inProgress,
-                TodoStatus.completed,
-                TodoStatus.cancelled,
-                TodoStatus.overdue,
-              ].contains(_selectedStatus)
-                  ? _selectedStatus
-                  : TodoStatus.pending,
-              decoration: const InputDecoration(
-                labelText: '상태',
-                border: OutlineInputBorder(),
-              ),
-              items: [
-                DropdownMenuItem(
-                  value: TodoStatus.pending,
-                  child: const Text('대기'),
-                ),
-                DropdownMenuItem(
-                  value: TodoStatus.inProgress,
-                  child: const Text('진행 중'),
-                ),
-                DropdownMenuItem(
-                  value: TodoStatus.completed,
-                  child: const Text('완료'),
-                ),
-                DropdownMenuItem(
-                  value: TodoStatus.cancelled,
-                  child: const Text('취소'),
-                ),
-                DropdownMenuItem(
-                  value: TodoStatus.overdue,
-                  child: const Text('지연'),
-                ),
-              ],
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() => _selectedStatus = value);
-                }
-              },
-            ),
+            _buildTextField(_titleController, '제목', true),
+            const SizedBox(height: 16),
+            _buildTextField(_descriptionController, '설명', false),
+            const SizedBox(height: 16),
+            _buildDateTimePicker(),
+            const SizedBox(height: 16),
+            _buildDropdownField(
+                '우선순위',
+                _selectedPriority,
+                [
+                  TodoPriority.high,
+                  TodoPriority.medium,
+                  TodoPriority.low,
+                ],
+                (val) => setState(() => _selectedPriority = val)),
+            const SizedBox(height: 16),
+            _buildDropdownField(
+                '카테고리',
+                _selectedCategory,
+                [
+                  TodoCategory.milking,
+                  TodoCategory.healthCheck,
+                  TodoCategory.vaccination,
+                  TodoCategory.treatment,
+                  TodoCategory.breeding,
+                  TodoCategory.feeding,
+                  TodoCategory.facility,
+                ],
+                (val) => setState(() => _selectedCategory = val)),
+            const SizedBox(height: 16),
+            _buildDropdownField(
+                '상태',
+                _selectedStatus,
+                [
+                  TodoStatus.pending,
+                  TodoStatus.inProgress,
+                  TodoStatus.completed,
+                  TodoStatus.cancelled,
+                  TodoStatus.overdue,
+                ],
+                (val) => setState(() => _selectedStatus = val)),
           ],
         ),
       ),
@@ -347,4 +200,76 @@ class _TodoDetailPageState extends State<TodoDetailPage> {
           : null,
     );
   }
-} 
+
+  Widget _buildTextField(
+      TextEditingController controller, String label, bool isRequired) {
+    return TextFormField(
+      controller: controller,
+      decoration:
+          InputDecoration(labelText: label, border: const OutlineInputBorder()),
+      maxLines: label == '설명' ? 3 : 1,
+      validator: isRequired
+          ? (value) =>
+              (value == null || value.isEmpty) ? '$label을 입력해주세요' : null
+          : null,
+    );
+  }
+
+  Widget _buildDateTimePicker() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ListTile(
+          title: const Text('마감일'),
+          subtitle: Text(
+              '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}'),
+          trailing: const Icon(Icons.calendar_today),
+          onTap: _selectDate,
+        ),
+        ListTile(
+          title: const Text('마감 시간'),
+          subtitle: Text(_selectedTime == null
+              ? '선택해주세요'
+              : '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}'),
+          trailing: const Icon(Icons.access_time),
+          onTap: _selectTime,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDropdownField(String label, String value, List<String> options,
+      void Function(String) onChanged) {
+    return DropdownButtonFormField<String>(
+      value: value,
+      decoration:
+          InputDecoration(labelText: label, border: const OutlineInputBorder()),
+      items: options
+          .map((opt) =>
+              DropdownMenuItem(value: opt, child: Text(_mapLabel(opt))))
+          .toList(),
+      onChanged: (val) => val != null ? onChanged(val) : null,
+    );
+  }
+
+  String _mapLabel(String value) {
+    const map = {
+      TodoPriority.high: '높음',
+      TodoPriority.medium: '중간',
+      TodoPriority.low: '낮음',
+      TodoCategory.milking: '착유',
+      TodoCategory.healthCheck: '건강검진',
+      TodoCategory.vaccination: '백신접종',
+      TodoCategory.treatment: '치료',
+      TodoCategory.breeding: '번식',
+      TodoCategory.feeding: '사료급여',
+      TodoCategory.facility: '시설관리',
+      TodoStatus.pending: '대기',
+      TodoStatus.inProgress: '진행 중',
+      TodoStatus.completed: '완료',
+      TodoStatus.cancelled: '취소',
+      TodoStatus.overdue: '지연',
+    };
+    return map[value] ?? value;
+  }
+}
