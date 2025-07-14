@@ -41,7 +41,7 @@ import 'screens/accounts/login.dart';
 import 'screens/accounts/signup.dart';
 import 'screens/home/home_page.dart';
 import 'screens/cow_list/cow_list_page.dart';
-import 'screens/cow_list/cow_detail_page.dart';
+import 'screens/cow_list/cow_detailed_records_page.dart';
 
 import 'screens/cow_list/cow_edit_page.dart';
 
@@ -73,8 +73,6 @@ import 'screens/cow_list/Cow_Detail/Estrus/estrus_list_page.dart';
 
 import 'screens/cow_list/Cow_Detail//Insemination/insemination_add_page.dart';
 import 'screens/cow_list/Cow_Detail//Insemination/insemination_list_page.dart';
-
-import 'screens/cow_list/Cow_Detail/Breeding/breeding_add_page.dart';
 
 import 'screens/cow_list/Cow_Detail/Pregnancy/pregnancy_check_add_page.dart';
 import 'screens/cow_list/Cow_Detail/Pregnancy/pregnancy_check_list_page.dart';
@@ -260,7 +258,7 @@ class SoDamApp extends StatelessWidget {
             '/profile': (context) => const ProfilePage(),
             '/cows/detail': (context) {
               final cow = ModalRoute.of(context)!.settings.arguments as Cow;
-              return CowDetailPage(cow: cow);
+              return CowDetailedRecordsPage(cow: cow);
             },
             '/cows/edit': (context) {
               final cow = ModalRoute.of(context)!.settings.arguments as Cow;
@@ -285,14 +283,6 @@ class SoDamApp extends StatelessWidget {
               return MilkingRecordListPage(
                 cowId: args['cowId'],
                 cowName: args['cowName'],
-              );
-            },
-            '/breeding-record': (context) {
-              final args = ModalRoute.of(context)!.settings.arguments
-                  as Map<String, String>;
-              return BreedingRecordAddPage(
-                cowId: args['cowId']!,
-                cowName: args['cowName']!,
               );
             },
 

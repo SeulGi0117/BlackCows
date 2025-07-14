@@ -35,10 +35,12 @@ class _TreatmentDetailPageState extends State<TreatmentDetailPage> {
         _isLoading = false;
       });
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('기록을 불러오지 못했습니다.')),
-      );
-      Navigator.pop(context);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('기록을 불러오지 못했습니다.')),
+        );
+        Navigator.pop(context);
+      }
     }
   }
 
@@ -62,19 +64,15 @@ class _TreatmentDetailPageState extends State<TreatmentDetailPage> {
               final success =
                   await provider.deleteRecord(widget.recordId, token);
 
-              if (success) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('삭제가 완료되었습니다.')),
-                  );
-                  Navigator.pop(context, true); // 돌아가서 목록 새로고침 유도
-                }
-              } else {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('삭제에 실패했습니다.')),
-                  );
-                }
+              if (success && mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('삭제가 완료되었습니다.')),
+                );
+                Navigator.pop(context, true); // 목록 페이지로 복귀
+              } else if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('삭제에 실패했습니다.')),
+                );
               }
             },
             child: const Text('삭제'),
@@ -87,6 +85,7 @@ class _TreatmentDetailPageState extends State<TreatmentDetailPage> {
   Widget _buildInfoCard(String title, List<Widget> children) {
     return Card(
       elevation: 2,
+      margin: const EdgeInsets.only(bottom: 16),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -135,26 +134,6 @@ class _TreatmentDetailPageState extends State<TreatmentDetailPage> {
         title: const Text('치료 기록 상세'),
         backgroundColor: const Color(0xFF4CAF50),
         foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            tooltip: '수정',
-            onPressed: () async {
-              final updated = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => TreatmentEditPage(record: _record),
-                ),
-              );
-              if (updated == true) _fetchRecord();
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete),
-            tooltip: '삭제',
-            onPressed: () => _showDeleteDialog(context),
-          ),
-        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -172,12 +151,10 @@ class _TreatmentDetailPageState extends State<TreatmentDetailPage> {
                     if (_record.diagnosis != null)
                       _buildInfoRow('진단명', _record.diagnosis!),
                   ]),
-                  const SizedBox(height: 16),
                   if (_record.symptoms?.isNotEmpty == true)
                     _buildInfoCard('🔍 증상', [
                       _buildInfoRow('관찰된 증상', _record.symptoms!.join(', ')),
                     ]),
-                  const SizedBox(height: 16),
                   _buildInfoCard('💊 치료 정보', [
                     if (_record.medicationUsed?.isNotEmpty == true)
                       _buildInfoRow(
@@ -192,17 +169,18 @@ class _TreatmentDetailPageState extends State<TreatmentDetailPage> {
                     if (_record.withdrawalPeriod != null)
                       _buildInfoRow('휴약기간', '${_record.withdrawalPeriod}일'),
                   ]),
-                  const SizedBox(height: 16),
                   _buildInfoCard('👨‍⚕️ 담당자 및 비용', [
                     if (_record.veterinarian != null)
                       _buildInfoRow('담당 수의사', _record.veterinarian!),
                     if (_record.treatmentCost != null)
                       _buildInfoRow(
                         '치료 비용',
-                        '${_record.treatmentCost!.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')}원',
+                        '${_record.treatmentCost!.toString().replaceAllMapped(
+                              RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+                              (m) => '${m[1]},',
+                            )}원',
                       ),
                   ]),
-                  const SizedBox(height: 16),
                   _buildInfoCard('📊 치료 결과', [
                     if (_record.treatmentResponse != null)
                       _buildInfoRow('치료 반응', _record.treatmentResponse!),
@@ -214,11 +192,61 @@ class _TreatmentDetailPageState extends State<TreatmentDetailPage> {
                     if (_record.followUpDate != null)
                       _buildInfoRow('추가 치료일', _record.followUpDate!),
                   ]),
-                  const SizedBox(height: 16),
                   if (_record.notes?.isNotEmpty == true)
                     _buildInfoCard('📝 메모', [
                       _buildInfoRow('특이사항', _record.notes!),
                     ]),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            final updated = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    TreatmentEditPage(record: _record),
+                              ),
+                            );
+                            if (updated == true && context.mounted) {
+                              await _fetchRecord();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('기록이 수정되었습니다')),
+                              );
+                            }
+                          },
+                          icon: const Icon(Icons.edit, size: 18),
+                          label: const Text('정보 수정'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF4CAF50),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () => _showDeleteDialog(context),
+                          icon: const Icon(Icons.delete, size: 18),
+                          label: const Text('삭제하기'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 40), // 여유 여백
                 ],
               ),
             ),

@@ -84,7 +84,12 @@ class _CalvingAddPageState extends State<CalvingAddPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('${widget.cowName} - 분만 기록')),
+      appBar: AppBar(
+        title: Text('${widget.cowName} - 분만 기록 추가'),
+        backgroundColor: const Color(0xFF4CAF50),
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
       body: Form(
         key: _formKey,
         child: ListView(

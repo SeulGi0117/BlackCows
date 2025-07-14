@@ -65,7 +65,7 @@ class _TreatmentAddPageState extends State<TreatmentAddPage> {
   void _initializeData() {
     final now = DateTime.now();
     _recordDateController.text = now.toString().split(' ')[0];
-    
+
     final timeNow = TimeOfDay.now();
     final hour = timeNow.hour.toString().padLeft(2, '0');
     final minute = timeNow.minute.toString().padLeft(2, '0');
@@ -115,7 +115,8 @@ class _TreatmentAddPageState extends State<TreatmentAddPage> {
     setState(() => _isLoading = true);
 
     try {
-      final token = Provider.of<UserProvider>(context, listen: false).accessToken;
+      final token =
+          Provider.of<UserProvider>(context, listen: false).accessToken;
       if (token == null) {
         throw Exception('인증 토큰이 없습니다.');
       }
@@ -123,38 +124,37 @@ class _TreatmentAddPageState extends State<TreatmentAddPage> {
       final record = TreatmentRecord(
         cowId: widget.cowId,
         recordDate: _recordDateController.text,
-        treatmentTime: _treatmentTimeController.text.isNotEmpty 
-            ? _treatmentTimeController.text 
+        treatmentTime: _treatmentTimeController.text.isNotEmpty
+            ? _treatmentTimeController.text
             : null,
         treatmentType: _treatmentType,
-        diagnosis: _diagnosisController.text.isNotEmpty 
-            ? _diagnosisController.text 
+        diagnosis: _diagnosisController.text.isNotEmpty
+            ? _diagnosisController.text
             : null,
-        medicationUsed: _medicationsController.text.isNotEmpty 
-            ? [_medicationsController.text] 
+        medicationUsed: _medicationsController.text.isNotEmpty
+            ? [_medicationsController.text]
             : null,
-        treatmentMethod: _treatmentProcedureController.text.isNotEmpty 
-            ? _treatmentProcedureController.text 
+        treatmentMethod: _treatmentProcedureController.text.isNotEmpty
+            ? _treatmentProcedureController.text
             : null,
-        treatmentResponse: _treatmentResponseController.text.isNotEmpty 
-            ? _treatmentResponseController.text 
+        treatmentResponse: _treatmentResponseController.text.isNotEmpty
+            ? _treatmentResponseController.text
             : null,
-        veterinarian: _veterinarianController.text.isNotEmpty 
-            ? _veterinarianController.text 
+        veterinarian: _veterinarianController.text.isNotEmpty
+            ? _veterinarianController.text
             : null,
-        treatmentCost: _treatmentCostController.text.isNotEmpty 
-            ? int.tryParse(_treatmentCostController.text) 
+        treatmentCost: _treatmentCostController.text.isNotEmpty
+            ? int.tryParse(_treatmentCostController.text)
             : null,
-        followUpDate: _followUpDateController.text.isNotEmpty 
-            ? _followUpDateController.text 
+        followUpDate: _followUpDateController.text.isNotEmpty
+            ? _followUpDateController.text
             : null,
-        notes: _notesController.text.isNotEmpty 
-            ? _notesController.text 
-            : null,
+        notes: _notesController.text.isNotEmpty ? _notesController.text : null,
       );
 
-      final success = await Provider.of<TreatmentRecordProvider>(context, listen: false)
-          .addRecord(record, token);
+      final success =
+          await Provider.of<TreatmentRecordProvider>(context, listen: false)
+              .addRecord(record, token);
 
       if (mounted) {
         if (success) {
@@ -195,7 +195,7 @@ class _TreatmentAddPageState extends State<TreatmentAddPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.cowName} 치료 기록 추가'),
-        backgroundColor: Colors.red,
+        backgroundColor: const Color(0xFF4CAF50),
         foregroundColor: Colors.white,
       ),
       body: Form(
@@ -227,7 +227,8 @@ class _TreatmentAddPageState extends State<TreatmentAddPage> {
                           border: OutlineInputBorder(),
                           suffixIcon: Icon(Icons.calendar_today),
                         ),
-                        validator: (value) => value?.isEmpty == true ? '치료일을 입력해주세요' : null,
+                        validator: (value) =>
+                            value?.isEmpty == true ? '치료일을 입력해주세요' : null,
                         onTap: () => _selectDate(_recordDateController),
                         readOnly: true,
                       ),
@@ -250,10 +251,13 @@ class _TreatmentAddPageState extends State<TreatmentAddPage> {
                           border: OutlineInputBorder(),
                         ),
                         items: _treatmentTypes.map((type) {
-                          return DropdownMenuItem(value: type, child: Text(type));
+                          return DropdownMenuItem(
+                              value: type, child: Text(type));
                         }).toList(),
-                        onChanged: (value) => setState(() => _treatmentType = value),
-                        validator: (value) => value == null ? '치료 유형을 선택해주세요' : null,
+                        onChanged: (value) =>
+                            setState(() => _treatmentType = value),
+                        validator: (value) =>
+                            value == null ? '치료 유형을 선택해주세요' : null,
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
@@ -291,7 +295,8 @@ class _TreatmentAddPageState extends State<TreatmentAddPage> {
                           labelText: '진단명 *',
                           border: OutlineInputBorder(),
                         ),
-                        validator: (value) => value?.isEmpty == true ? '진단명을 입력해주세요' : null,
+                        validator: (value) =>
+                            value?.isEmpty == true ? '진단명을 입력해주세요' : null,
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
@@ -409,7 +414,7 @@ class _TreatmentAddPageState extends State<TreatmentAddPage> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _submit,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
+                    backgroundColor: const Color(0xFF4CAF50),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -424,7 +429,8 @@ class _TreatmentAddPageState extends State<TreatmentAddPage> {
                               height: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             ),
                             SizedBox(width: 12),

@@ -60,7 +60,7 @@ class _InseminationRecordAddPageState extends State<InseminationRecordAddPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.cowName} 인공수정 기록 추가'),
-        backgroundColor: Colors.blue,
+        backgroundColor: const Color(0xFF4CAF50),
         foregroundColor: Colors.white,
       ),
       body: Form(
@@ -125,7 +125,7 @@ class _InseminationRecordAddPageState extends State<InseminationRecordAddPage> {
                 hintText: '시계를 눌러 시간을 선택하세요',
                 suffixIcon: Icon(Icons.access_time),
               ),
-              readOnly: true,  // 직접 입력을 막고 시계로만 선택
+              readOnly: true, // 직접 입력을 막고 시계로만 선택
               onTap: () async {
                 final time = await showTimePicker(
                   context: context,
@@ -133,7 +133,7 @@ class _InseminationRecordAddPageState extends State<InseminationRecordAddPage> {
                   builder: (context, child) {
                     return MediaQuery(
                       data: MediaQuery.of(context).copyWith(
-                        alwaysUse24HourFormat: false,  // 12시간 형식 사용
+                        alwaysUse24HourFormat: false, // 12시간 형식 사용
                       ),
                       child: child!,
                     );
@@ -243,7 +243,7 @@ class _InseminationRecordAddPageState extends State<InseminationRecordAddPage> {
               ),
               keyboardType: TextInputType.number,
               inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,  // 숫자만 입력 허용
+                FilteringTextInputFormatter.digitsOnly, // 숫자만 입력 허용
               ],
             ),
             const SizedBox(height: 16),
@@ -278,8 +278,8 @@ class _InseminationRecordAddPageState extends State<InseminationRecordAddPage> {
               ),
               keyboardType: TextInputType.number,
               inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,  // 숫자만 입력 허용
-                LengthLimitingTextInputFormatter(3),     // 최대 3자리 (100까지)
+                FilteringTextInputFormatter.digitsOnly, // 숫자만 입력 허용
+                LengthLimitingTextInputFormatter(3), // 최대 3자리 (100까지)
               ],
               validator: (value) {
                 if (value?.isNotEmpty == true) {
@@ -327,7 +327,7 @@ class _InseminationRecordAddPageState extends State<InseminationRecordAddPage> {
       child: ElevatedButton(
         onPressed: _saveRecord,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue,
+          backgroundColor: const Color(0xFF4CAF50),
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:cow_management/models/price_trend.dart';
+import 'package:fl_chart/fl_chart.dart';
 
-class PriceTrendDetailPage extends StatefulWidget {
-  final String initialType; // 'dairy', 'hanwoo', 'wholesale' 등
-  const PriceTrendDetailPage({super.key, required this.initialType});
+class PriceTrendChartView extends StatefulWidget {
+  final String initialType; // '초유떼기', '분유떼기' 등
+  const PriceTrendChartView({super.key, required this.initialType});
 
   @override
-  State<PriceTrendDetailPage> createState() => _PriceTrendDetailPageState();
+  State<PriceTrendChartView> createState() => _PriceTrendChartViewState();
 }
 
-class _PriceTrendDetailPageState extends State<PriceTrendDetailPage> {
+class _PriceTrendChartViewState extends State<PriceTrendChartView> {
   int selectedIndex = 0;
   final priceTypeKeyMap = {
     '초유떼기': ['초유떼기_암', '초유떼기_수'],
@@ -20,32 +20,31 @@ class _PriceTrendDetailPageState extends State<PriceTrendDetailPage> {
     '다산우': ['다산우', ''],
     '노폐우': ['노폐우', ''],
   };
+
   @override
   void initState() {
     super.initState();
-    // 홈에서 진입 시 기본 탭(초유떼기) 선택
-    selectedIndex = 0;
+    selectedIndex = priceTypeKeyMap.keys.toList().indexOf(widget.initialType);
+    if (selectedIndex == -1) selectedIndex = 0;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('젖소 산지 가격 상세'),
-        backgroundColor: const Color(0xFF4CAF50),
-      ),
-      body: Column(
-        children: [
-          const SizedBox(height: 16),
-          Card(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            elevation: 2,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
+    return Column(
+      children: [
+        const SizedBox(height: 16),
+        Card(
+          margin: const EdgeInsets.all(0),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 2,
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: IntrinsicWidth(
                 child: Row(
                   children: List.generate(priceTypeKeyMap.length, (idx) {
                     return Padding(
@@ -70,17 +69,17 @@ class _PriceTrendDetailPageState extends State<PriceTrendDetailPage> {
               ),
             ),
           ),
-          const SizedBox(height: 16),
-          Expanded(
-            child: _buildChartAndTable(),
-          ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 16),
+        _buildChartAndTable(),
+      ],
     );
   }
 
   Widget _buildChartAndTable() {
-    // 2025년 젖소 가격동향 표 데이터
+    final selectedKey = priceTypeKeyMap.keys.elementAt(selectedIndex);
+    final selectedColumns = priceTypeKeyMap[selectedKey]!;
+
     final List<Map<String, dynamic>> tableData = [
       {
         '월': '1월',
@@ -143,17 +142,23 @@ class _PriceTrendDetailPageState extends State<PriceTrendDetailPage> {
         '노폐우': 1071
       },
     ];
+
     final months = tableData.map((e) => e['월'] as String).toList();
-    final colostrumFemale = tableData.map((e) => e['초유떼기_암'] as int).toList();
-    final colostrumMale = tableData.map((e) => e['초유떼기_수'] as int).toList();
+    final data1 =
+        tableData.map((e) => e[selectedColumns[0]] ?? 0).cast<int>().toList();
+    final data2 = selectedColumns.length > 1 && selectedColumns[1].isNotEmpty
+        ? tableData.map((e) => e[selectedColumns[1]] ?? 0).cast<int>().toList()
+        : List.filled(tableData.length, 0);
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: ListView(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         children: [
-          const Text('2025년 젖소 산지 가격동향',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text('2025년 $selectedKey 가격동향',
+              style:
+                  const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
           const Text('단위: 천원/두',
               style: TextStyle(fontSize: 14, color: Colors.grey)),
@@ -174,7 +179,7 @@ class _PriceTrendDetailPageState extends State<PriceTrendDetailPage> {
                   width: 340,
                   child: CustomPaint(
                     painter: _ColostrumLineChartPainter(
-                        colostrumFemale, colostrumMale, months),
+                        data1, data2, months, selectedColumns),
                   ),
                 ),
               ),
@@ -185,11 +190,14 @@ class _PriceTrendDetailPageState extends State<PriceTrendDetailPage> {
             children: [
               Container(width: 16, height: 4, color: const Color(0xFF4CAF50)),
               const SizedBox(width: 4),
-              const Text('초유떼기 암', style: TextStyle(fontSize: 12)),
-              const SizedBox(width: 16),
-              Container(width: 16, height: 4, color: const Color(0xFF2196F3)),
-              const SizedBox(width: 4),
-              const Text('초유떼기 수', style: TextStyle(fontSize: 12)),
+              Text(selectedColumns[0], style: const TextStyle(fontSize: 12)),
+              if (selectedColumns.length > 1 &&
+                  selectedColumns[1].isNotEmpty) ...[
+                const SizedBox(width: 16),
+                Container(width: 16, height: 4, color: const Color(0xFF2196F3)),
+                const SizedBox(width: 4),
+                Text(selectedColumns[1], style: const TextStyle(fontSize: 12)),
+              ]
             ],
           ),
           const SizedBox(height: 16),
@@ -202,102 +210,24 @@ class _PriceTrendDetailPageState extends State<PriceTrendDetailPage> {
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: DataTable(
-                  headingRowColor:
-                      WidgetStateProperty.all(const Color(0xFFE8F5E9)),
-                  columns: const [
-                    DataColumn(
-                        label: Text('월',
-                            style: TextStyle(fontWeight: FontWeight.bold))),
-                    DataColumn(
-                        label: Text('초유떼기\n암',
-                            style: TextStyle(fontWeight: FontWeight.bold))),
-                    DataColumn(
-                        label: Text('초유떼기\n수',
-                            style: TextStyle(fontWeight: FontWeight.bold))),
-                    DataColumn(
-                        label: Text('분유떼기\n암',
-                            style: TextStyle(fontWeight: FontWeight.bold))),
-                    DataColumn(
-                        label: Text('분유떼기\n수',
-                            style: TextStyle(fontWeight: FontWeight.bold))),
-                    DataColumn(
-                        label: Text('수정단계',
-                            style: TextStyle(fontWeight: FontWeight.bold))),
-                    DataColumn(
-                        label: Text('초임만삭',
-                            style: TextStyle(fontWeight: FontWeight.bold))),
-                    DataColumn(
-                        label: Text('초산우',
-                            style: TextStyle(fontWeight: FontWeight.bold))),
-                    DataColumn(
-                        label: Text('다산우(4산)',
-                            style: TextStyle(fontWeight: FontWeight.bold))),
-                    DataColumn(
-                        label: Text('노폐우',
-                            style: TextStyle(fontWeight: FontWeight.bold))),
+                  columnSpacing: 30,
+                  headingRowColor: WidgetStateColor.resolveWith(
+                      (states) => const Color(0xFFE8F5E9)),
+                  columns: [
+                    const DataColumn(label: Text('월')),
+                    ...selectedColumns.where((c) => c.isNotEmpty).map(
+                          (col) => DataColumn(label: Text(col)),
+                        ),
                   ],
-                  rows: const [
-                    DataRow(cells: [
-                      DataCell(Text('1월')),
-                      DataCell(Text('24')),
-                      DataCell(Text('65')),
-                      DataCell(Text('194')),
-                      DataCell(Text('440')),
-                      DataCell(Text('1339')),
-                      DataCell(Text('3505')),
-                      DataCell(Text('3560')),
-                      DataCell(Text('2749')),
-                      DataCell(Text('1113')),
-                    ]),
-                    DataRow(cells: [
-                      DataCell(Text('2월')),
-                      DataCell(Text('22')),
-                      DataCell(Text('72')),
-                      DataCell(Text('185')),
-                      DataCell(Text('477')),
-                      DataCell(Text('1366')),
-                      DataCell(Text('3520')),
-                      DataCell(Text('3613')),
-                      DataCell(Text('2811')),
-                      DataCell(Text('1069')),
-                    ]),
-                    DataRow(cells: [
-                      DataCell(Text('3월')),
-                      DataCell(Text('24')),
-                      DataCell(Text('74')),
-                      DataCell(Text('183')),
-                      DataCell(Text('479')),
-                      DataCell(Text('1330')),
-                      DataCell(Text('3460')),
-                      DataCell(Text('3539')),
-                      DataCell(Text('2811')),
-                      DataCell(Text('1042')),
-                    ]),
-                    DataRow(cells: [
-                      DataCell(Text('4월')),
-                      DataCell(Text('27')),
-                      DataCell(Text('92')),
-                      DataCell(Text('184')),
-                      DataCell(Text('482')),
-                      DataCell(Text('1378')),
-                      DataCell(Text('3495')),
-                      DataCell(Text('3600')),
-                      DataCell(Text('2795')),
-                      DataCell(Text('1283')),
-                    ]),
-                    DataRow(cells: [
-                      DataCell(Text('5월')),
-                      DataCell(Text('30')),
-                      DataCell(Text('108')),
-                      DataCell(Text('192')),
-                      DataCell(Text('498')),
-                      DataCell(Text('1364')),
-                      DataCell(Text('3441')),
-                      DataCell(Text('3555')),
-                      DataCell(Text('2743')),
-                      DataCell(Text('1071')),
-                    ]),
-                  ],
+                  rows: tableData.map((row) {
+                    return DataRow(cells: [
+                      DataCell(Text(row['월'].toString())),
+                      ...selectedColumns.where((c) => c.isNotEmpty).map(
+                            (col) =>
+                                DataCell(Text(row[col]?.toString() ?? '-')),
+                          ),
+                    ]);
+                  }).toList(),
                 ),
               ),
             ),
@@ -312,73 +242,109 @@ class _ColostrumLineChartPainter extends CustomPainter {
   final List<int> female;
   final List<int> male;
   final List<String> months;
-  _ColostrumLineChartPainter(this.female, this.male, this.months);
+  final List<String> labels;
+  _ColostrumLineChartPainter(this.female, this.male, this.months, this.labels);
 
   @override
   void paint(Canvas canvas, Size size) {
     if (female.isEmpty || male.isEmpty) return;
-    final minY = [
-      ...female,
-      ...male,
-    ].reduce((a, b) => a < b ? a : b).toDouble();
-    final maxY = [
-      ...female,
-      ...male,
-    ].reduce((a, b) => a > b ? a : b).toDouble();
+
+    final minY =
+        [...female, ...male].reduce((a, b) => a < b ? a : b).toDouble();
+    final maxY =
+        [...female, ...male].reduce((a, b) => a > b ? a : b).toDouble();
     final dx = size.width / (female.length - 1);
     final dy = (maxY - minY).abs() < 1e-6 ? 1 : (maxY - minY);
+
     final pointsFemale = <Offset>[];
     final pointsMale = <Offset>[];
+
     for (int i = 0; i < female.length; i++) {
       final x = dx * i;
       final yF =
-          size.height - 20 - ((female[i] - minY) / dy * (size.height - 30));
+          size.height - 30 - ((female[i] - minY) / dy * (size.height - 50));
       final yM =
-          size.height - 20 - ((male[i] - minY) / dy * (size.height - 30));
+          size.height - 30 - ((male[i] - minY) / dy * (size.height - 50));
       pointsFemale.add(Offset(x, yF));
       pointsMale.add(Offset(x, yM));
     }
+
     final linePaintF = Paint()
       ..color = const Color(0xFF4CAF50)
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke;
+
     final linePaintM = Paint()
       ..color = const Color(0xFF2196F3)
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke;
+
     final dotPaintF = Paint()
       ..color = const Color(0xFF4CAF50)
       ..style = PaintingStyle.fill;
+
     final dotPaintM = Paint()
       ..color = const Color(0xFF2196F3)
       ..style = PaintingStyle.fill;
+
     // Draw lines
     for (int i = 0; i < pointsFemale.length - 1; i++) {
       canvas.drawLine(pointsFemale[i], pointsFemale[i + 1], linePaintF);
       canvas.drawLine(pointsMale[i], pointsMale[i + 1], linePaintM);
     }
-    // Draw dots
-    for (final p in pointsFemale) {
-      canvas.drawCircle(p, 3, dotPaintF);
+
+    // Draw dots and values (female)
+    final textPainter = TextPainter(
+      textAlign: TextAlign.center,
+      textDirection: TextDirection.ltr,
+    );
+
+    for (int i = 0; i < pointsFemale.length; i++) {
+      canvas.drawCircle(pointsFemale[i], 3, dotPaintF);
+
+      textPainter.text = TextSpan(
+        text: female[i].toString(),
+        style: const TextStyle(fontSize: 10, color: Color(0xFF4CAF50)),
+      );
+      textPainter.layout();
+      final offset = Offset(
+        pointsFemale[i].dx - textPainter.width / 2,
+        pointsFemale[i].dy - 14,
+      );
+      textPainter.paint(canvas, offset);
     }
-    for (final p in pointsMale) {
-      canvas.drawCircle(p, 3, dotPaintM);
+
+    // Draw dots and values (male)
+    for (int i = 0; i < pointsMale.length; i++) {
+      canvas.drawCircle(pointsMale[i], 3, dotPaintM);
+
+      textPainter.text = TextSpan(
+        text: male[i].toString(),
+        style: const TextStyle(fontSize: 10, color: Color(0xFF2196F3)),
+      );
+      textPainter.layout();
+      final offset = Offset(
+        pointsMale[i].dx - textPainter.width / 2,
+        pointsMale[i].dy - 14,
+      );
+      textPainter.paint(canvas, offset);
     }
-    // Draw x labels
-    const textStyle = TextStyle(fontSize: 11, color: Colors.black);
+
+    // Draw x-axis labels
+    const labelStyle = TextStyle(fontSize: 11, color: Colors.black);
     for (int i = 0; i < months.length; i++) {
-      final tp = TextPainter(
-        text: TextSpan(text: months[i], style: textStyle),
+      final labelPainter = TextPainter(
+        text: TextSpan(text: months[i], style: labelStyle),
         textDirection: TextDirection.ltr,
       )..layout();
-      final x = pointsFemale[i].dx - tp.width / 2;
-      final y = size.height - tp.height + 2;
-      tp.paint(canvas, Offset(x, y));
+      final x = pointsFemale[i].dx - labelPainter.width / 2;
+      final y = size.height - labelPainter.height;
+      labelPainter.paint(canvas, Offset(x, y));
     }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(CustomPainter oldDelegate) => true;
 }
 
 class _YAxisLabels extends StatelessWidget {
@@ -449,5 +415,5 @@ class _SimpleLineChartPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }

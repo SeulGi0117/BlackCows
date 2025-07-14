@@ -78,7 +78,7 @@ class _WeightAddPageState extends State<WeightAddPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.cowName} 체중측정 기록 추가'),
-        backgroundColor: Colors.purple,
+        backgroundColor: const Color(0xFF4CAF50),
         foregroundColor: Colors.white,
       ),
       body: Form(
@@ -371,7 +371,8 @@ class _WeightAddPageState extends State<WeightAddPage> {
       child: ElevatedButton(
         onPressed: _isSubmitting ? null : _submit,
         style: ElevatedButton.styleFrom(
-          backgroundColor: _isSubmitting ? Colors.grey : Colors.purple,
+          backgroundColor:
+              _isSubmitting ? Colors.grey : const Color(0xFF4CAF50),
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
