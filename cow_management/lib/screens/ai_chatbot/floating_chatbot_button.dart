@@ -73,18 +73,18 @@ class FloatingChatbotButton extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.red.shade200, // 연한 초록색
               shape: BoxShape.circle,
-              boxShadow: [
+              boxShadow: const [
                 BoxShadow(
                   color: Colors.black26,
                   blurRadius: 10,
-                  offset: const Offset(0, 0),
+                  offset: Offset(0, 0),
                 ),
               ],
             ),
           ),
           Image.asset(
             'assets/images/chatbot_icon.png',
-            width: 50, 
+            width: 50,
             height: 50,
             fit: BoxFit.contain,
           ),

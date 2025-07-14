@@ -16,13 +16,13 @@ class _ChatbotHistoryPageState extends State<ChatbotHistoryPage> {
   List<Map<String, dynamic>> _chatRooms = [];
   bool _isLoading = true;
   String? _selectedChatId;
-  
+
   // 사이드바 상태 관리
   bool _isSidebarVisible = false;
-  double _sidebarWidth = 200.0;
-  double _minSidebarWidth = 150.0;
-  double _maxSidebarWidth = 280.0;
-  bool _isResizing = false;
+  final double _sidebarWidth = 200.0;
+  final double _minSidebarWidth = 150.0;
+  final double _maxSidebarWidth = 280.0;
+  final bool _isResizing = false;
 
   @override
   void initState() {
@@ -37,7 +37,8 @@ class _ChatbotHistoryPageState extends State<ChatbotHistoryPage> {
   }
 
   Future<void> _fetchChatRooms() async {
-    final userId = Provider.of<UserProvider>(context, listen: false).currentUser?.userId;
+    final userId =
+        Provider.of<UserProvider>(context, listen: false).currentUser?.userId;
     print("🔥 userId: $userId");
     if (userId == null) return;
 
@@ -49,7 +50,8 @@ class _ChatbotHistoryPageState extends State<ChatbotHistoryPage> {
   }
 
   Future<void> _createNewChatRoom() async {
-    final userId = Provider.of<UserProvider>(context, listen: false).currentUser?.userId;
+    final userId =
+        Provider.of<UserProvider>(context, listen: false).currentUser?.userId;
     if (userId == null) return;
 
     final newChatId = await createChatRoom(userId);
@@ -68,8 +70,12 @@ class _ChatbotHistoryPageState extends State<ChatbotHistoryPage> {
         title: const Text("삭제 확인"),
         content: const Text("이 채팅방을 삭제할까요?"),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("취소")),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("삭제")),
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text("취소")),
+          TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text("삭제")),
         ],
       ),
     );
@@ -84,8 +90,9 @@ class _ChatbotHistoryPageState extends State<ChatbotHistoryPage> {
   }
 
   Future<void> _renameChatRoom(String chatId, String currentName) async {
-    final TextEditingController nameController = TextEditingController(text: currentName);
-    
+    final TextEditingController nameController =
+        TextEditingController(text: currentName);
+
     final result = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
@@ -183,39 +190,41 @@ class _ChatbotHistoryPageState extends State<ChatbotHistoryPage> {
       );
 
       final success = await updateChatRoomName(chatId, result);
-      
+
       // 로딩 다이얼로그 닫기
       Navigator.pop(context);
-      
+
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Row(
+            content: const Row(
               children: [
-                const Icon(Icons.check_circle, color: Colors.white),
-                const SizedBox(width: 8),
-                const Text('채팅방 이름이 변경되었습니다.'),
+                Icon(Icons.check_circle, color: Colors.white),
+                SizedBox(width: 8),
+                Text('채팅방 이름이 변경되었습니다.'),
               ],
             ),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
         );
         await _fetchChatRooms();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Row(
+            content: const Row(
               children: [
-                const Icon(Icons.error, color: Colors.white),
-                const SizedBox(width: 8),
-                const Text('채팅방 이름 변경에 실패했습니다.'),
+                Icon(Icons.error, color: Colors.white),
+                SizedBox(width: 8),
+                Text('채팅방 이름 변경에 실패했습니다.'),
               ],
             ),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
         );
       }
@@ -233,16 +242,17 @@ class _ChatbotHistoryPageState extends State<ChatbotHistoryPage> {
     if (name != null && name.isNotEmpty) {
       return name;
     }
-    
+
     // 기본 이름: 생성 날짜 기반으로 생성
     final createdAt = chat['created_at'];
     if (createdAt != null) {
       final date = DateTime.parse(createdAt);
       final formattedDate = '${date.month}/${date.day}';
-      final formattedTime = '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+      final formattedTime =
+          '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
       return "채팅 $formattedDate $formattedTime";
     }
-    
+
     // 최후의 수단: 인덱스 기반
     final index = _chatRooms.indexOf(chat);
     return "채팅 ${index + 1}";
@@ -258,13 +268,13 @@ class _ChatbotHistoryPageState extends State<ChatbotHistoryPage> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+        Navigator.pushNamedAndRemoveUntil(context, '/main', (route) => false);
         return false;
       },
       child: Scaffold(
         appBar: AppBar(
           title: const Text("AI 챗봇 소담이"),
-          automaticallyImplyLeading: false,  // 뒤로가기 버튼 제거
+          automaticallyImplyLeading: true, // 뒤로가기 버튼 제거
         ),
         body: Row(
           children: [
@@ -277,7 +287,8 @@ class _ChatbotHistoryPageState extends State<ChatbotHistoryPage> {
                   children: [
                     // 헤더
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
                         border: Border(
                           bottom: BorderSide(color: Colors.grey.shade400),
@@ -287,7 +298,8 @@ class _ChatbotHistoryPageState extends State<ChatbotHistoryPage> {
                         children: [
                           const Text(
                             '채팅 기록',
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.bold),
                           ),
                           const Spacer(),
                           IconButton(
@@ -315,7 +327,8 @@ class _ChatbotHistoryPageState extends State<ChatbotHistoryPage> {
                                   itemBuilder: (context, index) {
                                     final chat = _chatRooms[index];
                                     final chatId = chat['chat_id'];
-                                    final createdAt = _formatDate(chat['created_at']);
+                                    final createdAt =
+                                        _formatDate(chat['created_at']);
                                     final chatName = _getChatRoomName(chat);
 
                                     return Container(
@@ -330,50 +343,71 @@ class _ChatbotHistoryPageState extends State<ChatbotHistoryPage> {
                                         borderRadius: BorderRadius.circular(8),
                                         onTap: () => setState(() {
                                           _selectedChatId = chatId;
-                                          _isSidebarVisible = false; // 채팅방 선택 시 사이드바 닫기
+                                          _isSidebarVisible =
+                                              false; // 채팅방 선택 시 사이드바 닫기
                                         }),
                                         child: Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 12, vertical: 8),
                                           child: Row(
                                             children: [
                                               Expanded(
                                                 child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
                                                       chatName,
                                                       style: TextStyle(
                                                         fontSize: 12,
-                                                        fontWeight: FontWeight.w600,
-                                                        color: Colors.grey.shade800,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        color: Colors
+                                                            .grey.shade800,
                                                       ),
                                                       maxLines: 1,
-                                                      overflow: TextOverflow.ellipsis,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
                                                     ),
                                                     const SizedBox(height: 2),
                                                     Text(
                                                       createdAt,
                                                       style: TextStyle(
                                                         fontSize: 9,
-                                                        color: Colors.grey.shade600,
+                                                        color: Colors
+                                                            .grey.shade600,
                                                       ),
                                                     ),
                                                   ],
                                                 ),
                                               ),
                                               IconButton(
-                                                icon: Icon(Icons.edit, size: 16, color: Colors.indigo.shade400),
+                                                icon: Icon(Icons.edit,
+                                                    size: 16,
+                                                    color:
+                                                        Colors.indigo.shade400),
                                                 tooltip: "이름 변경",
-                                                onPressed: () => _renameChatRoom(chatId, chatName),
+                                                onPressed: () =>
+                                                    _renameChatRoom(
+                                                        chatId, chatName),
                                                 padding: EdgeInsets.zero,
-                                                constraints: const BoxConstraints(minWidth: 22, minHeight: 22),
+                                                constraints:
+                                                    const BoxConstraints(
+                                                        minWidth: 22,
+                                                        minHeight: 22),
                                               ),
                                               IconButton(
-                                                icon: Icon(Icons.delete, size: 16, color: Colors.red.shade400),
+                                                icon: Icon(Icons.delete,
+                                                    size: 16,
+                                                    color: Colors.red.shade400),
                                                 tooltip: "삭제",
-                                                onPressed: () => _deleteChatRoom(chatId),
+                                                onPressed: () =>
+                                                    _deleteChatRoom(chatId),
                                                 padding: EdgeInsets.zero,
-                                                constraints: const BoxConstraints(minWidth: 22, minHeight: 22),
+                                                constraints:
+                                                    const BoxConstraints(
+                                                        minWidth: 22,
+                                                        minHeight: 22),
                                               ),
                                             ],
                                           ),
@@ -418,7 +452,8 @@ class _ChatbotHistoryPageState extends State<ChatbotHistoryPage> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.chat_bubble_outline, size: 60, color: Colors.grey.shade400),
+                          Icon(Icons.chat_bubble_outline,
+                              size: 60, color: Colors.grey.shade400),
                           const SizedBox(height: 16),
                           Padding(
                             padding: const EdgeInsets.all(16),
@@ -426,7 +461,8 @@ class _ChatbotHistoryPageState extends State<ChatbotHistoryPage> {
                               _isSidebarVisible
                                   ? "채팅방을 선택하여 대화를 이어나가거나 새로 시작해보세요!"
                                   : "채팅방 목록을 열어서 대화를 이어나가거나 새로 시작해보세요!",
-                              style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                              style: TextStyle(
+                                  fontSize: 13, color: Colors.grey.shade600),
                               textAlign: TextAlign.center,
                             ),
                           ),
@@ -437,7 +473,6 @@ class _ChatbotHistoryPageState extends State<ChatbotHistoryPage> {
                       key: ValueKey(_selectedChatId),
                       chatId: _selectedChatId!,
                     ),
-                    
             ),
           ],
         ),
