@@ -340,46 +340,89 @@ class _HomeScreenState extends State<HomeScreen>
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: actions.length,
+            itemCount: actions.length + 1, // +1: 할 일 전체 보기
             itemBuilder: (context, index) {
-              final action = actions[index];
-              return Container(
-                width: 80,
-                margin: const EdgeInsets.only(right: 16),
-                child: ModernCard(
-                  padding: const EdgeInsets.all(12),
-                  margin: EdgeInsets.zero,
-                  onTap: action['onTap'] as void Function(),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: (action['color'] as Color).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
+              if (index < actions.length) {
+                final action = actions[index];
+                return Container(
+                  width: 80,
+                  margin: const EdgeInsets.only(right: 16),
+                  child: ModernCard(
+                    padding: const EdgeInsets.all(12),
+                    margin: EdgeInsets.zero,
+                    onTap: action['onTap'] as void Function(),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: (action['color'] as Color).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            action['icon'] as IconData,
+                            color: action['color'] as Color,
+                            size: 20,
+                          ),
                         ),
-                        child: Icon(
-                          action['icon'] as IconData,
-                          color: action['color'] as Color,
-                          size: 20,
+                        const SizedBox(height: 8),
+                        Text(
+                          action['title'] as String,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF2E3A59),
+                          ),
+                          textAlign: TextAlign.center,
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        action['title'] as String,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF2E3A59),
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              );
+                );
+              } else {
+                // 마지막 카드: 할 일 전체 보기
+                return Container(
+                  width: 80,
+                  margin: const EdgeInsets.only(right: 16),
+                  child: ModernCard(
+                    padding: const EdgeInsets.all(12),
+                    margin: EdgeInsets.zero,
+                    onTap: () {
+                      Navigator.pushNamed(context, '/todo'); // 라우트 이름 확인 필요
+                    },
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: Colors.blue.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.view_list,
+                            color: Colors.blue,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          '할 일 관리',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF2E3A59),
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
             },
           ),
         ),
