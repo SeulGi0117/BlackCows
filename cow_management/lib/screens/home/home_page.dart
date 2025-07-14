@@ -8,6 +8,7 @@ import 'package:cow_management/screens/notifications/notification_list_page.dart
 import 'package:cow_management/screens/todo/todo_page.dart';
 import 'package:cow_management/screens/cow_list/cow_registration_flow_page.dart';
 import 'package:cow_management/screens/ai_chatbot/chatbot_history_page.dart';
+import 'package:cow_management/screens/home/price_trend_detail_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -334,6 +335,8 @@ class _HomeScreenState extends State<HomeScreen>
         SizedBox(
           height: 100,
           child: ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: actions.length + 1, // +1: 할 일 전체 보기
@@ -892,142 +895,7 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Widget _buildRecentActivities() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
-            '최근 활동',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF2E3A59),
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        ModernCard(
-          child: Column(
-            children: [
-              _buildActivityItem(
-                icon: Icons.add_circle_outline,
-                title: '새로운 소 등록',
-                subtitle: '소 관리를 시작해보세요',
-                color: const Color(0xFF4CAF50),
-                onTap: () => _showCowRegistrationDialog(context),
-              ),
-              const Divider(height: 24),
-              _buildTodoSummaryItem(),
-              const Divider(height: 24),
-              _buildActivityItem(
-                icon: Icons.analytics_outlined,
-                title: 'AI 분석 서비스',
-                subtitle: '데이터 기반 농장 관리',
-                color: const Color(0xFF2196F3),
-                onTap: () => Navigator.pushNamed(context, '/analysis'),
-              ),
-              const Divider(height: 24),
-              _buildActivityItem(
-                icon: Icons.chat_bubble_outline,
-                title: 'AI 챗봇 서비스',
-                subtitle: '궁금한 점을 언제든 물어보세요',
-                color: const Color(0xFF9C27B0),
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const ChatbotHistoryPage()),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTodoSummaryItem() {
-    // 더미 할일 데이터 (추후 실제 데이터로 교체)
-    const todayTodos = 3;
-    const overdueTodos = 1;
-
-    return InkWell(
-      onTap: () => Navigator.pushNamed(context, '/todo'),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: const Color(0xFFFF9800).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.assignment,
-                color: Color(0xFFFF9800), size: 24),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  '할일 관리',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF2E3A59),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF4CAF50).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Text(
-                        '오늘 $todayTodos개',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF4CAF50),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    if (overdueTodos > 0)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE53935).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Text(
-                          '지연 $overdueTodos개',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFFE53935),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          Icon(
-            Icons.arrow_forward_ios_rounded,
-            color: Colors.grey.shade400,
-            size: 16,
-          ),
-        ],
-      ),
-    );
+    return const PriceTrendChartView(initialType: '초유떼기');
   }
 
   Widget _buildActivityItem({
