@@ -336,7 +336,7 @@ class _HomeScreenState extends State<HomeScreen>
           height: 100,
           child: ListView.builder(
             shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
+            physics: const BouncingScrollPhysics(),
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: actions.length + 1, // +1: 할 일 전체 보기
@@ -895,7 +895,25 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Widget _buildRecentActivities() {
-    return const PriceTrendChartView(initialType: '초유떼기');
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            '젖소 산지 가격 동향',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF2E3A59),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        const PriceTrendChartView(initialType: '초유떼기'),
+      ],
+    );
   }
 
   Widget _buildActivityItem({

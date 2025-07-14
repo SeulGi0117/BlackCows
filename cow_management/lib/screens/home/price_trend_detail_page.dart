@@ -44,28 +44,26 @@ class _PriceTrendChartViewState extends State<PriceTrendChartView> {
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
-              child: IntrinsicWidth(
-                child: Row(
-                  children: List.generate(priceTypeKeyMap.length, (idx) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: ChoiceChip(
-                        label: Text(priceTypeKeyMap.keys.elementAt(idx)),
-                        selected: selectedIndex == idx,
-                        onSelected: (_) {
-                          setState(() => selectedIndex = idx);
-                        },
-                        selectedColor: const Color(0xFF4CAF50),
-                        labelStyle: TextStyle(
-                          color: selectedIndex == idx
-                              ? Colors.white
-                              : Colors.black,
-                          fontWeight: FontWeight.bold,
-                        ),
+              child: Row(
+                children: List.generate(priceTypeKeyMap.length, (idx) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: ChoiceChip(
+                      label: Text(priceTypeKeyMap.keys.elementAt(idx)),
+                      selected: selectedIndex == idx,
+                      onSelected: (_) {
+                        setState(() => selectedIndex = idx);
+                      },
+                      selectedColor: const Color(0xFF4CAF50),
+                      labelStyle: TextStyle(
+                        color: selectedIndex == idx
+                            ? Colors.white
+                            : Colors.black,
+                        fontWeight: FontWeight.bold,
                       ),
-                    );
-                  }),
-                ),
+                    ),
+                  );
+                }),
               ),
             ),
           ),

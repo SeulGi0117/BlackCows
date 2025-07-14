@@ -85,13 +85,7 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                     color: const Color(0xFF4CAF50),
                     onTap: () => _showEditFarmNameDialog(context, userProvider),
                   ),
-                  _buildMenuItem(
-                    icon: Icons.analytics,
-                    title: '활동 통계',
-                    subtitle: '나의 농장 활동을 확인하세요',
-                    color: const Color(0xFF2196F3),
-                    onTap: () => _showComingSoonSnackBar('활동 통계'),
-                  ),
+                  // 활동 통계 메뉴 제거
                 ]),
                 const SizedBox(height: 24),
                 _buildAppSettingsMenu(),
@@ -429,9 +423,11 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
           child: Column(
             children: [
               for (int i = 0; i < items.length; i++) ...[
-                items[i],
-                if (i < items.length - 1) 
-                  Divider(height: 1, color: Colors.grey.shade200),
+                if (items[i] != null) ...[
+                  items[i],
+                  if (i < items.length - 1 && items[i + 1] != null)
+                    Divider(height: 1, color: Colors.grey.shade200),
+                ]
               ],
             ],
           ),
@@ -578,10 +574,11 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
             const SizedBox(height: 20),
             ListTile(
               leading: const Icon(Icons.notifications, color: Color(0xFF4CAF50)),
-              title: const Text('알림 설정'),
+              title: const Text('알림 서비스'),
+              subtitle: const Text('알림 서비스는 준비중입니다', style: TextStyle(color: Colors.grey)),
               trailing: Switch(
-                value: true,
-                onChanged: (value) {},
+                value: false,
+                onChanged: null,
                 activeColor: const Color(0xFF4CAF50),
               ),
             ),
@@ -607,32 +604,37 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
     
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('목장 이름 수정'),
-        content: ModernTextField(
-          controller: controller,
-          hint: '목장 이름을 입력하세요',
-          prefixIcon: const Icon(Icons.home, color: Color(0xFF4CAF50)),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('취소'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              // 목장 이름 수정 로직
-              Navigator.pop(context);
-              _showComingSoonSnackBar('목장 이름 수정');
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4CAF50),
+      builder: (context) =>
+        AlertDialog(
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('목장 이름 수정'),
+          content: SizedBox(
+            width: 400,
+            child: ModernTextField(
+              controller: controller,
+              hint: '목장 이름을 입력하세요',
+              prefixIcon: const Icon(Icons.home, color: Color(0xFF4CAF50)),
             ),
-            child: const Text('저장'),
           ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('취소'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                // 목장 이름 수정 로직
+                Navigator.pop(context);
+                _showComingSoonSnackBar('목장 이름 수정');
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4CAF50),
+              ),
+              child: const Text('저장'),
+            ),
+          ],
+        ),
     );
   }
 
@@ -721,8 +723,8 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
               ),
             ),
             SizedBox(height: 8),
-            Text('버전: 1.0.0'),
-                            Text('빌드: 2025.06.29'),
+            Text('버전: 6.1.2'),
+            Text('빌드: 2025.07.15'),
             SizedBox(height: 16),
             Text(
               '스마트한 농장 관리의 시작\n소담소담과 함께하세요!',
@@ -934,47 +936,6 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                 onPressed: _toggleDarkMode,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF673AB7),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                ),
-                child: const Text('토글'),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        ModernCard(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF4CAF50).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(Icons.notifications, color: Color(0xFF4CAF50), size: 24),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text('알림 설정', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF2E3A59))),
-                    SizedBox(height: 4),
-                    Text('알림을 켜거나 끌 수 있습니다', style: TextStyle(fontSize: 14, color: Colors.grey)),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 16),
-              ElevatedButton(
-                onPressed: _toggleNotification,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4CAF50),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
