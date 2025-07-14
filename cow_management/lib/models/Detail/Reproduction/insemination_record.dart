@@ -65,11 +65,11 @@ class InseminationRecord {
       data.addAll(Map<String, dynamic>.from(json['key_values']));
     }
 
-    // 바깥 json도 병합
     data['cow_id'] = json['cow_id'];
     data['record_date'] = json['record_date'];
 
     return InseminationRecord(
+      id: json['id'] ?? json['record_id'] ?? json['doc_id'],
       cowId: data['cow_id'] ?? '',
       recordDate: data['record_date'] ?? '',
       inseminationTime: data['insemination_time']?.toString(),

@@ -78,21 +78,20 @@ class CalvingRecord {
   }
 
   factory CalvingRecord.fromJson(Map<String, dynamic> json) {
-    final Map<String, dynamic> safeJson = Map<String, dynamic>.from(json);
-    Map<String, dynamic> data = {};
+    final data = <String, dynamic>{};
 
-    if (safeJson['record_data'] != null) {
-      data.addAll(Map<String, dynamic>.from(safeJson['record_data']));
+    if (json['record_data'] != null && json['record_data'] is Map) {
+      data.addAll(Map<String, dynamic>.from(json['record_data']));
     }
-    if (safeJson['key_values'] != null) {
-      data.addAll(Map<String, dynamic>.from(safeJson['key_values']));
+    if (json['key_values'] != null && json['key_values'] is Map) {
+      data.addAll(Map<String, dynamic>.from(json['key_values']));
     }
 
-    data['cow_id'] = safeJson['cow_id'];
-    data['record_date'] = safeJson['record_date'];
+    data['cow_id'] = json['cow_id'];
+    data['record_date'] = json['record_date'];
 
     return CalvingRecord(
-      id: safeJson['id']?.toString(),
+      id: json['id']?.toString(),
       cowId: data['cow_id'] ?? '',
       recordDate: data['record_date'] ?? '',
       calvingStartTime: data['calving_start_time'],
@@ -109,7 +108,7 @@ class CalvingRecord {
       veterinarianCalled: data['veterinarian_called'],
       damCondition: data['dam_condition'],
       lactationStart: data['lactation_start'],
-      notes: data['notes'] ?? safeJson['description'],
+      notes: data['notes'] ?? json['description'],
     );
   }
 
@@ -118,20 +117,48 @@ class CalvingRecord {
         'record_date': recordDate,
         'title': '분만 기록',
         'description': notes ?? '분만 기록 작성',
-        'calving_start_time': calvingStartTime,
-        'calving_end_time': calvingEndTime,
-        'calving_difficulty': calvingDifficulty,
-        'calf_count': calfCount,
-        'calf_gender': calfGender,
-        'calf_weight': calfWeight,
-        'calf_health': calfHealth,
-        'placenta_expelled': placentaExpelled,
-        'placenta_expulsion_time': placentaExpulsionTime,
-        'complications': complications,
-        'assistance_required': assistanceRequired,
-        'veterinarian_called': veterinarianCalled,
-        'dam_condition': damCondition,
-        'lactation_start': lactationStart,
-        'notes': notes,
+        if (calvingStartTime != null) 'calving_start_time': calvingStartTime,
+        if (calvingEndTime != null) 'calving_end_time': calvingEndTime,
+        if (calvingDifficulty != null) 'calving_difficulty': calvingDifficulty,
+        if (calfCount != null) 'calf_count': calfCount,
+        if (calfGender != null) 'calf_gender': calfGender,
+        if (calfWeight != null) 'calf_weight': calfWeight,
+        if (calfHealth != null) 'calf_health': calfHealth,
+        if (placentaExpelled != null) 'placenta_expelled': placentaExpelled,
+        if (placentaExpulsionTime != null)
+          'placenta_expulsion_time': placentaExpulsionTime,
+        if (complications != null) 'complications': complications,
+        if (assistanceRequired != null)
+          'assistance_required': assistanceRequired,
+        if (veterinarianCalled != null)
+          'veterinarian_called': veterinarianCalled,
+        if (damCondition != null) 'dam_condition': damCondition,
+        if (lactationStart != null) 'lactation_start': lactationStart,
+        if (notes != null) 'notes': notes,
+      };
+
+  Map<String, dynamic> toUpdateJson() => {
+        'record_date': recordDate,
+        'record_data': {
+          if (calvingStartTime != null) 'calving_start_time': calvingStartTime,
+          if (calvingEndTime != null) 'calving_end_time': calvingEndTime,
+          if (calvingDifficulty != null)
+            'calving_difficulty': calvingDifficulty,
+          if (calfCount != null) 'calf_count': calfCount,
+          if (calfGender != null) 'calf_gender': calfGender,
+          if (calfWeight != null) 'calf_weight': calfWeight,
+          if (calfHealth != null) 'calf_health': calfHealth,
+          if (placentaExpelled != null) 'placenta_expelled': placentaExpelled,
+          if (placentaExpulsionTime != null)
+            'placenta_expulsion_time': placentaExpulsionTime,
+          if (complications != null) 'complications': complications,
+          if (assistanceRequired != null)
+            'assistance_required': assistanceRequired,
+          if (veterinarianCalled != null)
+            'veterinarian_called': veterinarianCalled,
+          if (damCondition != null) 'dam_condition': damCondition,
+          if (lactationStart != null) 'lactation_start': lactationStart,
+          if (notes != null) 'notes': notes,
+        },
       };
 }
