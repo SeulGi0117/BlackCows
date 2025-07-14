@@ -16,6 +16,7 @@ import 'providers/cow_provider.dart';
 import 'providers/user_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/todo_provider.dart';
+import 'providers/notification_provider.dart';
 // Services
 import 'services/todo_service.dart';
 import 'services/dio_client.dart';
@@ -45,7 +46,7 @@ import 'screens/cow_list/cow_detail_page.dart';
 import 'screens/cow_list/cow_edit_page.dart';
 
 import 'screens/profile/profile_page.dart';
-import 'screens/notifications/notification_page.dart';
+import 'screens/notifications/notification_list_page.dart';
 import 'screens/todo/todo_page.dart';
 import 'screens/ai_chatbot/app_wrapper.dart';
 import 'screens/ai_chatbot/chatbot_history_page.dart';
@@ -132,6 +133,11 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => InseminationRecordProvider()),
         ChangeNotifierProvider(create: (_) => PregnancyCheckProvider()),
         ChangeNotifierProvider(create: (_) => CalvingRecordProvider()),
+        ChangeNotifierProvider(
+          create: (context) => NotificationProvider(
+            userProvider: Provider.of<UserProvider>(context, listen: false),
+          ),
+        ),
       ],
       child: const SoDamApp(),
     ),
@@ -260,7 +266,7 @@ class SoDamApp extends StatelessWidget {
               final cow = ModalRoute.of(context)!.settings.arguments as Cow;
               return CowEditPage(cow: cow);
             },
-            '/notifications': (context) => const NotificationPage(),
+            '/notifications': (context) => const NotificationListPage(),
             '/todo': (context) => const TodoPage(),
 
             // 상세 기록 페이지

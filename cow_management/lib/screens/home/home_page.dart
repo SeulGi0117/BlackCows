@@ -4,7 +4,7 @@ import 'package:cow_management/providers/user_provider.dart';
 import 'package:cow_management/providers/cow_provider.dart';
 import 'package:cow_management/widgets/modern_card.dart';
 import 'package:cow_management/widgets/loading_widget.dart';
-import 'package:cow_management/screens/notifications/notification_page.dart';
+import 'package:cow_management/screens/notifications/notification_list_page.dart';
 import 'package:cow_management/screens/todo/todo_page.dart';
 import 'package:cow_management/screens/cow_list/cow_registration_flow_page.dart';
 import 'package:cow_management/screens/ai_chatbot/chatbot_history_page.dart';
@@ -16,7 +16,8 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
   int countByStatus(List cows, String status) {
     return cows.where((cow) => cow.status == status).length;
   }
@@ -55,9 +56,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     if (userProvider.isLoggedIn && userProvider.accessToken != null) {
       if (cowProvider.cows.isEmpty && !_cowsLoadedOnce) {
         _cowsLoadedOnce = true;
-        
-        cowProvider.fetchCowsFromBackend(userProvider.accessToken!, forceRefresh: true, userProvider: userProvider).then((_) {
-          if (!_favoritesLoaded && userProvider.isLoggedIn && userProvider.accessToken != null) {
+
+        cowProvider
+            .fetchCowsFromBackend(userProvider.accessToken!,
+                forceRefresh: true, userProvider: userProvider)
+            .then((_) {
+          if (!_favoritesLoaded &&
+              userProvider.isLoggedIn &&
+              userProvider.accessToken != null) {
             cowProvider.syncFavoritesFromServer(userProvider.accessToken!);
             _favoritesLoaded = true;
           }
@@ -65,8 +71,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           _cowsLoadedOnce = false;
           print('홈 화면에서 소 목록 로딩 실패: $error');
         });
-      } 
-      else if (!_favoritesLoaded) {
+      } else if (!_favoritesLoaded) {
         cowProvider.syncFavoritesFromServer(userProvider.accessToken!);
         _favoritesLoaded = true;
       }
@@ -163,7 +168,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         final user = userProvider.currentUser;
         final currentHour = DateTime.now().hour;
         String greeting;
-        
+
         if (currentHour < 12) {
           greeting = '좋은 아침이에요';
         } else if (currentHour < 18) {
@@ -215,7 +220,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     ),
                     const SizedBox(height: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(20),
@@ -307,9 +313,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         'title': 'AI 챗봇',
         'color': const Color(0xFF9C27B0),
         'onTap': () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const ChatbotHistoryPage()),
-        ),
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const ChatbotHistoryPage()),
+            ),
       },
     ];
 
@@ -490,7 +497,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       ),
                       const Spacer(),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: const Color(0xFF4CAF50).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(20),
@@ -509,17 +517,25 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   const SizedBox(height: 20),
                   Row(
                     children: [
-                      Expanded(child: _buildStatusCard('건강', healthyCount, const Color(0xFF4CAF50), Icons.favorite)),
+                      Expanded(
+                          child: _buildStatusCard('건강', healthyCount,
+                              const Color(0xFF4CAF50), Icons.favorite)),
                       const SizedBox(width: 12),
-                      Expanded(child: _buildStatusCard('치료중', treatmentCount, const Color(0xFFFF5722), Icons.medical_services)),
+                      Expanded(
+                          child: _buildStatusCard('치료중', treatmentCount,
+                              const Color(0xFFFF5722), Icons.medical_services)),
                     ],
                   ),
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      Expanded(child: _buildStatusCard('임신', pregnantCount, const Color(0xFF2196F3), Icons.pregnant_woman)),
+                      Expanded(
+                          child: _buildStatusCard('임신', pregnantCount,
+                              const Color(0xFF2196F3), Icons.pregnant_woman)),
                       const SizedBox(width: 12),
-                      Expanded(child: _buildStatusCard('건유', dryCount, const Color(0xFFFF9800), Icons.pause_circle)),
+                      Expanded(
+                          child: _buildStatusCard('건유', dryCount,
+                              const Color(0xFFFF9800), Icons.pause_circle)),
                     ],
                   ),
                 ],
@@ -539,11 +555,17 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
     for (var cow in cows) {
       String status = cow.status.toLowerCase();
-      if (status.contains('건강') || status.contains('정상') || status.contains('양호')) {
+      if (status.contains('건강') ||
+          status.contains('정상') ||
+          status.contains('양호')) {
         normalCount++;
-      } else if (status.contains('주의') || status.contains('경고') || status.contains('건유')) {
+      } else if (status.contains('주의') ||
+          status.contains('경고') ||
+          status.contains('건유')) {
         warningCount++;
-      } else if (status.contains('위험') || status.contains('치료') || status.contains('이상')) {
+      } else if (status.contains('위험') ||
+          status.contains('치료') ||
+          status.contains('이상')) {
         dangerCount++;
       } else {
         // 알 수 없는 상태는 주의로 분류
@@ -555,15 +577,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.health_and_safety_outlined,
                 color: Color(0xFF4CAF50),
                 size: 24,
               ),
-              const SizedBox(width: 12),
-              const Text(
+              SizedBox(width: 12),
+              Text(
                 '소 상태 요약',
                 style: TextStyle(
                   fontSize: 18,
@@ -577,15 +599,18 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           Row(
             children: [
               Expanded(
-                child: _buildHealthStatusCard('정상', normalCount, const Color(0xFF4CAF50), Icons.check_circle),
+                child: _buildHealthStatusCard('정상', normalCount,
+                    const Color(0xFF4CAF50), Icons.check_circle),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _buildHealthStatusCard('주의', warningCount, const Color(0xFFFF9800), Icons.warning),
+                child: _buildHealthStatusCard(
+                    '주의', warningCount, const Color(0xFFFF9800), Icons.warning),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _buildHealthStatusCard('이상', dangerCount, const Color(0xFFE53935), Icons.error),
+                child: _buildHealthStatusCard(
+                    '이상', dangerCount, const Color(0xFFE53935), Icons.error),
               ),
             ],
           ),
@@ -594,7 +619,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildHealthStatusCard(String title, int count, Color color, IconData icon) {
+  Widget _buildHealthStatusCard(
+      String title, int count, Color color, IconData icon) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
       decoration: BoxDecoration(
@@ -694,8 +720,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   Widget _buildFavoriteCows() {
     return Consumer<CowProvider>(
       builder: (context, cowProvider, child) {
-                 final favoriteCows = cowProvider.favorites;
-        
+        final favoriteCows = cowProvider.favorites;
+
         if (favoriteCows.isEmpty) {
           return const SizedBox.shrink();
         }
@@ -783,9 +809,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           ),
                           const SizedBox(height: 4),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: _getStatusColor(cow.status).withOpacity(0.2),
+                              color:
+                                  _getStatusColor(cow.status).withOpacity(0.2),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
@@ -868,7 +896,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 color: const Color(0xFF9C27B0),
                 onTap: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const ChatbotHistoryPage()),
+                  MaterialPageRoute(
+                      builder: (context) => const ChatbotHistoryPage()),
                 ),
               ),
             ],
@@ -880,9 +909,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   Widget _buildTodoSummaryItem() {
     // 더미 할일 데이터 (추후 실제 데이터로 교체)
-    final todayTodos = 3;
-    final overdueTodos = 1;
-    
+    const todayTodos = 3;
+    const overdueTodos = 1;
+
     return InkWell(
       onTap: () => Navigator.pushNamed(context, '/todo'),
       child: Row(
@@ -894,7 +923,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               color: const Color(0xFFFF9800).withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.assignment, color: Color(0xFFFF9800), size: 24),
+            child: const Icon(Icons.assignment,
+                color: Color(0xFFFF9800), size: 24),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -913,14 +943,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
                         color: const Color(0xFF4CAF50).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Text(
+                      child: const Text(
                         '오늘 $todayTodos개',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: Color(0xFF4CAF50),
@@ -930,14 +961,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     const SizedBox(width: 8),
                     if (overdueTodos > 0)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
                           color: const Color(0xFFE53935).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Text(
+                        child: const Text(
                           '지연 $overdueTodos개',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: Color(0xFFE53935),
@@ -1045,7 +1077,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   Future<void> _refreshData() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final cowProvider = Provider.of<CowProvider>(context, listen: false);
-    
+
     if (userProvider.accessToken != null) {
       try {
         await cowProvider.fetchCowsFromBackend(

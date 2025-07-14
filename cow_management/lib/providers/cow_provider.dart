@@ -13,6 +13,15 @@ class CowProvider with ChangeNotifier {
 
   List<Cow> get cows => List.unmodifiable(_cows);
 
+  Cow? getCowById(String id) {
+    try {
+      return _cows.firstWhere((cow) => cow.id == id);
+    } catch (_) {
+      _logger.warning('Cow not found for id: $id');
+      return null;
+    }
+  }
+
   void addCow(Cow cow) {
     _cows.add(cow);
     notifyListeners();
@@ -210,7 +219,8 @@ class CowProvider with ChangeNotifier {
   }
 
   // 축산물이력제 정보 조회
-  Future<Map<String, dynamic>?> getLivestockTraceInfo(String cowId, String token) async {
+  Future<Map<String, dynamic>?> getLivestockTraceInfo(
+      String cowId, String token) async {
     final dio = Dio();
     final apiUrl = ApiConfig.baseUrl;
 
@@ -254,15 +264,16 @@ class CowProvider with ChangeNotifier {
   }
 
   // 서버에서 소 전체 목록을 불러와 setCows까지 처리하는 메서드 추가
-  Future<void> fetchCowsFromBackend(String token, {bool forceRefresh = false, UserProvider? userProvider}) async {
+  Future<void> fetchCowsFromBackend(String token,
+      {bool forceRefresh = false, UserProvider? userProvider}) async {
     // forceRefresh가 true이거나 아직 로드한 적이 없을 때만 실행
     if (!forceRefresh && _cowsLoadedOnce) return;
-    
+
     final dio = Dio();
     final apiUrl = ApiConfig.baseUrl;
-    
+
     _logger.info('소 목록 로딩 시작 - API URL: $apiUrl');
-    
+
     try {
       final response = await dio.get(
         '$apiUrl/cows/?sortDirection=DESCENDING',
@@ -273,10 +284,11 @@ class CowProvider with ChangeNotifier {
           },
         ),
       );
-      
+
       if (response.statusCode == 200) {
         final List<dynamic> jsonList = response.data;
-        final List<Cow> cows = jsonList.map((json) => Cow.fromJson(json)).toList();
+        final List<Cow> cows =
+            jsonList.map((json) => Cow.fromJson(json)).toList();
         setCows(cows);
         _logger.info('소 목록 로딩 성공: ${cows.length}마리');
       } else {
@@ -286,16 +298,18 @@ class CowProvider with ChangeNotifier {
         throw Exception('서버 응답 오류: ${response.statusCode}');
       }
     } catch (e) {
-      if (e is DioException && e.response?.statusCode == 401 && userProvider != null) {
+      if (e is DioException &&
+          e.response?.statusCode == 401 &&
+          userProvider != null) {
         _logger.warning('토큰 만료로 인한 401 에러 - 토큰 갱신 시도');
-        
+
         try {
           // 토큰 갱신 시도
           final refreshSuccess = await userProvider.refreshAccessToken();
-          
+
           if (refreshSuccess && userProvider.accessToken != null) {
             _logger.info('토큰 갱신 성공 - API 재시도');
-            
+
             // 새로운 토큰으로 재시도
             final retryResponse = await dio.get(
               '$apiUrl/cows/?sortDirection=DESCENDING',
@@ -306,10 +320,11 @@ class CowProvider with ChangeNotifier {
                 },
               ),
             );
-            
+
             if (retryResponse.statusCode == 200) {
               final List<dynamic> jsonList = retryResponse.data;
-              final List<Cow> cows = jsonList.map((json) => Cow.fromJson(json)).toList();
+              final List<Cow> cows =
+                  jsonList.map((json) => Cow.fromJson(json)).toList();
               setCows(cows);
               _logger.info('토큰 갱신 후 소 목록 로딩 성공: ${cows.length}마리');
               return;
@@ -323,11 +338,11 @@ class CowProvider with ChangeNotifier {
           throw Exception('토큰 갱신 실패: $refreshError');
         }
       }
-      
+
       _logger.severe('소 목록 불러오기 오류: $e');
       // 실패 시 _cowsLoadedOnce를 false로 리셋하여 재시도 가능하게 함
       _cowsLoadedOnce = false;
-      throw e; // 에러를 다시 던져서 호출하는 곳에서 처리할 수 있게 함
+      rethrow; // 에러를 다시 던져서 호출하는 곳에서 처리할 수 있게 함
     }
   }
 
@@ -351,7 +366,7 @@ class CowProvider with ChangeNotifier {
         // 로컬 목록에서도 삭제
         removeCow(cowId);
         _logger.info('소 삭제 성공: $cowId');
-        
+
         // 소 목록 새로고침
         await fetchCowsFromBackend(token, forceRefresh: true);
       } else {
