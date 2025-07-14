@@ -268,7 +268,7 @@ class SoDamApp extends StatelessWidget {
             },
             '/notifications': (context) => const NotificationListPage(),
             '/todo': (context) => const TodoPage(),
-
+            '/chatbot': (context) => const ChatbotHistoryPage(),
             // 상세 기록 페이지
             '/milking-record-add': (context) {
               // 우유 기록 추가 (새 라우트 이름)

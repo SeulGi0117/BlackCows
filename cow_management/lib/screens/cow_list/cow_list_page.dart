@@ -75,7 +75,7 @@ class _CowListPageState extends State<CowListPage>
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+        Navigator.pushNamedAndRemoveUntil(context, '/main', (route) => false);
         return false;
       },
       child: Scaffold(

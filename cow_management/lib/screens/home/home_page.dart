@@ -312,11 +312,7 @@ class _HomeScreenState extends State<HomeScreen>
         'icon': Icons.chat_bubble_outline,
         'title': 'AI 챗봇',
         'color': const Color(0xFF9C27B0),
-        'onTap': () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => const ChatbotHistoryPage()),
-            ),
+        'onTap': () => Navigator.pushNamed(context, '/chatbot'),
       },
     ];
 
