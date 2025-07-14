@@ -177,10 +177,9 @@ class _EstrusAddPageState extends State<EstrusAddPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.pink.shade50,
       appBar: AppBar(
         title: Text('${widget.cowName} - 발정 기록 추가'),
-        backgroundColor: Colors.pink,
+        backgroundColor: const Color(0xFF4CAF50),
         foregroundColor: Colors.white,
         elevation: 0,
       ),
@@ -508,7 +507,7 @@ class _EstrusAddPageState extends State<EstrusAddPage> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.pink,
+                  backgroundColor: const Color(0xFF4CAF50),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),

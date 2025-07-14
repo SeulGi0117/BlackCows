@@ -81,20 +81,8 @@ class _FeedDetailPageState extends State<FeedDetailPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('사료급여 상세 정보'),
-        backgroundColor: Colors.orange.shade400,
+        backgroundColor: const Color(0xFF4CAF50),
         foregroundColor: Colors.white,
-        actions: [
-          if (_record != null)
-            IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: _editRecord,
-            ),
-          if (_record != null)
-            IconButton(
-              icon: const Icon(Icons.delete),
-              onPressed: _confirmDelete,
-            ),
-        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -102,27 +90,69 @@ class _FeedDetailPageState extends State<FeedDetailPage> {
               ? Center(child: Text(_error!))
               : _record == null
                   ? const Center(child: Text('기록이 존재하지 않습니다.'))
-                  : ListView(
+                  : SingleChildScrollView(
                       padding: const EdgeInsets.all(16),
-                      children: [
-                        _buildCard('급여일', _record?.recordDate),
-                        _buildCard('급여 시간', _record?.feedTime),
-                        _buildCard('사료 종류', _record?.feedType),
-                        _buildCardNumber('급여량', _record?.feedAmount,
-                            unit: ' kg'),
-                        _buildCard('사료 품질', _record?.feedQuality),
-                        _buildCard('보충제 종류', _record?.supplementType),
-                        _buildCardNumber('보충제 급여량', _record?.supplementAmount,
-                            unit: ' kg'),
-                        _buildCardNumber('음수량', _record?.waterConsumption,
-                            unit: ' L'),
-                        _buildCard('섭취 상태', _record?.appetiteCondition),
-                        _buildCardNumber('사료 효율', _record?.feedEfficiency),
-                        _buildCardNumber('사료 단가', _record?.costPerFeed,
-                            unit: ' 원'),
-                        _buildCard('급여자', _record?.fedBy),
-                        _buildCard('메모', _record?.notes),
-                      ],
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildCard('급여일', _record?.recordDate),
+                          _buildCard('급여 시간', _record?.feedTime),
+                          _buildCard('사료 종류', _record?.feedType),
+                          _buildCardNumber('급여량', _record?.feedAmount,
+                              unit: ' kg'),
+                          _buildCard('사료 품질', _record?.feedQuality),
+                          _buildCard('보충제 종류', _record?.supplementType),
+                          _buildCardNumber('보충제 급여량', _record?.supplementAmount,
+                              unit: ' kg'),
+                          _buildCardNumber('음수량', _record?.waterConsumption,
+                              unit: ' L'),
+                          _buildCard('섭취 상태', _record?.appetiteCondition),
+                          _buildCardNumber('사료 효율', _record?.feedEfficiency),
+                          _buildCardNumber('사료 단가', _record?.costPerFeed,
+                              unit: ' 원'),
+                          _buildCard('급여자', _record?.fedBy),
+                          _buildCard('메모', _record?.notes),
+                          const SizedBox(height: 24),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  onPressed: _editRecord,
+                                  icon: const Icon(Icons.edit, size: 18),
+                                  label: const Text('정보 수정'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF4CAF50),
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  onPressed: _confirmDelete,
+                                  icon: const Icon(Icons.delete, size: 18),
+                                  label: const Text('삭제하기'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 40),
+                        ],
+                      ),
                     ),
     );
   }

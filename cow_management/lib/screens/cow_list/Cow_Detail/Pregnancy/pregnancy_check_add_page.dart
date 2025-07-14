@@ -61,9 +61,10 @@ class _PregnancyCheckAddPageState extends State<PregnancyCheckAddPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.cowName} 임신감정 기록 추가'),
-        backgroundColor: Colors.pink.shade400,
+        title: Text('${widget.cowName} - 임신감정 기록 추가'),
+        backgroundColor: const Color(0xFF4CAF50),
         foregroundColor: Colors.white,
+        elevation: 0,
       ),
       body: Form(
         key: _formKey,

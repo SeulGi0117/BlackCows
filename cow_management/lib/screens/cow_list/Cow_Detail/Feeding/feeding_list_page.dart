@@ -68,7 +68,7 @@ class _FeedListPageState extends State<FeedListPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.cowName} 사료급여 기록'),
-        backgroundColor: Colors.orange.shade400,
+        backgroundColor: const Color(0xFF4CAF50),
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -94,7 +94,7 @@ class _FeedListPageState extends State<FeedListPage> {
             ),
           ).then((_) => _loadRecords());
         },
-        backgroundColor: Colors.orange.shade400,
+        backgroundColor: const Color(0xFF4CAF50),
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );

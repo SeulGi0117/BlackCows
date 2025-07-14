@@ -117,7 +117,7 @@ class _CalvingDetailPageState extends State<CalvingDetailPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('분만 상세 정보'),
-        backgroundColor: const Color(0xFF795548),
+        backgroundColor: const Color(0xFF4CAF50),
         foregroundColor: Colors.white,
       ),
       body: _isLoading
@@ -213,7 +213,7 @@ class _CalvingDetailPageState extends State<CalvingDetailPage> {
                               icon: const Icon(Icons.edit),
                               label: const Text('수정'),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.brown,
+                                backgroundColor: const Color(0xFF4CAF50),
                                 foregroundColor: Colors.white,
                               ),
                             ),

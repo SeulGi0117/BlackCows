@@ -149,7 +149,7 @@ class _FeedAddPageState extends State<FeedAddPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.cowName} 사료 기록 추가'),
-        backgroundColor: Colors.green.shade700,
+        backgroundColor: const Color(0xFF4CAF50),
         foregroundColor: Colors.white,
       ),
       body: _isSubmitting
