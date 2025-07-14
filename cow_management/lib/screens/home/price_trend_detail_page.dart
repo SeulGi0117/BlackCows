@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../models/price_trend.dart';
+import 'package:cow_management/models/price_trend.dart';
 
 class PriceTrendDetailPage extends StatefulWidget {
   final String initialType; // 'dairy', 'hanwoo', 'wholesale' 등
@@ -11,10 +11,15 @@ class PriceTrendDetailPage extends StatefulWidget {
 
 class _PriceTrendDetailPageState extends State<PriceTrendDetailPage> {
   int selectedIndex = 0;
-  final List<String> priceTypes = [
-    '초유떼기', '분유떼기', '수정단계', '초임만삭', '초산우', '다산우', '노폐우'
-  ];
-
+  final priceTypeKeyMap = {
+    '초유떼기': ['초유떼기_암', '초유떼기_수'],
+    '분유떼기': ['분유떼기_암', '분유떼기_수'],
+    '수정단계': ['수정단계', ''],
+    '초임만삭': ['초임만삭', ''],
+    '초산우': ['초산우', ''],
+    '다산우': ['다산우', ''],
+    '노폐우': ['노폐우', ''],
+  };
   @override
   void initState() {
     super.initState();
@@ -34,25 +39,28 @@ class _PriceTrendDetailPageState extends State<PriceTrendDetailPage> {
           const SizedBox(height: 16),
           Card(
             margin: const EdgeInsets.symmetric(horizontal: 16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             elevation: 2,
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
-                  children: List.generate(priceTypes.length, (idx) {
+                  children: List.generate(priceTypeKeyMap.length, (idx) {
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: ChoiceChip(
-                        label: Text(priceTypes[idx]),
+                        label: Text(priceTypeKeyMap.keys.elementAt(idx)),
                         selected: selectedIndex == idx,
                         onSelected: (_) {
                           setState(() => selectedIndex = idx);
                         },
                         selectedColor: const Color(0xFF4CAF50),
                         labelStyle: TextStyle(
-                          color: selectedIndex == idx ? Colors.white : Colors.black,
+                          color: selectedIndex == idx
+                              ? Colors.white
+                              : Colors.black,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -75,19 +83,64 @@ class _PriceTrendDetailPageState extends State<PriceTrendDetailPage> {
     // 2025년 젖소 가격동향 표 데이터
     final List<Map<String, dynamic>> tableData = [
       {
-        '월': '1월', '초유떼기_암': 24, '초유떼기_수': 65, '분유떼기_암': 194, '분유떼기_수': 440, '수정단계': 1339, '초임만삭': 3505, '초산우': 3560, '다산우': 2749, '노폐우': 1113
+        '월': '1월',
+        '초유떼기_암': 24,
+        '초유떼기_수': 65,
+        '분유떼기_암': 194,
+        '분유떼기_수': 440,
+        '수정단계': 1339,
+        '초임만삭': 3505,
+        '초산우': 3560,
+        '다산우': 2749,
+        '노폐우': 1113
       },
       {
-        '월': '2월', '초유떼기_암': 22, '초유떼기_수': 72, '분유떼기_암': 185, '분유떼기_수': 477, '수정단계': 1366, '초임만삭': 3520, '초산우': 3613, '다산우': 2811, '노폐우': 1069
+        '월': '2월',
+        '초유떼기_암': 22,
+        '초유떼기_수': 72,
+        '분유떼기_암': 185,
+        '분유떼기_수': 477,
+        '수정단계': 1366,
+        '초임만삭': 3520,
+        '초산우': 3613,
+        '다산우': 2811,
+        '노폐우': 1069
       },
       {
-        '월': '3월', '초유떼기_암': 24, '초유떼기_수': 74, '분유떼기_암': 183, '분유떼기_수': 479, '수정단계': 1330, '초임만삭': 3460, '초산우': 3539, '다산우': 2811, '노폐우': 1042
+        '월': '3월',
+        '초유떼기_암': 24,
+        '초유떼기_수': 74,
+        '분유떼기_암': 183,
+        '분유떼기_수': 479,
+        '수정단계': 1330,
+        '초임만삭': 3460,
+        '초산우': 3539,
+        '다산우': 2811,
+        '노폐우': 1042
       },
       {
-        '월': '4월', '초유떼기_암': 27, '초유떼기_수': 92, '분유떼기_암': 184, '분유떼기_수': 482, '수정단계': 1378, '초임만삭': 3495, '초산우': 3600, '다산우': 2795, '노폐우': 1283
+        '월': '4월',
+        '초유떼기_암': 27,
+        '초유떼기_수': 92,
+        '분유떼기_암': 184,
+        '분유떼기_수': 482,
+        '수정단계': 1378,
+        '초임만삭': 3495,
+        '초산우': 3600,
+        '다산우': 2795,
+        '노폐우': 1283
       },
       {
-        '월': '5월', '초유떼기_암': 30, '초유떼기_수': 108, '분유떼기_암': 192, '분유떼기_수': 498, '수정단계': 1364, '초임만삭': 3441, '초산우': 3555, '다산우': 2743, '노폐우': 1071
+        '월': '5월',
+        '초유떼기_암': 30,
+        '초유떼기_수': 108,
+        '분유떼기_암': 192,
+        '분유떼기_수': 498,
+        '수정단계': 1364,
+        '초임만삭': 3441,
+        '초산우': 3555,
+        '다산우': 2743,
+        '노폐우': 1071
       },
     ];
     final months = tableData.map((e) => e['월'] as String).toList();
@@ -99,14 +152,18 @@ class _PriceTrendDetailPageState extends State<PriceTrendDetailPage> {
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         children: [
-          const Text('2025년 젖소 산지 가격동향', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text('2025년 젖소 산지 가격동향',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
-          const Text('단위: 천원/두', style: TextStyle(fontSize: 14, color: Colors.grey)),
+          const Text('단위: 천원/두',
+              style: TextStyle(fontSize: 14, color: Colors.grey)),
           const SizedBox(height: 2),
-          const Text('출처: 농협 축산정보센터', style: TextStyle(fontSize: 12, color: Colors.grey)),
+          const Text('출처: 농협 축산정보센터',
+              style: TextStyle(fontSize: 12, color: Colors.grey)),
           const SizedBox(height: 16),
           Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             elevation: 2,
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -116,7 +173,8 @@ class _PriceTrendDetailPageState extends State<PriceTrendDetailPage> {
                   height: 140,
                   width: 340,
                   child: CustomPaint(
-                    painter: _ColostrumLineChartPainter(colostrumFemale, colostrumMale, months),
+                    painter: _ColostrumLineChartPainter(
+                        colostrumFemale, colostrumMale, months),
                   ),
                 ),
               ),
@@ -125,38 +183,60 @@ class _PriceTrendDetailPageState extends State<PriceTrendDetailPage> {
           const SizedBox(height: 8),
           Row(
             children: [
-              Container(width: 16, height: 4, color: Color(0xFF4CAF50)),
+              Container(width: 16, height: 4, color: const Color(0xFF4CAF50)),
               const SizedBox(width: 4),
               const Text('초유떼기 암', style: TextStyle(fontSize: 12)),
               const SizedBox(width: 16),
-              Container(width: 16, height: 4, color: Color(0xFF2196F3)),
+              Container(width: 16, height: 4, color: const Color(0xFF2196F3)),
               const SizedBox(width: 4),
               const Text('초유떼기 수', style: TextStyle(fontSize: 12)),
             ],
           ),
           const SizedBox(height: 16),
           Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             elevation: 2,
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: DataTable(
-                  headingRowColor: MaterialStateProperty.all(Color(0xFFE8F5E9)),
-                  columns: [
-                    DataColumn(label: Text('월', style: TextStyle(fontWeight: FontWeight.bold))),
-                    DataColumn(label: Text('초유떼기\n암', style: TextStyle(fontWeight: FontWeight.bold))),
-                    DataColumn(label: Text('초유떼기\n수', style: TextStyle(fontWeight: FontWeight.bold))),
-                    DataColumn(label: Text('분유떼기\n암', style: TextStyle(fontWeight: FontWeight.bold))),
-                    DataColumn(label: Text('분유떼기\n수', style: TextStyle(fontWeight: FontWeight.bold))),
-                    DataColumn(label: Text('수정단계', style: TextStyle(fontWeight: FontWeight.bold))),
-                    DataColumn(label: Text('초임만삭', style: TextStyle(fontWeight: FontWeight.bold))),
-                    DataColumn(label: Text('초산우', style: TextStyle(fontWeight: FontWeight.bold))),
-                    DataColumn(label: Text('다산우(4산)', style: TextStyle(fontWeight: FontWeight.bold))),
-                    DataColumn(label: Text('노폐우', style: TextStyle(fontWeight: FontWeight.bold))),
+                  headingRowColor:
+                      WidgetStateProperty.all(const Color(0xFFE8F5E9)),
+                  columns: const [
+                    DataColumn(
+                        label: Text('월',
+                            style: TextStyle(fontWeight: FontWeight.bold))),
+                    DataColumn(
+                        label: Text('초유떼기\n암',
+                            style: TextStyle(fontWeight: FontWeight.bold))),
+                    DataColumn(
+                        label: Text('초유떼기\n수',
+                            style: TextStyle(fontWeight: FontWeight.bold))),
+                    DataColumn(
+                        label: Text('분유떼기\n암',
+                            style: TextStyle(fontWeight: FontWeight.bold))),
+                    DataColumn(
+                        label: Text('분유떼기\n수',
+                            style: TextStyle(fontWeight: FontWeight.bold))),
+                    DataColumn(
+                        label: Text('수정단계',
+                            style: TextStyle(fontWeight: FontWeight.bold))),
+                    DataColumn(
+                        label: Text('초임만삭',
+                            style: TextStyle(fontWeight: FontWeight.bold))),
+                    DataColumn(
+                        label: Text('초산우',
+                            style: TextStyle(fontWeight: FontWeight.bold))),
+                    DataColumn(
+                        label: Text('다산우(4산)',
+                            style: TextStyle(fontWeight: FontWeight.bold))),
+                    DataColumn(
+                        label: Text('노폐우',
+                            style: TextStyle(fontWeight: FontWeight.bold))),
                   ],
-                  rows: [
+                  rows: const [
                     DataRow(cells: [
                       DataCell(Text('1월')),
                       DataCell(Text('24')),
@@ -246,13 +326,15 @@ class _ColostrumLineChartPainter extends CustomPainter {
       ...male,
     ].reduce((a, b) => a > b ? a : b).toDouble();
     final dx = size.width / (female.length - 1);
-    final dy = maxY == minY ? 1 : (maxY - minY);
+    final dy = (maxY - minY).abs() < 1e-6 ? 1 : (maxY - minY);
     final pointsFemale = <Offset>[];
     final pointsMale = <Offset>[];
     for (int i = 0; i < female.length; i++) {
       final x = dx * i;
-      final yF = size.height - 20 - ((female[i] - minY) / dy * (size.height - 30));
-      final yM = size.height - 20 - ((male[i] - minY) / dy * (size.height - 30));
+      final yF =
+          size.height - 20 - ((female[i] - minY) / dy * (size.height - 30));
+      final yM =
+          size.height - 20 - ((male[i] - minY) / dy * (size.height - 30));
       pointsFemale.add(Offset(x, yF));
       pointsMale.add(Offset(x, yM));
     }
@@ -283,7 +365,7 @@ class _ColostrumLineChartPainter extends CustomPainter {
       canvas.drawCircle(p, 3, dotPaintM);
     }
     // Draw x labels
-    final textStyle = const TextStyle(fontSize: 11, color: Colors.black);
+    const textStyle = TextStyle(fontSize: 11, color: Colors.black);
     for (int i = 0; i < months.length; i++) {
       final tp = TextPainter(
         text: TextSpan(text: months[i], style: textStyle),
@@ -305,7 +387,7 @@ class _YAxisLabels extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (values.isEmpty) return SizedBox(width: 32);
+    if (values.isEmpty) return const SizedBox(width: 32);
     final minY = values.reduce((a, b) => a < b ? a : b);
     final maxY = values.reduce((a, b) => a > b ? a : b);
     final midY = ((minY + maxY) / 2).round();
@@ -354,7 +436,7 @@ class _SimpleLineChartPainter extends CustomPainter {
       canvas.drawCircle(p, 4, dotPaint);
     }
     // Draw x labels
-    final textStyle = const TextStyle(fontSize: 12, color: Colors.black);
+    const textStyle = TextStyle(fontSize: 12, color: Colors.black);
     for (int i = 0; i < values.length; i++) {
       final tp = TextPainter(
         text: TextSpan(text: '${i + 1}월', style: textStyle),
@@ -368,4 +450,4 @@ class _SimpleLineChartPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-} 
+}
