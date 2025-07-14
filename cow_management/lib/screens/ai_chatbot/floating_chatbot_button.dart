@@ -71,7 +71,7 @@ class FloatingChatbotButton extends StatelessWidget {
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: Colors.green[100], // 연한 초록색
+              color: Colors.red.shade200, // 연한 초록색
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
