@@ -43,12 +43,6 @@ class _TodoPageState extends State<TodoPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('할일 관리'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_list),
-            onPressed: _showFilterDialog,
-          ),
-        ],
       ),
       body: Consumer<TodoProvider>(
         builder: (context, provider, child) {
@@ -75,6 +69,39 @@ class _TodoPageState extends State<TodoPage> {
                 },
               ),
               const SizedBox(height: 12),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: GestureDetector(
+                  onTap: _showFilterDialog,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _buildFilterChip(label: '상태', value: _statusFilter),
+                        _buildFilterChip(label: '우선순위', value: _priorityFilter),
+                        _buildFilterChip(label: '카테고리', value: _categoryFilter),
+                        const Icon(Icons.filter_list),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // 할 일 리스트
               Expanded(child: _buildTodoList(provider.filteredTodos)),
             ],
           );
@@ -456,6 +483,57 @@ class _TodoPageState extends State<TodoPage> {
     );
   }
 
+  Widget _buildFilterItem({
+    required String label,
+    required String? value,
+    required List<String> options,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '$label:',
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 15,
+              color: Colors.blueGrey.shade700,
+            ),
+          ),
+          const SizedBox(width: 10),
+          DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: value ?? '전체',
+              dropdownColor: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              style: TextStyle(fontSize: 14, color: Colors.blueGrey.shade900),
+              icon: Icon(Icons.keyboard_arrow_down_rounded,
+                  color: Colors.blueGrey.shade400),
+              items: options.map((opt) {
+                return DropdownMenuItem(value: opt, child: Text(opt));
+              }).toList(),
+              onChanged: onChanged,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _showFilterDialog() async {
     final result = await showDialog<Map<String, String?>>(
       context: context,
@@ -475,6 +553,22 @@ class _TodoPageState extends State<TodoPage> {
 
     if (result != null) await _reloadAllData();
   }
+}
+
+Widget _buildFilterChip({required String label, String? value}) {
+  final display = value ?? '전체';
+  return Row(
+    children: [
+      Text(
+        '$label: ',
+        style: const TextStyle(fontWeight: FontWeight.bold),
+      ),
+      Text(
+        display,
+        style: const TextStyle(color: Colors.black87),
+      ),
+    ],
+  );
 }
 
 class FilterDialog extends StatefulWidget {
