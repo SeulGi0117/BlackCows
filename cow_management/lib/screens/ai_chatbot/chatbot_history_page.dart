@@ -18,8 +18,8 @@ class _ChatbotHistoryPageState extends State<ChatbotHistoryPage> {
   String? _selectedChatId;
   
   // 사이드바 상태 관리
-  bool _isSidebarVisible = true;
-  double _sidebarWidth = 220.0;
+  bool _isSidebarVisible = false;
+  double _sidebarWidth = 200.0;
   double _minSidebarWidth = 150.0;
   double _maxSidebarWidth = 280.0;
   bool _isResizing = false;
@@ -328,7 +328,10 @@ class _ChatbotHistoryPageState extends State<ChatbotHistoryPage> {
                                       ),
                                       child: InkWell(
                                         borderRadius: BorderRadius.circular(8),
-                                        onTap: () => setState(() => _selectedChatId = chatId),
+                                        onTap: () => setState(() {
+                                          _selectedChatId = chatId;
+                                          _isSidebarVisible = false; // 채팅방 선택 시 사이드바 닫기
+                                        }),
                                         child: Padding(
                                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                           child: Row(
@@ -359,18 +362,18 @@ class _ChatbotHistoryPageState extends State<ChatbotHistoryPage> {
                                                 ),
                                               ),
                                               IconButton(
-                                                icon: Icon(Icons.edit, size: 16, color: Colors.grey.shade600),
+                                                icon: Icon(Icons.edit, size: 16, color: Colors.indigo.shade400),
                                                 tooltip: "이름 변경",
                                                 onPressed: () => _renameChatRoom(chatId, chatName),
                                                 padding: EdgeInsets.zero,
-                                                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                                                constraints: const BoxConstraints(minWidth: 22, minHeight: 22),
                                               ),
                                               IconButton(
                                                 icon: Icon(Icons.delete, size: 16, color: Colors.red.shade400),
                                                 tooltip: "삭제",
                                                 onPressed: () => _deleteChatRoom(chatId),
                                                 padding: EdgeInsets.zero,
-                                                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                                                constraints: const BoxConstraints(minWidth: 22, minHeight: 22),
                                               ),
                                             ],
                                           ),
@@ -415,13 +418,17 @@ class _ChatbotHistoryPageState extends State<ChatbotHistoryPage> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey.shade400),
+                          Icon(Icons.chat_bubble_outline, size: 60, color: Colors.grey.shade400),
                           const SizedBox(height: 16),
-                          Text(
-                            _isSidebarVisible
-                                ? "채팅방을 선택하거나 새로 시작해보세요!"
-                                : "채팅방 목록을 열어서 대화를 시작해보세요!",
-                            style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Text(
+                              _isSidebarVisible
+                                  ? "채팅방을 선택하여 대화를 이어나가거나 새로 시작해보세요!"
+                                  : "채팅방 목록을 열어서 대화를 이어나가거나 새로 시작해보세요!",
+                              style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                              textAlign: TextAlign.center,
+                            ),
                           ),
                         ],
                       ),
@@ -430,6 +437,7 @@ class _ChatbotHistoryPageState extends State<ChatbotHistoryPage> {
                       key: ValueKey(_selectedChatId),
                       chatId: _selectedChatId!,
                     ),
+                    
             ),
           ],
         ),

@@ -35,17 +35,11 @@ Future<String?> sendChatbotMessage({
   required String question,
 }) async {
   try {
-    print('🔥 챗봇 질문 전송: userId=$userId, chatId=$chatId, question=$question');
     final response = await _dio.post('/chatbot/ask', data: {
       'user_id': userId,
       'chat_id': chatId,
       'question': question,
     });
-    print('🔥 챗봇 응답: ${response.data}');
-    // answer가 에러 안내 메시지일 때 상세 에러 print
-    if (response.data['answer'] != null && response.data['answer'].toString().contains('일시적인 오류')) {
-      print('🔥 서버에서 받은 상세 에러: ${response.data}');
-    }
     return response.data['answer'];
   } catch (e) {
     print('❌ 챗봇 질문 실패: $e');
@@ -68,13 +62,10 @@ Future<String?> sendChatbotMessage({
 // 사용자 채팅방 목록 조회
 Future<List<Map<String, dynamic>>> getChatRoomList(String userId) async {
   try {
-    print('🔥 채팅방 목록 조회: userId=$userId');
     final response = await _dio.get('/chatbot/rooms/$userId');
-    print('🔥 채팅방 목록 응답: ${response.data}');
     
-    // API 문서에 따른 응답 구조: chats: [{chat_id, created_at}]
     if (response.data['chats'] != null) {
-      return List<Map<String, dynamic>>.from(response.data['chats']);
+      return List<Map<String, dynamic>>.from(response.data['chats']); //chats: List[ChatRoom] - chat_id, name, created_at
     }
     return [];
   } catch (e) {
@@ -89,9 +80,7 @@ Future<List<Map<String, dynamic>>> getChatRoomList(String userId) async {
 // 채팅방 대화 이력 조회
 Future<List<Map<String, dynamic>>> getChatHistory(String chatId) async {
   try {
-    print('🔥 채팅 기록 조회: chatId=$chatId');
     final response = await _dio.get('/chatbot/history/$chatId');
-    print('🔥 채팅 기록 응답: ${response.data}');
     
     // API 문서에 따른 응답 구조: chat_id, messages: [{role, content, timestamp}]
     if (response.data['messages'] != null) {

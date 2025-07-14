@@ -13,7 +13,7 @@ class AppWrapper extends StatefulWidget {
 
 class _AppWrapperState extends State<AppWrapper> {
   double _x = 20;
-  double _y = 80;
+  double _y = 120;
 
   @override
   Widget build(BuildContext context) {
