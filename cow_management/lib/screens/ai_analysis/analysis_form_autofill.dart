@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'analysis_tab_controller.dart';
+import 'package:cow_management/services/ai_prediction_api.dart'; // 올바른 경로
 
 class AnalysisFormAutofill extends StatefulWidget {
   final void Function(String? temp, String? milk) onPredict;
@@ -399,12 +400,42 @@ class _AnalysisFormAutofillState extends State<AnalysisFormAutofill> {
   Widget _buildAnalysisButton() {
     return SizedBox(
       width: double.infinity,
-          child: ElevatedButton(
-            onPressed: () {
-          // 첫 번째와 두 번째 컨트롤러 값을 전달 (기존 인터페이스 유지)
-          final firstValue = _controllers.values.isNotEmpty ? _controllers.values.first.text : '';
-          final secondValue = _controllers.values.length > 1 ? _controllers.values.elementAt(1).text : '';
-          widget.onPredict(firstValue, secondValue);
+      child: ElevatedButton(
+        onPressed: () async {
+          if (widget.selectedServiceId == 'milk_yield') {
+            // 착유량 예측 입력값 추출
+            final milking_frequency = int.tryParse(_controllers['milkingFreq']?.text ?? '') ?? 0;
+            final conductivity = double.tryParse(_controllers['conductivity']?.text ?? '') ?? 0.0;
+            final temperature = double.tryParse(_controllers['temperature']?.text ?? '') ?? 0.0;
+            final fat_percentage = double.tryParse(_controllers['fatRatio']?.text ?? '') ?? 0.0;
+            final protein_percentage = double.tryParse(_controllers['proteinRatio']?.text ?? '') ?? 0.0;
+            final concentrate_intake = double.tryParse(_controllers['feedIntake']?.text ?? '') ?? 0.0;
+            final milking_month = int.tryParse(_controllers['milkDateMonth']?.text ?? '') ?? 0;
+            final milking_day_of_week = _convertDayToInt(_controllers['milkDateDay']?.text ?? '');
+
+            // 단일 예측 API 호출
+            final result = await milkYieldPrediction(
+              milking_frequency: milking_frequency,
+              conductivity: conductivity,
+              temperature: temperature,
+              fat_percentage: fat_percentage,
+              protein_percentage: protein_percentage,
+              concentrate_intake: concentrate_intake,
+              milking_month: milking_month,
+              milking_day_of_week: milking_day_of_week,
+            );
+
+            // 결과를 analysis_page.dart로 전달
+            widget.onPredict(
+              temperature.toString(),
+              result?.toStringAsFixed(2) ?? '',
+            );
+          } else {
+            // 기존 방식 유지 (다른 서비스)
+            final firstValue = _controllers.values.isNotEmpty ? _controllers.values.first.text : '';
+            final secondValue = _controllers.values.length > 1 ? _controllers.values.elementAt(1).text : '';
+            widget.onPredict(firstValue, secondValue);
+          }
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.grey.shade800,
@@ -425,11 +456,25 @@ class _AnalysisFormAutofillState extends State<AnalysisFormAutofill> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-          ),
-        ),
-      ],
+              ),
+            ),
+          ],
         ),
       ),
     );
+  }
+
+  // 요일 한글 → 숫자 변환 함수 수정
+  int _convertDayToInt(String day) {
+    switch (day) {
+      case '월': return 1;
+      case '화': return 2;
+      case '수': return 3;
+      case '목': return 4;
+      case '금': return 5;
+      case '토': return 6;
+      case '일': return 7;
+      default: return 1; // 기본값으로 1 반환
+    }
   }
 }

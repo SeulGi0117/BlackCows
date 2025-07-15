@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 
 class AnalysisResultCard extends StatelessWidget {
-  const AnalysisResultCard({super.key});
+  final Map<String, dynamic> resultData; // 결과 데이터를 받도록 수정
+
+  const AnalysisResultCard({
+    required this.resultData,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -74,6 +79,9 @@ class AnalysisResultCard extends StatelessWidget {
   }
 
   Widget _buildMainResult() {
+    final prediction = resultData['prediction'] ?? 'N/A';
+    final confidence = resultData['confidence'] ?? 'N/A';
+    
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -98,7 +106,7 @@ class AnalysisResultCard extends StatelessWidget {
               Expanded(
                 child: _buildResultItem(
                   '예상 착유량',
-                  '18.2L',
+                  prediction,
                   Icons.water_drop,
                   Colors.blue.shade100,
                 ),
@@ -106,8 +114,8 @@ class AnalysisResultCard extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _buildResultItem(
-                  '정확도',
-                  '91%',
+                  'AI 확신 정도',
+                  confidence,
                   Icons.verified,
                   Colors.green.shade100,
                 ),
@@ -158,6 +166,8 @@ class AnalysisResultCard extends StatelessWidget {
   }
 
   Widget _buildDetailedAnalysis() {
+    final details = resultData['details'] as Map<String, dynamic>? ?? {};
+    
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -177,10 +187,9 @@ class AnalysisResultCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          _buildAnalysisItem('체온 상태', '정상 (38.4°C)', Colors.green),
-          _buildAnalysisItem('사료 섭취량', '양호 (25.0kg)', Colors.green),
-          _buildAnalysisItem('심박수', '정상 (72회/분)', Colors.green),
-          _buildAnalysisItem('활동량', '보통', Colors.orange),
+          ...details.entries.map((entry) => 
+            _buildAnalysisItem(entry.key, entry.value.toString(), Colors.green)
+          ).toList(),
         ],
       ),
     );
@@ -226,6 +235,8 @@ class AnalysisResultCard extends StatelessWidget {
   }
 
   Widget _buildRecommendations() {
+    final recommendations = resultData['recommendations'] as List<dynamic>? ?? [];
+    
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -245,18 +256,9 @@ class AnalysisResultCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          _buildRecommendationItem(
-            '하루 두 번 착유를 유지하세요',
-            Icons.schedule,
-          ),
-          _buildRecommendationItem(
-            '사료 섭취량을 현재 수준으로 유지하세요',
-            Icons.grass,
-          ),
-          _buildRecommendationItem(
-            '정기적인 건강 검진을 받으세요',
-            Icons.health_and_safety,
-          ),
+          ...recommendations.map((rec) => 
+            _buildRecommendationItem(rec.toString(), Icons.lightbulb)
+          ).toList(),
         ],
       ),
     );
