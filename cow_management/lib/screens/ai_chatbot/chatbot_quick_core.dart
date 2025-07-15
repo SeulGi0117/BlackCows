@@ -44,7 +44,7 @@ class _ChatbotQuickCoreState extends State<ChatbotQuickCore> {
         _messages.add(_ChatMessage(
           text: "안녕하세요 소담이입니다😊 무엇을 도와드릴까요?",
           isUser: false,
-          timestamp: DateTime.now(),
+          timestamp: DateTime.now().toUtc().add(Duration(hours: 9)),
         ));
       });
       return;
@@ -63,7 +63,7 @@ class _ChatbotQuickCoreState extends State<ChatbotQuickCore> {
           _messages.add(_ChatMessage(
             text: "안녕하세요 소담이입니다😊 무엇을 도와드릴까요?",
             isUser: false,
-            timestamp: DateTime.now(),
+            timestamp: DateTime.now().toUtc().add(Duration(hours: 9)),
           ));
         });
       } else {
@@ -78,9 +78,7 @@ class _ChatbotQuickCoreState extends State<ChatbotQuickCore> {
 
         setState(() {
           // 인사말을 가장 오래된 메시지보다 이전 시간으로 설정
-          final earliestTime = sortedHistory.isNotEmpty 
-              ? sortedHistory.first.timestamp.subtract(const Duration(seconds: 1))
-              : DateTime.now();
+          final earliestTime = sortedHistory.first.timestamp.subtract(const Duration(seconds: 2));
           
           _messages.add(_ChatMessage(
             text: "안녕하세요 소담이입니다😊 무엇을 도와드릴까요?",
@@ -95,7 +93,7 @@ class _ChatbotQuickCoreState extends State<ChatbotQuickCore> {
         _messages.add(_ChatMessage(
           text: "채팅 기록을 불러올 수 없습니다.",
           isUser: false,
-          timestamp: DateTime.now(),
+          timestamp: DateTime.now().toUtc().add(Duration(hours: 9)),
         ));
       });
     } finally {
@@ -134,7 +132,7 @@ class _ChatbotQuickCoreState extends State<ChatbotQuickCore> {
       _messages.add(_ChatMessage(
         text: text,
         isUser: true,
-        timestamp: DateTime.now(),
+        timestamp: DateTime.now().toUtc().add(Duration(hours: 9)), 
       ));
       _isWaitingForResponse = true; // 답변 대기 상태 시작
     });
@@ -143,7 +141,7 @@ class _ChatbotQuickCoreState extends State<ChatbotQuickCore> {
 
     _chatId ??= await createChatRoom(userId);
     if (_chatId == null) {
-      _addBotMessage("채팅방 생성에 실패했어요.");
+      _addBotMessage("채팅방 생성에 실패했어요.", DateTime.now().toUtc().add(Duration(hours: 9)));
       return;
     }
 
@@ -156,16 +154,16 @@ class _ChatbotQuickCoreState extends State<ChatbotQuickCore> {
     setState(() {
       _isWaitingForResponse = false; // 답변 대기 상태 종료
     });
-
-    _addBotMessage(answer ?? "답변을 가져오지 못했어요.");
+      print("⏰ now: ${DateTime.now().toUtc().add(Duration(hours: 9))}, now.add(Duration(seconds: 2)): ${DateTime.now().toUtc().add(Duration(hours: 9)).add(Duration(seconds: 2))}");
+      _addBotMessage(answer ?? "답변을 가져오지 못했어요.", DateTime.now().toUtc().add(Duration(hours: 9)).add(Duration(seconds: 2)));
   }
 
-  void _addBotMessage(String text) {
+  void _addBotMessage(String text, DateTime timestamp) {
     setState(() {
       _messages.add(_ChatMessage(
         text: text,
         isUser: false,
-        timestamp: DateTime.now(),
+        timestamp: timestamp,
       ));
     });
 

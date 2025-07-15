@@ -6,6 +6,15 @@ import 'analysis_input_mode_toggle.dart';
 import 'analysis_form_autofill.dart';
 import 'analysis_form_manual.dart';
 import 'analysis_result_card.dart';
+import 'package:cow_management/services/ai_prediction_api.dart'; // API import 추가
+
+// 착유량 분석 결과 모델 추가
+class MilkYieldAnalysisResult {
+  final double? predictedYield;
+  final double? confidence; // AI 확신 정도
+
+  MilkYieldAnalysisResult({this.predictedYield, this.confidence});
+}
 
 class AnalysisPage extends StatefulWidget {
   const AnalysisPage({super.key});
@@ -54,35 +63,92 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
     super.dispose();
   }
 
-  void _predict(String? temperature, String? milkVolume) {
+  void _predict(String? temperature, String? milkVolume) async {
     setState(() {
       isLoading = true;
       hasResult = false;
     });
 
-    // 더미 결과 데이터 생성
-    Future.delayed(const Duration(seconds: 2), () {
-      setState(() {
-        isLoading = false;
-        hasResult = true;
-        resultData = _generateDummyResult();
-      });
+    if (selectedServiceId == 'milk_yield') {
+      // 착유량 예측인 경우
+      final predictedYield = double.tryParse(milkVolume ?? '');
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(Icons.check_circle, color: Colors.white),
-              const SizedBox(width: 8),
-              const Text('AI 분석이 완료되었습니다!'),
-            ],
-          ),
-          backgroundColor: Colors.grey.shade800,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      if (predictedYield != null) {
+        // 배치 예측 API로 확신 정도 받아오기 (더미 데이터 사용)
+        final batchResult = await milkYieldBatchPrediction(
+          predictions: [
+            {
+              // 실제 입력값들로 채워야 함 (현재는 더미 데이터)
+              'milking_frequency': 2,
+              'conductivity': 4.2,
+              'temperature': double.tryParse(temperature ?? '') ?? 20.0,
+              'fat_percentage': 3.8,
+              'protein_percentage': 3.2,
+              'concentrate_intake': 25.0,
+              'milking_month': 6,
+              'milking_day_of_week': 0, // 월요일을 0으로 수정
+            }
+          ],
+          batchName: "단일 예측 확신도",
+        );
+        
+        double? confidence;
+        if (batchResult != null && batchResult['predictions'] is List && batchResult['predictions'].isNotEmpty) {
+          confidence = batchResult['predictions'][0]['confidence'] as double?;
+        }
+
+        setState(() {
+          isLoading = false;
+          hasResult = true;
+          resultData = {
+            'prediction': '${predictedYield.toStringAsFixed(2)}L',
+            'confidence': confidence != null ? '${(confidence * 100).toStringAsFixed(1)}%' : 'N/A',
+            'predictedYield': predictedYield,
+            'confidenceValue': confidence,
+            'trend': 'stable',
+            'details': {
+              '예측 착유량': '${predictedYield.toStringAsFixed(2)}L',
+              'AI 확신 정도': confidence != null ? '${(confidence * 100).toStringAsFixed(1)}%' : 'N/A',
+              '신뢰도': confidence != null ? '${(confidence * 100).toStringAsFixed(1)}%' : 'N/A'
+            },
+            'recommendations': [
+              '현재 사료 배합이 적절합니다',
+              '온도 관리를 지속해주세요',
+              '정기적인 건강 검진 권장'
+            ]
+          };
+        });
+      } else {
+        setState(() {
+          isLoading = false;
+          hasResult = false;
+        });
+      }
+    } else {
+      // 기존 더미 결과 데이터 생성 (다른 서비스)
+      Future.delayed(const Duration(seconds: 2), () {
+        setState(() {
+          isLoading = false;
+          hasResult = true;
+          resultData = _generateDummyResult();
+        });
+      });
+    }
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.white),
+            const SizedBox(width: 8),
+            const Text('AI 분석이 완료되었습니다!'),
+          ],
         ),
-      );
-    });
+        backgroundColor: Colors.grey.shade800,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+    );
   }
 
   Map<String, dynamic> _generateDummyResult() {
@@ -1311,7 +1377,7 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
 
   Widget _buildMastitisResult(AnalysisTab selectedService) {
     final level = resultData['level'] ?? 1;
-    final levelTexts = ['정상', '주의', '위험', '매우 위험'];
+    final levelTexts = ['정상', '주의', '염증 가능성'];
     
     return Container(
       padding: const EdgeInsets.all(20),

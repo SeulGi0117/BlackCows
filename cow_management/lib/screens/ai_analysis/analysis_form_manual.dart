@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'analysis_tab_controller.dart';
+import 'package:cow_management/services/ai_prediction_api.dart'; 
 
 class AnalysisFormManual extends StatefulWidget {
   final void Function(String? temp, String? milk) onPredict;
@@ -21,27 +22,22 @@ class _AnalysisFormManualState extends State<AnalysisFormManual> {
 
   // 필드 매핑
   final Map<String, Map<String, dynamic>> _fieldMapping = {
+    // 착유량 예측
     '착유횟수': {'key': 'milkingFreq', 'label': '착유횟수 (회/일)', 'hint': '2', 'icon': Icons.schedule},
-    '사료섭취량': {'key': 'feedIntake', 'label': '사료섭취량 (kg)', 'hint': '25.0', 'icon': Icons.grass},
+    '전도율': {'key': 'conductivity', 'label': '전도율 (mS/cm)', 'hint': '4.2', 'icon': Icons.electric_bolt},
     '온도': {'key': 'temperature', 'label': '환경온도 (°C)', 'hint': '20', 'icon': Icons.thermostat},
     '유지방비율': {'key': 'fatRatio', 'label': '유지방비율 (%)', 'hint': '3.8', 'icon': Icons.opacity},
-    '전도율': {'key': 'conductivity', 'label': '전도율 (mS/cm)', 'hint': '4.2', 'icon': Icons.electric_bolt},
     '유단백비율': {'key': 'proteinRatio', 'label': '유단백비율 (%)', 'hint': '3.2', 'icon': Icons.science},
-    '체세포수 또는 생체지표': {'key': 'scc', 'label': '체세포수 (cells/mL)', 'hint': '200000', 'icon': Icons.biotech},
-    '착유량': {'key': 'milkVolume', 'label': '착유량 (L)', 'hint': '18.5', 'icon': Icons.water_drop},
-    '산차수': {'key': 'parity', 'label': '산차수', 'hint': '2', 'icon': Icons.child_care},
-    '질병이력': {'key': 'diseaseHistory', 'label': '질병이력', 'hint': '없음', 'icon': Icons.medical_services},
-    '체중': {'key': 'weight', 'label': '체중 (kg)', 'hint': '650', 'icon': Icons.monitor_weight},
-    '활동량': {'key': 'activity', 'label': '활동량', 'hint': '보통', 'icon': Icons.directions_walk},
-    '체형점수': {'key': 'bodyScore', 'label': '체형점수', 'hint': '3.5', 'icon': Icons.assessment},
-    '수정일': {'key': 'breedingDate', 'label': '수정일', 'hint': '2024-01-15', 'icon': Icons.calendar_today},
-    '공태일수': {'key': 'daysOpen', 'label': '공태일수', 'hint': '45', 'icon': Icons.timer},
-    '이전분만일': {'key': 'lastCalvingDate', 'label': '이전분만일', 'hint': '2023-12-01', 'icon': Icons.event},
-    '수정방법': {'key': 'breedingMethod', 'label': '수정방법', 'hint': '인공수정', 'icon': Icons.medical_information},
-    '유방염이력': {'key': 'mastitisHistory', 'label': '유방염이력', 'hint': '없음', 'icon': Icons.warning},
-    '체온': {'key': 'temperature', 'label': '체온 (°C)', 'hint': '38.4', 'icon': Icons.thermostat},
-    '발정주기': {'key': 'estruscycle', 'label': '발정주기 (일)', 'hint': '21', 'icon': Icons.favorite},
-    '마지막분만일': {'key': 'lastCalvingDate', 'label': '마지막분만일', 'hint': '2023-12-01', 'icon': Icons.event},
+    '농후사료섭취량': {'key': 'feedIntake', 'label': '사료섭취량 (kg)', 'hint': '25.0', 'icon': Icons.grass},    
+    '착유기측정월': {'key': 'milkDateMonth', 'label': '착유기측정월', 'hint': '1', 'icon': Icons.calendar_today},
+    '착유기측정요일': {'key': 'milkDateDay', 'label': '착유기측정요일', 'hint': '월', 'icon': Icons.calendar_today},
+    // 유방염 예측
+    '체세포수': {'key': 'scc', 'label': '체세포수 (cells/mL)', 'hint': '200000', 'icon': Icons.biotech},
+    '착유량': {'key': 'milkYield', 'label': '착유량 (L)', 'hint': '20', 'icon': Icons.grass},
+    '전도율': {'key': 'conductivity', 'label': '전도율 (mS/cm)', 'hint': '4.2', 'icon': Icons.electric_bolt},
+    '유지방비율': {'key': 'fatRatio', 'label': '유지방비율 (%)', 'hint': '3.8', 'icon': Icons.opacity},
+    '유단백비율': {'key': 'proteinRatio', 'label': '유단백비율 (%)', 'hint': '3.2', 'icon': Icons.science},
+    '산차수': {'key': 'scc', 'label': '산차수 (cells/mL)', 'hint': '200000', 'icon': Icons.biotech},
   };
 
   @override
@@ -221,12 +217,42 @@ class _AnalysisFormManualState extends State<AnalysisFormManual> {
   Widget _buildAnalysisButton() {
     return SizedBox(
       width: double.infinity,
-          child: ElevatedButton(
-            onPressed: () {
-          // 첫 번째와 두 번째 컨트롤러 값을 전달 (기존 인터페이스 유지)
-          final firstValue = _controllers.values.isNotEmpty ? _controllers.values.first.text : '';
-          final secondValue = _controllers.values.length > 1 ? _controllers.values.elementAt(1).text : '';
-          widget.onPredict(firstValue, secondValue);
+      child: ElevatedButton(
+        onPressed: () async {
+          if (widget.selectedServiceId == 'milk_yield') {
+            // 착유량 예측 입력값 추출
+            final milking_frequency = int.tryParse(_controllers['milkingFreq']?.text ?? '') ?? 0;
+            final conductivity = double.tryParse(_controllers['conductivity']?.text ?? '') ?? 0.0;
+            final temperature = double.tryParse(_controllers['temperature']?.text ?? '') ?? 0.0;
+            final fat_percentage = double.tryParse(_controllers['fatRatio']?.text ?? '') ?? 0.0;
+            final protein_percentage = double.tryParse(_controllers['proteinRatio']?.text ?? '') ?? 0.0;
+            final concentrate_intake = double.tryParse(_controllers['feedIntake']?.text ?? '') ?? 0.0;
+            final milking_month = int.tryParse(_controllers['milkDateMonth']?.text ?? '') ?? 0;
+            final milking_day_of_week = _convertDayToInt(_controllers['milkDateDay']?.text ?? '');
+
+            // 단일 예측 API 호출
+            final result = await milkYieldPrediction(
+              milking_frequency: milking_frequency,
+              conductivity: conductivity,
+              temperature: temperature,
+              fat_percentage: fat_percentage,
+              protein_percentage: protein_percentage,
+              concentrate_intake: concentrate_intake,
+              milking_month: milking_month,
+              milking_day_of_week: milking_day_of_week,
+            );
+
+            // 결과를 analysis_page.dart로 전달
+            widget.onPredict(
+              temperature.toString(),
+              result?.toStringAsFixed(2) ?? '',
+            );
+          } else {
+            // 기존 방식 유지 (다른 서비스)
+            final firstValue = _controllers.values.isNotEmpty ? _controllers.values.first.text : '';
+            final secondValue = _controllers.values.length > 1 ? _controllers.values.elementAt(1).text : '';
+            widget.onPredict(firstValue, secondValue);
+          }
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.grey.shade800,
@@ -247,11 +273,25 @@ class _AnalysisFormManualState extends State<AnalysisFormManual> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-          ),
-        ),
-      ],
+              ),
+            ),
+          ],
         ),
       ),
     );
+  }
+
+  // 요일 한글 → 숫자 변환 함수 수정 (월요일=0부터 시작)
+  int _convertDayToInt(String day) {
+    switch (day) {
+      case '월': return 0;
+      case '화': return 1;
+      case '수': return 2;
+      case '목': return 3;
+      case '금': return 4;
+      case '토': return 5;
+      case '일': return 6;
+      default: return 0; // 기본값으로 0 반환
+    }
   }
 }
