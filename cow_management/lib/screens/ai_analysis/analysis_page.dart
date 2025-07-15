@@ -85,7 +85,7 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
             'details': {
               '예측 착유량': '${predictedYield.toStringAsFixed(2)}L',
               'AI 확신도': confidenceValue != null ? '${confidenceValue.toStringAsFixed(1)}%' : 'N/A',
-              'AI 정확도': '82% (평균 오차 ±5L)'
+              'AI 정확도': '82%'
             },
             // 권장사항 안내 제거
           };

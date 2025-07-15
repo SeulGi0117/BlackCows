@@ -606,16 +606,17 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
       context: context,
       builder: (context) =>
         AlertDialog(
-          insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: const Text('목장 이름 수정'),
-          content: SizedBox(
-            width: 400,
-            child: ModernTextField(
-              controller: controller,
-              hint: '목장 이름을 입력하세요',
-              prefixIcon: const Icon(Icons.home, color: Color(0xFF4CAF50)),
-            ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ModernTextField(
+                controller: controller,
+                hint: '목장 이름을 입력하세요',
+                prefixIcon: const Icon(Icons.home, color: Color(0xFF4CAF50)),
+              ),
+            ],
           ),
           actions: [
             TextButton(

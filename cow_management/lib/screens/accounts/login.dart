@@ -307,39 +307,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   }
 
   Widget _buildSocialLogin() {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(child: Divider(color: Colors.grey.shade300)),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                '또는',
-                style: TextStyle(
-                  color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            Expanded(child: Divider(color: Theme.of(context).dividerColor)),
-          ],
-        ),
-        const SizedBox(height: 24),
-        Row(
-          children: [
-            Expanded(
-              child: _buildSocialButton(
-                icon: Icons.g_mobiledata,
-                label: 'Google',
-                color: const Color(0xFFDB4437),
-                onPressed: _loginWithGoogle,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
+    return const SizedBox.shrink(); // SNS 로그인 섹션 제거
   }
 
   Widget _buildSocialButton({
