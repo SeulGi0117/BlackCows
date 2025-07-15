@@ -208,21 +208,51 @@ class _PriceTrendChartViewState extends State<PriceTrendChartView> {
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: DataTable(
-                  columnSpacing: 30,
+                  columnSpacing: 20,
                   headingRowColor: WidgetStateColor.resolveWith(
                       (states) => const Color(0xFFE8F5E9)),
                   columns: [
-                    const DataColumn(label: Text('월')),
+                    const DataColumn(
+                      label: SizedBox(
+                        width: 40,
+                        child: Text('월', style: TextStyle(fontSize: 12)),
+                      ),
+                    ),
                     ...selectedColumns.where((c) => c.isNotEmpty).map(
-                          (col) => DataColumn(label: Text(col)),
+                          (col) => DataColumn(
+                            label: SizedBox(
+                              width: 80,
+                              child: Text(
+                                col,
+                                style: const TextStyle(fontSize: 12),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ),
                         ),
                   ],
                   rows: tableData.map((row) {
                     return DataRow(cells: [
-                      DataCell(Text(row['월'].toString())),
+                      DataCell(
+                        SizedBox(
+                          width: 40,
+                          child: Text(
+                            row['월'].toString(),
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ),
+                      ),
                       ...selectedColumns.where((c) => c.isNotEmpty).map(
-                            (col) =>
-                                DataCell(Text(row[col]?.toString() ?? '-')),
+                            (col) => DataCell(
+                              SizedBox(
+                                width: 80,
+                                child: Text(
+                                  row[col]?.toString() ?? '-',
+                                  style: const TextStyle(fontSize: 12),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
                           ),
                     ]);
                   }).toList(),

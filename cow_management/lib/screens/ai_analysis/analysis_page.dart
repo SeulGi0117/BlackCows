@@ -25,7 +25,7 @@ class AnalysisPage extends StatefulWidget {
 
 class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMixin {
   String selectedServiceId = 'milk_yield';
-  String inputMode = '소 선택';
+  // inputMode 및 관련 상태 제거
   bool isLoading = false;
   bool hasResult = false;
   String mastitisMode = 'with_scc'; // 'with_scc' or 'without_scc'
@@ -63,59 +63,31 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
     super.dispose();
   }
 
-  void _predict(String? temperature, String? milkVolume) async {
+  void _predict(String? temperature, String? milkVolume, [String? confidence]) async {
     setState(() {
       isLoading = true;
       hasResult = false;
     });
 
     if (selectedServiceId == 'milk_yield') {
-      // 착유량 예측인 경우
       final predictedYield = double.tryParse(milkVolume ?? '');
-      
+      final confidenceValue = double.tryParse(confidence ?? '');
       if (predictedYield != null) {
-        // 배치 예측 API로 확신 정도 받아오기 (더미 데이터 사용)
-        final batchResult = await milkYieldBatchPrediction(
-          predictions: [
-            {
-              // 실제 입력값들로 채워야 함 (현재는 더미 데이터)
-              'milking_frequency': 2,
-              'conductivity': 4.2,
-              'temperature': double.tryParse(temperature ?? '') ?? 20.0,
-              'fat_percentage': 3.8,
-              'protein_percentage': 3.2,
-              'concentrate_intake': 25.0,
-              'milking_month': 6,
-              'milking_day_of_week': 0, // 월요일을 0으로 수정
-            }
-          ],
-          batchName: "단일 예측 확신도",
-        );
-        
-        double? confidence;
-        if (batchResult != null && batchResult['predictions'] is List && batchResult['predictions'].isNotEmpty) {
-          confidence = batchResult['predictions'][0]['confidence'] as double?;
-        }
-
         setState(() {
           isLoading = false;
           hasResult = true;
           resultData = {
             'prediction': '${predictedYield.toStringAsFixed(2)}L',
-            'confidence': confidence != null ? '${(confidence * 100).toStringAsFixed(1)}%' : 'N/A',
+            'confidence': confidenceValue != null ? '${confidenceValue.toStringAsFixed(1)}%' : 'N/A',
             'predictedYield': predictedYield,
-            'confidenceValue': confidence,
+            'confidenceValue': confidenceValue,
             'trend': 'stable',
             'details': {
               '예측 착유량': '${predictedYield.toStringAsFixed(2)}L',
-              'AI 확신 정도': confidence != null ? '${(confidence * 100).toStringAsFixed(1)}%' : 'N/A',
-              '신뢰도': confidence != null ? '${(confidence * 100).toStringAsFixed(1)}%' : 'N/A'
+              'AI 확신도': confidenceValue != null ? '${confidenceValue.toStringAsFixed(1)}%' : 'N/A',
+              'AI 정확도': '82% (평균 오차 ±5L)'
             },
-            'recommendations': [
-              '현재 사료 배합이 적절합니다',
-              '온도 관리를 지속해주세요',
-              '정기적인 건강 검진 권장'
-            ]
+            // 권장사항 안내 제거
           };
         });
       } else {
@@ -453,14 +425,14 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
                   ),
                 ],
 
-                // 입력 방식 선택 (럼피스킨병이 아닐 때만)
-                if (selectedServiceId != 'lumpy_skin_detection') ...[
-                  const SizedBox(height: 24),
-                  _buildInputModeSection(),
+                // AI 확신도/정확도 안내 섹션
+                if (selectedServiceId == 'milk_yield') ...[
+                  _buildAIInfoSection(),
                   const SizedBox(height: 24),
                 ],
 
-                // 입력 폼 (럼피스킨병이 아닐 때만)
+                // 입력 방식 선택 및 토글 제거
+                // 입력 폼 (직접 입력만)
                 if (selectedServiceId != 'lumpy_skin_detection') ...[
                   _buildInputForm(),
                   const SizedBox(height: 24),
@@ -648,7 +620,22 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
               final isSelected = selectedServiceId == service.id;
               final isPremium = service.isPremium;
               return GestureDetector(
-                onTap: () => setState(() => selectedServiceId = service.id),
+                onTap: () {
+                  if (service.id == 'milk_yield' || service.id == 'mastitis_risk') {
+                    setState(() => selectedServiceId = service.id);
+                  } else {
+                    // 안내 팝업 (SnackBar)
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text('아직 기능 준비 중입니다.'),
+                        backgroundColor: Colors.grey.shade800,
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
@@ -714,43 +701,359 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
     );
   }
 
-  Widget _buildInputModeSection() {
+  Widget _buildAIInfoSection() {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.grey.shade50,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: Colors.grey.shade300),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.input, color: Colors.grey.shade700),
+              Icon(Icons.analytics, color: Colors.grey.shade700, size: 20),
               const SizedBox(width: 8),
               const Text(
-                '입력 방식',
+                'AI 모델 성능 지표',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
+                  color: Colors.black,
                 ),
               ),
             ],
           ),
+          const SizedBox(height: 16),
+          
+          // AI 확신도
+          _buildInfoRow(
+            '🤖 AI 확신도',
+            '이번 예측에 대한 AI의 확신 정도',
+            '100개 AI모델이 모두 비슷한 답을 하면 확신도가 높고, 제각각 다른 답을 하면 확신도가 낮습니다.',
+            '확신도가 높아도 실제와 다를 수 있어요. 참고용으로만 활용하세요.',
+          ),
+          
           const SizedBox(height: 12),
-          AnalysisInputModeToggle(
-            inputMode: inputMode,
-            onChanged: (val) => setState(() => inputMode = val),
+          
+          // AI 정확도
+          _buildInfoRow(
+            '🎯 AI 정확도',
+            '모델의 전체적인 성능',
+            '수천 개 학습 데이터로 테스트한 결과, 평균 82% 정확도를 보입니다.',
+            '개별 예측은 이와 다를 수 있어요.',
+          ),
+          
+          const SizedBox(height: 12),
+          
+          // 모델 성능 지표
+          _buildModelPerformanceRow(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String title, String subtitle, String description, String warning) {
+    return GestureDetector(
+      onTap: () => _showInfoDialog(title, subtitle, description, warning),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.info_outline, size: 16, color: Colors.grey.shade600),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModelPerformanceSection() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.analytics, color: Colors.grey.shade700, size: 20),
+              const SizedBox(width: 8),
+              const Text(
+                'AI 모델 성능 지표',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          
+          // 모델 성능 지표
+          _buildModelPerformanceRow(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModelPerformanceRow() {
+    return GestureDetector(
+      onTap: () => _showModelPerformanceDialog(),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '📈 모델 성능 지표',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'MAE 3.41 / RMSE 4.94 / R² 0.821',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.info_outline, size: 16, color: Colors.grey.shade600),
+          ],
+        ),
+      ),
+    );
+  }
+
+
+
+  void _showInfoDialog(String title, String subtitle, String description, String warning) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              subtitle,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(description),
+            const SizedBox(height: 12),
+            Text(
+              warning,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade600,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('알겠어요'),
           ),
         ],
       ),
+    );
+  }
+
+  void _showModelPerformanceDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('📈 회귀 모델 성능 지표 해석'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'MAE 3.41 / RMSE 4.94 / R² 0.821',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                '이 모델의 예측 성능을 아래와 같이 해석할 수 있습니다:',
+                style: TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 16),
+              
+              // MAE
+              _buildPerformanceItem(
+                '1. MAE (Mean Absolute Error) = 3.41',
+                '평균적으로 실제 값과 예측 값 사이의 절대 오차가 3.41입니다.',
+                '예: 착유량이 30L인 소의 예측값이 33.4L 또는 26.6L 정도로 오차가 발생할 수 있다는 의미입니다.',
+                '해석: 오차의 평균 크기가 작을수록 좋은 성능. 3.41은 상대적으로 양호한 수준입니다.',
+              ),
+              
+              const SizedBox(height: 16),
+              
+              // RMSE
+              _buildPerformanceItem(
+                '2. RMSE (Root Mean Squared Error) = 4.94',
+                '큰 오차에 더 민감하게 반응하는 지표.',
+                '오차를 제곱해서 평균 후 루트를 씌우므로 MAE보다 항상 크거나 같습니다.',
+                '해석: 큰 오차가 일부 존재하지만, 평균적으로도 오차가 5 이하로 유지되고 있다는 점에서 꽤 안정적인 모델입니다.',
+              ),
+              
+              const SizedBox(height: 16),
+              
+              // R²
+              _buildPerformanceItem(
+                '3. R² (결정계수) = 0.821',
+                '모델이 전체 데이터의 분산 중 82.1%를 설명하고 있다는 의미입니다.',
+                '0.0이면 아무 설명 못함, 1.0이면 완벽한 예측.',
+                '해석: 입력 변수들이 종속 변수(예: 착유량)를 잘 설명하고 있고, 모델도 해당 패턴을 잘 학습한 상태입니다.',
+              ),
+              
+              const SizedBox(height: 16),
+              
+              // 종합 해석
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.green.shade200),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '종합 해석:',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      '전반적으로 설명력(R²)이 높고, MAE, RMSE도 안정적입니다.',
+                      style: TextStyle(fontSize: 13),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      '일부 예측에서 5~6 정도의 오차가 있을 수 있으나, 일반적인 착유 예측 모델 수준에서는 우수한 성능으로 평가할 수 있습니다.',
+                      style: TextStyle(fontSize: 13),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '단, "착유량의 단위"가 L이고, 평균 착유량이 예를 들어 30~40L이라면, 이 수준의 오차는 실제 착유량 적용에도 충분히 가능한 모델일 가능성이 높습니다.',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontStyle: FontStyle.italic,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('알겠어요'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPerformanceItem(String title, String description, String example, String interpretation) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          description,
+          style: const TextStyle(fontSize: 13),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          example,
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey.shade700,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          interpretation,
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.blue.shade700,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 
@@ -785,16 +1088,11 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
             ],
           ),
           const SizedBox(height: 12),
-          inputMode == '소 선택'
-              ? AnalysisFormAutofill(
-                  onPredict: _predict,
-                  selectedServiceId: selectedServiceId,
-                  mastitisMode: selectedServiceId == 'mastitis_risk' ? mastitisMode : null,
-                )
-              : AnalysisFormManual(
-                  onPredict: _predict,
-                  selectedServiceId: selectedServiceId,
-                ),
+          // 오직 직접 입력만 사용
+          AnalysisFormManual(
+            onPredict: _predict,
+            selectedServiceId: selectedServiceId,
+          ),
         ],
       ),
     );
@@ -1142,89 +1440,93 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
             _buildServiceSpecificResult(selectedService),
           ],
           
-          // 상세 정보
-          const SizedBox(height: 20),
-          const Text(
-            '상세 분석',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 12),
-          ...resultData['details'].entries.map<Widget>((entry) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Row(
-                children: [
-                  Container(
-                    width: 6,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade600,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    entry.key,
-                    style: TextStyle(
-                      color: Colors.grey.shade600,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    entry.value.toString(),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
+          // 상세 정보 (null 체크 추가)
+          if (resultData['details'] != null && resultData['details'] is Map) ...[
+            const SizedBox(height: 20),
+            const Text(
+              '상세 분석',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
               ),
-            );
-          }).toList(),
-          const SizedBox(height: 20),
-          
-          // 권장사항
-          const Text(
-            '권장사항',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
             ),
-          ),
-          const SizedBox(height: 12),
-          ...resultData['recommendations'].map<Widget>((recommendation) {
-            return Container(
-              width: double.infinity,
-              margin: const EdgeInsets.only(bottom: 8),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: isWarning ? Colors.red.shade50 : Colors.grey.shade50,
-                borderRadius: BorderRadius.circular(8),
-                border: isWarning ? Border.all(color: Colors.red.shade200) : null,
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    isWarning ? Icons.warning : Icons.lightbulb_outline,
-                    color: isWarning ? Colors.red : Colors.orange,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      recommendation.toString(),
-                      style: TextStyle(
-                        color: isWarning ? Colors.red.shade700 : Colors.grey.shade700,
+            const SizedBox(height: 12),
+            ...(resultData['details'] as Map<String, dynamic>).entries.map<Widget>((entry) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade600,
+                        shape: BoxShape.circle,
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 12),
+                    Text(
+                      entry.key,
+                      style: TextStyle(
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      entry.value.toString(),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ],
+          const SizedBox(height: 20),
+          
+          // 권장사항 (null 체크 추가)
+          if (resultData['recommendations'] != null && resultData['recommendations'] is List) ...[
+            const Text(
+              '권장사항',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
               ),
-            );
-          }).toList(),
+            ),
+            const SizedBox(height: 12),
+            ...(resultData['recommendations'] as List).map<Widget>((recommendation) {
+              return Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: isWarning ? Colors.red.shade50 : Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: isWarning ? Border.all(color: Colors.red.shade200) : null,
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      isWarning ? Icons.warning : Icons.lightbulb_outline,
+                      color: isWarning ? Colors.red : Colors.orange,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        recommendation.toString(),
+                        style: TextStyle(
+                          color: isWarning ? Colors.red.shade700 : Colors.grey.shade700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ],
         ],
       ),
     );
@@ -1322,51 +1624,43 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
             ],
           ),
           const SizedBox(height: 20),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Wrap(
+            spacing: 16,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade300),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('예측 착유량:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(width: 8),
+                  Text(
+                    resultData['prediction'] ?? '',
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
-                  child: Column(
-                    children: [
-                      Text(
-                        resultData['prediction'] ?? '',
-                        style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey.shade800,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '신뢰도: ${resultData['confidence'] ?? ''}',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                ],
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildDetailItem('전일 대비', resultData['details']['전일 대비'] ?? ''),
-                    const SizedBox(height: 8),
-                    _buildDetailItem('평균 대비', resultData['details']['평균 대비'] ?? ''),
-                    const SizedBox(height: 8),
-                    _buildDetailItem('신뢰도', resultData['details']['신뢰도'] ?? ''),
-                  ],
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('AI 확신도:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                  const SizedBox(width: 8),
+                  Text(
+                    resultData['confidence'] ?? '',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('AI 정확도:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                  const SizedBox(width: 8),
+                  const Text(
+                    '82%',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ],
               ),
             ],
           ),

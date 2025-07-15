@@ -4,7 +4,7 @@ import 'analysis_tab_controller.dart';
 import 'package:cow_management/services/ai_prediction_api.dart'; 
 
 class AnalysisFormManual extends StatefulWidget {
-  final void Function(String? temp, String? milk) onPredict;
+  final void Function(String? temp, String? milk, String? confidence) onPredict;
   final String selectedServiceId;
 
   const AnalysisFormManual({
@@ -242,16 +242,50 @@ class _AnalysisFormManualState extends State<AnalysisFormManual> {
               milking_day_of_week: milking_day_of_week,
             );
 
-            // 결과를 analysis_page.dart로 전달
-            widget.onPredict(
-              temperature.toString(),
-              result?.toStringAsFixed(2) ?? '',
-            );
+            if (result.isSuccess) {
+              // 성공 시 결과를 analysis_page.dart로 전달 (예측값, 신뢰도)
+              widget.onPredict(
+                temperature.toString(),
+                result.predictedYield?.toStringAsFixed(2) ?? '',
+                result.confidence?.toStringAsFixed(1) ?? '',
+              );
+            } else {
+              // 실패 시 에러 메시지 표시
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        const Icon(Icons.error, color: Colors.white),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            result.errorMessage ?? '알 수 없는 오류가 발생했습니다.',
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                        ),
+                      ],
+                    ),
+                    backgroundColor: Colors.red.shade600,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    duration: const Duration(seconds: 5),
+                    action: SnackBarAction(
+                      label: '확인',
+                      textColor: Colors.white,
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      },
+                    ),
+                  ),
+                );
+              }
+            }
           } else {
             // 기존 방식 유지 (다른 서비스)
             final firstValue = _controllers.values.isNotEmpty ? _controllers.values.first.text : '';
             final secondValue = _controllers.values.length > 1 ? _controllers.values.elementAt(1).text : '';
-            widget.onPredict(firstValue, secondValue);
+            widget.onPredict(firstValue, secondValue, null);
           }
         },
         style: ElevatedButton.styleFrom(

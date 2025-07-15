@@ -58,30 +58,16 @@ class AnalysisResultCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
-
-          // 주요 예측 결과
+          // 주요 예측 결과만 표시
           _buildMainResult(),
-          const SizedBox(height: 20),
-
-          // 상세 분석
-          _buildDetailedAnalysis(),
-          const SizedBox(height: 20),
-
-          // 권장사항
-          _buildRecommendations(),
-          const SizedBox(height: 20),
-
-          // 추가 정보
-          _buildAdditionalInfo(),
         ],
       ),
     );
   }
 
   Widget _buildMainResult() {
-    final prediction = resultData['prediction'] ?? 'N/A';
-    final confidence = resultData['confidence'] ?? 'N/A';
-    
+    final prediction = resultData['prediction']?.toString() ?? 'N/A';
+    final confidence = resultData['confidence']?.toString() ?? 'N/A';
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -114,10 +100,32 @@ class AnalysisResultCard extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _buildResultItem(
-                  'AI 확신 정도',
+                  'AI 확신도',
                   confidence,
                   Icons.verified,
                   Colors.green.shade100,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildResultItem(
+                  'AI 정확도',
+                  '82%',
+                  Icons.analytics,
+                  Colors.orange.shade100,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildResultItem(
+                  '평균 오차',
+                  '±5L',
+                  Icons.trending_up,
+                  Colors.purple.shade100,
                 ),
               ),
             ],
@@ -165,130 +173,7 @@ class AnalysisResultCard extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailedAnalysis() {
-    final details = resultData['details'] as Map<String, dynamic>? ?? {};
-    
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.2)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            '🔍 상세 분석',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 12),
-          ...details.entries.map((entry) => 
-            _buildAnalysisItem(entry.key, entry.value.toString(), Colors.green)
-          ).toList(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAnalysisItem(String label, String value, Color statusColor) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.9),
-              fontSize: 14,
-            ),
-          ),
-          Row(
-            children: [
-              Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: statusColor,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                value,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRecommendations() {
-    final recommendations = resultData['recommendations'] as List<dynamic>? ?? [];
-    
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.2)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            '💡 권장사항',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 12),
-          ...recommendations.map((rec) => 
-            _buildRecommendationItem(rec.toString(), Icons.lightbulb)
-          ).toList(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRecommendationItem(String text, IconData icon) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            icon,
-            color: Colors.white.withOpacity(0.8),
-            size: 16,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              text,
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.9),
-                fontSize: 14,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // _buildDetailedAnalysis, _buildRecommendations 등 map() 호출하는 모든 함수/렌더링 제거
 
   Widget _buildAdditionalInfo() {
     return Container(
