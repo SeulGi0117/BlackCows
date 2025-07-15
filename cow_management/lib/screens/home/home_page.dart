@@ -8,7 +8,9 @@ import 'package:cow_management/screens/notifications/notification_list_page.dart
 import 'package:cow_management/screens/todo/todo_page.dart';
 import 'package:cow_management/screens/cow_list/cow_registration_flow_page.dart';
 import 'package:cow_management/screens/ai_chatbot/chatbot_history_page.dart';
-import 'package:cow_management/screens/home/price_trend_detail_page.dart';
+
+import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/intl.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -27,6 +29,96 @@ class _HomeScreenState extends State<HomeScreen>
   bool _cowsLoadedOnce = false;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+  
+  // 🎨 가격동향 관련 변수
+  int selectedPriceCategoryIndex = 0;
+  
+  // 카테고리 목록
+  final List<String> priceCategories = [
+    '초유떼기',
+    '분유떼기', 
+    '수정단계',
+    '초임만삭',
+    '초산우',
+    '다산우(4산)',
+    '노폐우'
+  ];
+  
+  // 📊 실제 데이터 (출처: 농협 축산정보센터)
+  final List<Map<String, dynamic>> priceData = [
+    {
+      'month': '1월',
+      '초유떼기암': 24,
+      '초유떼기수': 65,
+      '분유떼기암': 194,
+      '분유떼기수': 440,
+      '수정단계': 1339,
+      '초임만삭': 3505,
+      '초산우': 3560,
+      '다산우(4산)': 2749,
+      '노폐우': 1113
+    },
+    {
+      'month': '2월',
+      '초유떼기암': 22,
+      '초유떼기수': 72,
+      '분유떼기암': 185,
+      '분유떼기수': 477,
+      '수정단계': 1366,
+      '초임만삭': 3520,
+      '초산우': 3613,
+      '다산우(4산)': 2811,
+      '노폐우': 1069
+    },
+    {
+      'month': '3월',
+      '초유떼기암': 24,
+      '초유떼기수': 74,
+      '분유떼기암': 183,
+      '분유떼기수': 479,
+      '수정단계': 1330,
+      '초임만삭': 3460,
+      '초산우': 3539,
+      '다산우(4산)': 2811,
+      '노폐우': 1042
+    },
+    {
+      'month': '4월',
+      '초유떼기암': 27,
+      '초유떼기수': 92,
+      '분유떼기암': 184,
+      '분유떼기수': 482,
+      '수정단계': 1378,
+      '초임만삭': 3495,
+      '초산우': 3600,
+      '다산우(4산)': 2795,
+      '노폐우': 1283
+    },
+    {
+      'month': '5월',
+      '초유떼기암': 30,
+      '초유떼기수': 108,
+      '분유떼기암': 192,
+      '분유떼기수': 498,
+      '수정단계': 1364,
+      '초임만삭': 3441,
+      '초산우': 3555,
+      '다산우(4산)': 2743,
+      '노폐우': 1071
+    },
+    {
+      'month': '6월',
+      '초유떼기암': 30,
+      '초유떼기수': 114,
+      '분유떼기암': 199,
+      '분유떼기수': 509,
+      '수정단계': 1358,
+      '초임만삭': 3423,
+      '초산우': 3543,
+      '다산우(4산)': 2716,
+      '노폐우': 1093
+    },
+  ];
 
   @override
   void initState() {
@@ -894,11 +986,12 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  Widget _buildRecentActivities() {
+    Widget _buildRecentActivities() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 16),
+        // 🎯 헤더 섹션
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 16),
           child: Text(
@@ -910,9 +1003,746 @@ class _HomeScreenState extends State<HomeScreen>
             ),
           ),
         ),
-        const SizedBox(height: 8),
-        const PriceTrendChartView(initialType: '초유떼기'),
+        const SizedBox(height: 16),
+        
+        // 🔘 카테고리 선택 버튼 섹션
+        Container(
+          margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x0A000000),
+                blurRadius: 8,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: SizedBox(
+            height: 40,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: priceCategories.length,
+              itemBuilder: (context, index) {
+                final isSelected = selectedPriceCategoryIndex == index;
+                return Container(
+                  margin: const EdgeInsets.only(right: 8),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          selectedPriceCategoryIndex = index;
+                        });
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? const Color(0xFF4CAF50)
+                              : const Color(0xFFF3F4F6),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: isSelected
+                              ? [
+                                  BoxShadow(
+                                    color: const Color(0xFF4CAF50).withOpacity(0.3),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ]
+                              : null,
+                        ),
+                        child: Center(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (isSelected)
+                                const Icon(
+                                  Icons.check,
+                                  color: Colors.white,
+                                  size: 16,
+                                ),
+                              if (isSelected) const SizedBox(width: 4),
+                              Text(
+                                priceCategories[index],
+                                style: TextStyle(
+                                  color: isSelected
+                                      ? Colors.white
+                                      : const Color(0xFF374151),
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+        
+        // 📊 그래프 섹션
+        _buildPriceChartSection(),
+        
+        // 📋 가격표 섹션
+        _buildPriceTableSection(),
       ],
+    );
+  }
+
+  /// 📊 그래프 섹션
+  Widget _buildPriceChartSection() {
+    final selectedCategory = priceCategories[selectedPriceCategoryIndex];
+    
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A000000),
+            blurRadius: 8,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 헤더
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: const BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Color(0xFFE5E7EB),
+                  width: 1,
+                ),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '2025년 $selectedCategory 가격동향',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  '단위: 천원/두',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF6B7280),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                const Text(
+                  '출처: 농협 축산정보센터',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF9CA3AF),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // 그래프
+          Container(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+            child: AspectRatio(
+              aspectRatio: 1.6,
+              child: _buildPriceLineChart(),
+            ),
+          ),
+          // 범례 (초유떼기, 분유떼기만)
+          if (priceCategories[selectedPriceCategoryIndex] == '초유떼기' || 
+              priceCategories[selectedPriceCategoryIndex] == '분유떼기')
+            Container(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildLegendItem('암', const Color(0xFFEF4444)),
+                  const SizedBox(width: 24),
+                  _buildLegendItem('수', const Color(0xFF3B82F6)),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// 📈 LineChart 위젯
+  Widget _buildPriceLineChart() {
+    final selectedCategory = priceCategories[selectedPriceCategoryIndex];
+    final chartData = _getPriceChartData(selectedCategory);
+    final yAxisRange = _calculateYAxisRange(selectedCategory);
+    
+    return LineChart(
+      LineChartData(
+        gridData: FlGridData(
+          show: true,
+          drawVerticalLine: true,
+          drawHorizontalLine: true,
+          verticalInterval: 1,
+          horizontalInterval: yAxisRange['interval']!,
+          getDrawingHorizontalLine: (value) => FlLine(
+            color: const Color(0xFFE5E7EB),
+            strokeWidth: 0.5,
+          ),
+          getDrawingVerticalLine: (value) => FlLine(
+            color: const Color(0xFFE5E7EB),
+            strokeWidth: 0.5,
+          ),
+        ),
+        titlesData: FlTitlesData(
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 35,
+              interval: 1,
+              getTitlesWidget: (value, meta) {
+                const months = ['1월', '2월', '3월', '4월', '5월', '6월'];
+                final index = value.toInt();
+                if (index >= 0 && index < months.length) {
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      months[index],
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF6B7280),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  );
+                }
+                return const SizedBox();
+              },
+            ),
+          ),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 65,
+              interval: yAxisRange['interval']!,
+              getTitlesWidget: (value, meta) {
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: Text(
+                    _formatChartValue(value),
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: Color(0xFF6B7280),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        ),
+        borderData: FlBorderData(
+          show: true,
+          border: Border.all(
+            color: const Color(0xFFE5E7EB),
+            width: 1,
+          ),
+        ),
+        lineBarsData: chartData,
+        minX: -0.2,
+        maxX: 5.2,
+        minY: yAxisRange['minY'],
+        maxY: yAxisRange['maxY'],
+        clipData: FlClipData.none(),
+        lineTouchData: LineTouchData(
+          touchTooltipData: LineTouchTooltipData(
+            tooltipBgColor: Colors.white,
+            getTooltipItems: (touchedSpots) {
+              return touchedSpots.map((spot) {
+                final monthIndex = spot.x.toInt();
+                final months = ['1월', '2월', '3월', '4월', '5월', '6월'];
+                final month = months[monthIndex];
+                final value = NumberFormat('#,###').format(spot.y.toInt());
+                
+                return LineTooltipItem(
+                  '$month\n$value',
+                  const TextStyle(
+                    color: Color(0xFF111827),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                );
+              }).toList();
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 차트 Y축 값 포맷팅
+  String _formatChartValue(double value) {
+    return NumberFormat('#,###').format(value.toInt());
+  }
+
+  /// 차트 데이터 생성
+  List<LineChartBarData> _getPriceChartData(String category) {
+    final List<LineChartBarData> lines = [];
+    
+    if (category == '초유떼기') {
+      // 초유떼기: 암수 두 개의 선
+      final femaleKey = '초유떼기암';
+      final maleKey = '초유떼기수';
+      
+      // 암컷 데이터
+      final femaleSpots = priceData.asMap().entries.map((entry) {
+        return FlSpot(entry.key.toDouble(), entry.value[femaleKey]?.toDouble() ?? 0);
+      }).toList();
+      
+      // 수컷 데이터
+      final maleSpots = priceData.asMap().entries.map((entry) {
+        return FlSpot(entry.key.toDouble(), entry.value[maleKey]?.toDouble() ?? 0);
+      }).toList();
+      
+      lines.add(
+        LineChartBarData(
+          spots: femaleSpots,
+          isCurved: true,
+          curveSmoothness: 0.35,
+          color: const Color(0xFFEF4444),
+          barWidth: 3,
+          dotData: FlDotData(
+            show: true,
+            getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
+              radius: 4,
+              color: const Color(0xFFEF4444),
+              strokeWidth: 2,
+              strokeColor: Colors.white,
+            ),
+          ),
+          belowBarData: BarAreaData(show: false),
+        ),
+      );
+      
+      lines.add(
+        LineChartBarData(
+          spots: maleSpots,
+          isCurved: true,
+          curveSmoothness: 0.35,
+          color: const Color(0xFF3B82F6),
+          barWidth: 3,
+          dotData: FlDotData(
+            show: true,
+            getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
+              radius: 4,
+              color: const Color(0xFF3B82F6),
+              strokeWidth: 2,
+              strokeColor: Colors.white,
+            ),
+          ),
+          belowBarData: BarAreaData(show: false),
+        ),
+      );
+    } else if (category == '분유떼기') {
+      // 분유떼기: 암수 두 개의 선
+      final femaleKey = '분유떼기암';
+      final maleKey = '분유떼기수';
+      
+      // 암컷 데이터
+      final femaleSpots = priceData.asMap().entries.map((entry) {
+        return FlSpot(entry.key.toDouble(), entry.value[femaleKey]?.toDouble() ?? 0);
+      }).toList();
+      
+      // 수컷 데이터
+      final maleSpots = priceData.asMap().entries.map((entry) {
+        return FlSpot(entry.key.toDouble(), entry.value[maleKey]?.toDouble() ?? 0);
+      }).toList();
+      
+      lines.add(
+        LineChartBarData(
+          spots: femaleSpots,
+          isCurved: true,
+          curveSmoothness: 0.35,
+          color: const Color(0xFFEF4444),
+          barWidth: 3,
+          dotData: FlDotData(
+            show: true,
+            getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
+              radius: 4,
+              color: const Color(0xFFEF4444),
+              strokeWidth: 2,
+              strokeColor: Colors.white,
+            ),
+          ),
+          belowBarData: BarAreaData(show: false),
+        ),
+      );
+      
+      lines.add(
+        LineChartBarData(
+          spots: maleSpots,
+          isCurved: true,
+          curveSmoothness: 0.35,
+          color: const Color(0xFF3B82F6),
+          barWidth: 3,
+          dotData: FlDotData(
+            show: true,
+            getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
+              radius: 4,
+              color: const Color(0xFF3B82F6),
+              strokeWidth: 2,
+              strokeColor: Colors.white,
+            ),
+          ),
+          belowBarData: BarAreaData(show: false),
+        ),
+      );
+    } else {
+      // 단일 선 (나머지 카테고리)
+      final spots = priceData.asMap().entries.map((entry) {
+        return FlSpot(entry.key.toDouble(), entry.value[category]?.toDouble() ?? 0);
+      }).toList();
+      
+      final color = _getPriceCategoryColor(category);
+      
+      lines.add(
+        LineChartBarData(
+          spots: spots,
+          isCurved: true,
+          curveSmoothness: 0.35,
+          color: color,
+          barWidth: 3,
+          dotData: FlDotData(
+            show: true,
+            getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
+              radius: 4,
+              color: color,
+              strokeWidth: 2,
+              strokeColor: Colors.white,
+            ),
+          ),
+          belowBarData: BarAreaData(show: false),
+        ),
+      );
+    }
+    
+    return lines;
+  }
+
+  /// Y축 범위 및 간격 계산
+  Map<String, double> _calculateYAxisRange(String category) {
+    // 카테고리별 적절한 Y축 범위 설정
+    double minY;
+    double maxY;
+    double intervalStep;
+    
+    if (category == '초유떼기') {
+      // 초유떼기: 암 22-30, 수 65-114 → 0-150 범위
+      minY = 0;
+      maxY = 150;
+      intervalStep = 25;
+    } else if (category == '분유떼기') {
+      // 분유떼기: 암 183-199, 수 440-509 → 0-600 범위
+      minY = 0;
+      maxY = 600;
+      intervalStep = 100;
+    } else if (category == '수정단계') {
+      // 수정단계: 1300-1600 범위 (데이터 1330-1378)
+      minY = 1300;
+      maxY = 1600;
+      intervalStep = (maxY - minY) / 6; // 50
+    } else if (category == '초임만삭') {
+      // 초임만삭: 3400-3600 범위 (데이터 3423-3560)  
+      minY = 3400;
+      maxY = 3600;
+      intervalStep = (maxY - minY) / 6; // 약 33.33
+    } else if (category == '초산우') {
+      // 초산우: 3500-3700 범위 (데이터 3539-3613)
+      minY = 3500;
+      maxY = 3700;
+      intervalStep = (maxY - minY) / 6; // 약 33.33
+    } else if (category == '다산우(4산)') {
+      // 다산우(4산): 2700-3000 범위 (데이터 2716-2811)
+      minY = 2700;
+      maxY = 3000;
+      intervalStep = (maxY - minY) / 6; // 50
+    } else if (category == '노폐우') {
+      // 노폐우: 1000-1500 범위 (데이터 1042-1283)
+      minY = 1000;
+      maxY = 1500;
+      intervalStep = (maxY - minY) / 6; // 약 83.33
+    } else {
+      // 기본값
+      minY = 0;
+      maxY = 100;
+      intervalStep = (maxY - minY) / 6;
+    }
+    
+    return {
+      'minY': minY,
+      'maxY': maxY,
+      'interval': intervalStep,
+    };
+  }
+
+  /// Y축 간격 계산 (6개 고정)
+  double _calculateYAxisInterval(double min, double max) {
+    return (max - min) / 6;
+  }
+
+  /// 카테고리별 색상 반환
+  Color _getPriceCategoryColor(String category) {
+    switch (category) {
+      case '수정단계':
+        return const Color(0xFF8B5CF6);
+      case '초임만삭':
+        return const Color(0xFF06B6D4);
+      case '초산우':
+        return const Color(0xFFF59E0B);
+      case '다산우(4산)':
+        return const Color(0xFFEC4899);
+      case '노폐우':
+        return const Color(0xFF84CC16);
+      default:
+        return const Color(0xFF22C55E);
+    }
+  }
+
+  /// 범례 아이템 생성
+  Widget _buildLegendItem(String label, Color color) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 16,
+          height: 3,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 12,
+            color: Color(0xFF6B7280),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// 📋 가격표 섹션
+  Widget _buildPriceTableSection() {
+    final selectedCategory = priceCategories[selectedPriceCategoryIndex];
+    
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A000000),
+            blurRadius: 8,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 헤더
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: const BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Color(0xFFE5E7EB),
+                  width: 1,
+                ),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$selectedCategory 가격표',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  '단위: 천원/두',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF6B7280),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // 테이블
+          Container(
+            padding: const EdgeInsets.all(16),
+            child: _buildPriceDataTable(selectedCategory),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 데이터 테이블 생성
+  Widget _buildPriceDataTable(String category) {
+    List<String> columns = ['월'];
+    
+    if (category == '초유떼기' || category == '분유떼기') {
+      columns.addAll(['암', '수']);
+    } else {
+      columns.add('가격');
+    }
+    
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          minWidth: MediaQuery.of(context).size.width - 64, // 16px margin * 2 + 16px padding * 2
+        ),
+        child: DataTable(
+          columnSpacing: 40,
+          headingRowHeight: 56,
+          dataRowMinHeight: 52,
+          dataRowMaxHeight: 52,
+          headingRowColor: MaterialStateProperty.all(
+            const Color(0xFFF9FAFB),
+          ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: const Color(0xFFE5E7EB),
+              width: 1,
+            ),
+          ),
+          columns: columns.map((column) {
+            return DataColumn(
+              label: Expanded(
+                child: Text(
+                  column,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF111827),
+                    fontSize: 16,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            );
+          }).toList(),
+          rows: priceData.map((data) {
+            List<DataCell> cells = [
+              DataCell(
+                Container(
+                  width: double.infinity,
+                  alignment: Alignment.center,
+                  child: Text(
+                    data['month'],
+                    style: const TextStyle(
+                      color: Color(0xFF111827),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+            ];
+            
+            if (category == '초유떼기' || category == '분유떼기') {
+              cells.addAll([
+                DataCell(
+                  Container(
+                    width: double.infinity,
+                    alignment: Alignment.center,
+                    child: Text(
+                      NumberFormat('#,###').format(data['${category}암'] ?? 0),
+                      style: const TextStyle(
+                        color: Color(0xFF111827),
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+                DataCell(
+                  Container(
+                    width: double.infinity,
+                    alignment: Alignment.center,
+                    child: Text(
+                      NumberFormat('#,###').format(data['${category}수'] ?? 0),
+                      style: const TextStyle(
+                        color: Color(0xFF111827),
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+              ]);
+            } else {
+              cells.add(
+                DataCell(
+                  Container(
+                    width: double.infinity,
+                    alignment: Alignment.center,
+                    child: Text(
+                      NumberFormat('#,###').format(data[category] ?? 0),
+                      style: const TextStyle(
+                        color: Color(0xFF111827),
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }
+            
+            return DataRow(
+              cells: cells,
+              color: MaterialStateProperty.resolveWith<Color?>(
+                (Set<MaterialState> states) {
+                  if (states.contains(MaterialState.hovered)) {
+                    return const Color(0xFFF9FAFB);
+                  }
+                  return null;
+                },
+              ),
+            );
+          }).toList(),
+        ),
+      ),
     );
   }
 

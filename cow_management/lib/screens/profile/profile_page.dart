@@ -14,8 +14,6 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStateMixin {
-  String? _deleteErrorMessage;
-  bool _obscureDeletePassword = true;
   
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -85,6 +83,13 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                     color: const Color(0xFF4CAF50),
                     onTap: () => _showEditFarmNameDialog(context, userProvider),
                   ),
+                  _buildMenuItem(
+                    icon: Icons.security,
+                    title: '비밀번호 변경',
+                    subtitle: '계정 보안을 위해 비밀번호를 변경하세요',
+                    color: const Color(0xFF2196F3),
+                    onTap: () => Navigator.pushNamed(context, '/profile/change-password'),
+                  ),
                   // 활동 통계 메뉴 제거
                 ]),
                 const SizedBox(height: 24),
@@ -114,7 +119,7 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                   ),
                 ]),
                 const SizedBox(height: 24),
-                _buildDangerZone(userProvider),
+                _buildLogoutButton(userProvider),
                 const SizedBox(height: 100),
               ],
             ),
@@ -478,62 +483,23 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
     );
   }
 
-  Widget _buildDangerZone(UserProvider userProvider) {
-    return ModernCard(
-      border: Border.all(color: Colors.red.withOpacity(0.3)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.warning, color: Colors.red, size: 20),
-              const SizedBox(width: 8),
-              const Text(
-                '위험 구역',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.red,
-                ),
-              ),
-            ],
+  Widget _buildLogoutButton(UserProvider userProvider) {
+    return Container(
+      alignment: Alignment.centerLeft,
+      child: TextButton.icon(
+        onPressed: () => _showLogoutConfirmDialog(userProvider),
+        icon: const Icon(Icons.logout, size: 16, color: Colors.grey),
+        label: const Text(
+          '로그아웃',
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.grey,
+            fontWeight: FontWeight.w500,
           ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: () => _showLogoutConfirmDialog(userProvider),
-              icon: const Icon(Icons.logout, size: 20),
-              label: const Text('로그아웃'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.red,
-                side: const BorderSide(color: Colors.red),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: () => _showDeleteAccountDialog(userProvider),
-              icon: const Icon(Icons.delete_forever, size: 20),
-              label: const Text('계정 삭제'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.red,
-                side: const BorderSide(color: Colors.red),
-                backgroundColor: Colors.red.withOpacity(0.05),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ),
-        ],
+        ),
+        style: TextButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        ),
       ),
     );
   }
@@ -773,87 +739,7 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
     );
   }
 
-  void _showDeleteAccountDialog(UserProvider userProvider) {
-    final passwordController = TextEditingController();
-    bool localObscurePassword = true;
-    String? errorMessage;
-    
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text(
-            '계정 삭제',
-            style: TextStyle(color: Colors.red),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                '계정을 삭제하면 이 계정에 등록된 모든 정보가 즉시 파기되고 복구할 수 없습니다:\n\n• 젖소 목록 및 상세 기록\n• 할일 관리 데이터\n• 챗봇 대화 내용\n• AI 분석 서비스 내용\n• 기타 모든 개인정보\n\n이 작업은 되돌릴 수 없습니다.',
-                style: TextStyle(color: Colors.red),
-              ),
-              const SizedBox(height: 16),
-              ModernTextField(
-                controller: passwordController,
-                hint: '비밀번호를 입력하세요',
-                obscureText: localObscurePassword,
-                prefixIcon: const Icon(Icons.lock, color: Colors.red),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    localObscurePassword ? Icons.visibility : Icons.visibility_off,
-                    color: Colors.grey,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      localObscurePassword = !localObscurePassword;
-                    });
-                  },
-                ),
-              ),
-              if (errorMessage != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text(
-                    errorMessage!,
-                    style: const TextStyle(color: Colors.red, fontSize: 12),
-                  ),
-                ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('취소'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                try {
-                  await userProvider.deleteAccount(
-                    password: passwordController.text,
-                  );
-                  
-                  // 계정 삭제 성공 시 로그인 페이지로 이동
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (context) => const AuthSelectionPage()),
-                    (route) => false,
-                  );
-                } catch (e) {
-                  setState(() {
-                    errorMessage = e.toString();
-                  });
-                }
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('삭제'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+
 
   void _showComingSoonSnackBar(String feature) {
     ScaffoldMessenger.of(context).showSnackBar(

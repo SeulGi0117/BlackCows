@@ -265,7 +265,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
 
   Widget _buildForgotPassword() {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         TextButton(
           onPressed: () {
@@ -282,10 +282,9 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
             ),
           ),
         ),
-        Container(
-          width: 1,
-          height: 16,
-          color: Theme.of(context).dividerColor,
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 8),
+          child: Text('|', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w500)),
         ),
         TextButton(
           onPressed: () {
