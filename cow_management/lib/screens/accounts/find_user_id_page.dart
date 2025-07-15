@@ -237,10 +237,6 @@ class _FindUserIdPageState extends State<FindUserIdPage> with SingleTickerProvid
                   hint: '가입 시 입력한 이름을 입력하세요',
                   controller: _usernameController,
                   prefixIcon: const Icon(Icons.person_outline, color: Color(0xFF4CAF50)),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'[가-힣a-zA-Z\s]')),
-                    LengthLimitingTextInputFormatter(20),
-                  ],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return '이름을 입력해주세요';
