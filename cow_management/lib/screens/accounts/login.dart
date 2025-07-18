@@ -209,11 +209,36 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
               ),
             ),
             const SizedBox(height: 32),
-            ModernTextField(
-              label: '아이디',
-              hint: '아이디를 입력하세요',
+            TextFormField(
               controller: _userIdController,
-              prefixIcon: const Icon(Icons.person_outline, color: Color(0xFF4CAF50)),
+              decoration: InputDecoration(
+                labelText: '아이디',
+                hintText: '아이디를 입력하세요',
+                prefixIcon: const Icon(Icons.person_outline, color: Color(0xFF4CAF50)),
+                filled: true,
+                fillColor: Colors.grey.shade50,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                focusedBorder: const OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(16)),
+                  borderSide: BorderSide(color: Color(0xFF4CAF50), width: 2),
+                ),
+                errorBorder: const OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(16)),
+                  borderSide: BorderSide(color: Colors.red, width: 2),
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              ),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9_]')),
+                LengthLimitingTextInputFormatter(20),
+              ],
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return '아이디를 입력해주세요';
@@ -225,23 +250,48 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
               },
             ),
             const SizedBox(height: 20),
-            ModernTextField(
-              label: '비밀번호',
-              hint: '비밀번호를 입력하세요',
+            TextFormField(
               controller: _passwordController,
               obscureText: !_isPasswordVisible,
-              prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF4CAF50)),
-              suffixIcon: IconButton(
-                icon: Icon(
-                  _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                  color: Colors.grey.shade600,
+              decoration: InputDecoration(
+                labelText: '비밀번호',
+                hintText: '비밀번호를 입력하세요',
+                prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF4CAF50)),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                    color: Colors.grey.shade600,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isPasswordVisible = !_isPasswordVisible;
+                    });
+                  },
                 ),
-                onPressed: () {
-                  setState(() {
-                    _isPasswordVisible = !_isPasswordVisible;
-                  });
-                },
+                filled: true,
+                fillColor: Colors.grey.shade50,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                focusedBorder: const OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(16)),
+                  borderSide: BorderSide(color: Color(0xFF4CAF50), width: 2),
+                ),
+                errorBorder: const OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(16)),
+                  borderSide: BorderSide(color: Colors.red, width: 2),
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               ),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r"[a-zA-Z0-9!\#\$%&\\'()*+,\-./:;<=>?@\[\]^_`{|}~]"), replacementString: ''),
+                LengthLimitingTextInputFormatter(50),
+              ],
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return '비밀번호를 입력해주세요';

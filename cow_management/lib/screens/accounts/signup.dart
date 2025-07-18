@@ -210,11 +210,36 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
             Icons.security,
           ),
           const SizedBox(height: 40),
-          ModernTextField(
-            label: '아이디 *',
-            hint: '영문, 숫자, 언더스코어만 가능',
+          TextFormField(
             controller: _userIdController,
-            prefixIcon: const Icon(Icons.account_circle_outlined, color: Color(0xFF4CAF50)),
+            decoration: InputDecoration(
+              labelText: '아이디 *',
+              hintText: '영문, 숫자, 언더스코어만 가능',
+              prefixIcon: const Icon(Icons.account_circle_outlined, color: Color(0xFF4CAF50)),
+              filled: true,
+              fillColor: Colors.grey.shade50,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              focusedBorder: const OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(16)),
+                borderSide: BorderSide(color: Color(0xFF4CAF50), width: 2),
+              ),
+              errorBorder: const OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(16)),
+                borderSide: BorderSide(color: Colors.red, width: 2),
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            ),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9_]')),
+              LengthLimitingTextInputFormatter(20),
+            ],
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return '아이디를 입력해주세요';

@@ -1215,11 +1215,11 @@ class _HomeScreenState extends State<HomeScreen>
             sideTitles: SideTitles(
               showTitles: true,
               reservedSize: 35,
-              interval: 1,
+              interval: 1, // interval을 1로 고정
               getTitlesWidget: (value, meta) {
                 const months = ['1월', '2월', '3월', '4월', '5월', '6월'];
                 final index = value.toInt();
-                if (index >= 0 && index < months.length) {
+                if (index >= 0 && index < months.length && value == index.toDouble()) {
                   return Padding(
                     padding: const EdgeInsets.only(top: 8),
                     child: Text(
@@ -1267,8 +1267,8 @@ class _HomeScreenState extends State<HomeScreen>
           ),
         ),
         lineBarsData: chartData,
-        minX: -0.2,
-        maxX: 5.2,
+        minX: 0, // -0.2 → 0으로 수정
+        maxX: 5, // 5.2 → 5로 수정
         minY: yAxisRange['minY'],
         maxY: yAxisRange['maxY'],
         clipData: FlClipData.none(),
