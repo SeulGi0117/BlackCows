@@ -689,17 +689,11 @@ class _HomeScreenState extends State<HomeScreen>
 
     for (var cow in cows) {
       String status = cow.status.toLowerCase();
-      if (status.contains('건강') ||
-          status.contains('정상') ||
-          status.contains('양호')) {
+      if (status.contains('양호')) {
         normalCount++;
-      } else if (status.contains('주의') ||
-          status.contains('경고') ||
-          status.contains('건유')) {
+      } else if (status.contains('경고')) {
         warningCount++;
-      } else if (status.contains('위험') ||
-          status.contains('치료') ||
-          status.contains('이상')) {
+      } else if (status.contains('위험')) {
         dangerCount++;
       } else {
         // 알 수 없는 상태는 주의로 분류
