@@ -19,6 +19,23 @@ class MilkYieldPredictionResult {
   });
 }
 
+// 유방염 예측 결과 모델
+class MastitisPredictionResult {
+  final String? predictionClass;
+  final double? confidenceScore;
+  final String? modelVersion;
+  final String? errorMessage;
+  final bool isSuccess;
+
+  MastitisPredictionResult({
+    this.predictionClass,
+    this.confidenceScore,
+    this.modelVersion,
+    this.errorMessage,
+    required this.isSuccess,
+  });
+}
+
 // 착유량 예측
 Future<MilkYieldPredictionResult> milkYieldPrediction({
    required int milking_frequency,
@@ -75,6 +92,8 @@ Future<MilkYieldPredictionResult> milkYieldPrediction({
     
     if (e is DioException) {
       print('❌ Dio 에러 상세: ${e.response?.data}');
+      print('❌ 요청 헤더: ${e.requestOptions.headers}');
+      print('❌ 상태 코드: ${e.response?.statusCode}');
       
       // HTTP 상태 코드별 에러 메시지
       final statusCode = e.response?.statusCode;
@@ -85,6 +104,12 @@ Future<MilkYieldPredictionResult> milkYieldPrediction({
           return MilkYieldPredictionResult(
             isSuccess: false,
             errorMessage: '잘못된 요청입니다. 입력값을 확인해주세요.',
+          );
+        case 401:
+        case 403:
+          return MilkYieldPredictionResult(
+            isSuccess: false,
+            errorMessage: '인증이 만료되었습니다. 다시 로그인해주세요.',
           );
         case 422:
           return MilkYieldPredictionResult(
@@ -220,4 +245,246 @@ Future<Map<String, dynamic>?> milkYieldBatchPrediction({
     }
     return null;
   }
+}
+
+// 유방염 예측 (체세포수 없음 모드)
+Future<MastitisPredictionResult> mastitisPrediction({
+  required double milk_yield,
+  required double conductivity,
+  required double fat_percentage,
+  required double protein_percentage,
+  required int lactation_number,
+  String? cow_id,
+  String? prediction_date,
+  String? notes,
+}) async {
+  try {
+    // 입력값 검증
+    final validationError = _validateMastitisInputs(
+      milk_yield: milk_yield,
+      conductivity: conductivity,
+      fat_percentage: fat_percentage,
+      protein_percentage: protein_percentage,
+      lactation_number: lactation_number,
+    );
+    
+    if (validationError != null) {
+      return MastitisPredictionResult(
+        isSuccess: false,
+        errorMessage: validationError,
+      );
+    }
+
+    final requestData = {
+      'milk_yield': milk_yield,
+      'conductivity': conductivity,
+      'fat_percentage': fat_percentage,
+      'protein_percentage': protein_percentage,
+      'lactation_number': lactation_number,
+      if (cow_id != null) 'cow_id': cow_id,
+      if (prediction_date != null) 'prediction_date': prediction_date,
+      if (notes != null) 'notes': notes,
+    };
+    
+    print('🔍 유방염 예측 요청 데이터: $requestData');
+    
+    final response = await _dio.post('/ai/mastitis/predict', data: requestData);
+    
+    return MastitisPredictionResult(
+      predictionClass: response.data['prediction_class'],
+      confidenceScore: (response.data['confidence_score'] as num?)?.toDouble(),
+      modelVersion: response.data['model_version'],
+      isSuccess: true,
+    );
+  } catch (e) {
+    print('❌ 유방염 예측 실패: $e');
+    
+    if (e is DioException) {
+      print('❌ Dio 에러 상세: ${e.response?.data}');
+      
+      final statusCode = e.response?.statusCode;
+      final errorData = e.response?.data;
+      
+      switch (statusCode) {
+        case 400:
+          return MastitisPredictionResult(
+            isSuccess: false,
+            errorMessage: '잘못된 요청입니다. 입력값을 확인해주세요.',
+          );
+        case 401:
+        case 403:
+          return MastitisPredictionResult(
+            isSuccess: false,
+            errorMessage: '인증이 만료되었습니다. 다시 로그인해주세요.',
+          );
+        case 422:
+          return MastitisPredictionResult(
+            isSuccess: false,
+            errorMessage: _parse422Error(errorData),
+          );
+        case 500:
+          return MastitisPredictionResult(
+            isSuccess: false,
+            errorMessage: '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+          );
+        case 503:
+          return MastitisPredictionResult(
+            isSuccess: false,
+            errorMessage: 'AI 서비스가 일시적으로 사용할 수 없습니다. 잠시 후 다시 시도해주세요.',
+          );
+        default:
+          return MastitisPredictionResult(
+            isSuccess: false,
+            errorMessage: '네트워크 오류가 발생했습니다. 연결을 확인해주세요.',
+          );
+      }
+    }
+    
+    return MastitisPredictionResult(
+      isSuccess: false,
+      errorMessage: '알 수 없는 오류가 발생했습니다.',
+    );
+  }
+}
+
+// 체세포수 기반 유방염 예측 (체세포수 있음 모드)
+Future<MastitisPredictionResult> sccMastitisPrediction({
+  required int somatic_cell_count,
+  String? cow_id,
+  String? prediction_date,
+  String? notes,
+}) async {
+  try {
+    // 입력값 검증
+    final validationError = _validateSCCInputs(
+      somatic_cell_count: somatic_cell_count,
+    );
+    
+    if (validationError != null) {
+      return MastitisPredictionResult(
+        isSuccess: false,
+        errorMessage: validationError,
+      );
+    }
+
+    final requestData = {
+      'somatic_cell_count': somatic_cell_count,
+      if (cow_id != null) 'cow_id': cow_id,
+      if (prediction_date != null) 'prediction_date': prediction_date,
+      if (notes != null) 'notes': notes,
+    };
+    
+    print('🔍 체세포수 기반 유방염 예측 요청 데이터: $requestData');
+    
+    final response = await _dio.post('/ai/scc-mastitis/predict', data: requestData);
+    
+    return MastitisPredictionResult(
+      predictionClass: response.data['prediction_class'],
+      confidenceScore: (response.data['confidence_score'] as num?)?.toDouble(),
+      modelVersion: response.data['model_version'],
+      isSuccess: true,
+    );
+  } catch (e) {
+    print('❌ 체세포수 기반 유방염 예측 실패: $e');
+    
+    if (e is DioException) {
+      print('❌ Dio 에러 상세: ${e.response?.data}');
+      
+      final statusCode = e.response?.statusCode;
+      final errorData = e.response?.data;
+      
+      switch (statusCode) {
+        case 400:
+          return MastitisPredictionResult(
+            isSuccess: false,
+            errorMessage: '잘못된 요청입니다. 입력값을 확인해주세요.',
+          );
+        case 401:
+        case 403:
+          return MastitisPredictionResult(
+            isSuccess: false,
+            errorMessage: '인증이 만료되었습니다. 다시 로그인해주세요.',
+          );
+        case 422:
+          return MastitisPredictionResult(
+            isSuccess: false,
+            errorMessage: _parse422Error(errorData),
+          );
+        case 500:
+          return MastitisPredictionResult(
+            isSuccess: false,
+            errorMessage: '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+          );
+        case 503:
+          return MastitisPredictionResult(
+            isSuccess: false,
+            errorMessage: 'AI 서비스가 일시적으로 사용할 수 없습니다. 잠시 후 다시 시도해주세요.',
+          );
+        default:
+          return MastitisPredictionResult(
+            isSuccess: false,
+            errorMessage: '네트워크 오류가 발생했습니다. 연결을 확인해주세요.',
+          );
+      }
+    }
+    
+    return MastitisPredictionResult(
+      isSuccess: false,
+      errorMessage: '알 수 없는 오류가 발생했습니다.',
+    );
+  }
+}
+
+// 유방염 예측 입력값 검증
+String? _validateMastitisInputs({
+  required double milk_yield,
+  required double conductivity,
+  required double fat_percentage,
+  required double protein_percentage,
+  required int lactation_number,
+}) {
+  if (milk_yield <= 0) {
+    return '착유량은 0보다 큰 값이어야 합니다.';
+  }
+  if (milk_yield > 100) {
+    return '착유량은 100L 이하여야 합니다.';
+  }
+  
+  if (conductivity <= 0) {
+    return '전도율은 0보다 큰 값이어야 합니다.';
+  }
+  if (conductivity > 20) {
+    return '전도율은 20 mS/cm 이하여야 합니다.';
+  }
+  
+  if (fat_percentage <= 0 || fat_percentage > 20) {
+    return '유지방 비율은 0% ~ 20% 범위여야 합니다.';
+  }
+  
+  if (protein_percentage <= 0 || protein_percentage > 10) {
+    return '유단백 비율은 0% ~ 10% 범위여야 합니다.';
+  }
+  
+  if (lactation_number <= 0) {
+    return '산차수는 1 이상이어야 합니다.';
+  }
+  if (lactation_number > 20) {
+    return '산차수는 20 이하여야 합니다.';
+  }
+  
+  return null;
+}
+
+// 체세포수 입력값 검증
+String? _validateSCCInputs({
+  required int somatic_cell_count,
+}) {
+  if (somatic_cell_count <= 0) {
+    return '체세포수는 0보다 큰 값이어야 합니다.';
+  }
+  if (somatic_cell_count > 10000000) {
+    return '체세포수는 10,000,000 cells/mL 이하여야 합니다.';
+  }
+  
+  return null;
 }

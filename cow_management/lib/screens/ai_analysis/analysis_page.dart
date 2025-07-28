@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'analysis_tab_controller.dart';
 import 'analysis_input_mode_toggle.dart';
-import 'analysis_form_autofill.dart';
 import 'analysis_form_manual.dart';
 import 'analysis_result_card.dart';
 import 'package:cow_management/services/ai_prediction_api.dart'; // API import 추가
@@ -63,16 +62,28 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
     super.dispose();
   }
 
-  void _predict(String? temperature, String? milkVolume, [String? confidence]) async {
+  void _predict(String? predictionClass, String? confidence, [String? modelVersion]) async {
     setState(() {
       isLoading = true;
       hasResult = false;
     });
 
+    // 에러 처리를 위한 변수
+    bool isSuccess = false;
+    String? errorMessage;
+
     if (selectedServiceId == 'milk_yield') {
-      final predictedYield = double.tryParse(milkVolume ?? '');
+      // 착유량 예측 결과 처리
+      final predictedYield = double.tryParse(predictionClass ?? '');
       final confidenceValue = double.tryParse(confidence ?? '');
-      if (predictedYield != null) {
+      
+      if (predictionClass == 'ERROR') {
+        // 서버 오류 처리
+        isSuccess = false;
+        errorMessage = confidence ?? '서버 연결에 실패했습니다.';
+      } else if (predictedYield != null) {
+        // 성공적인 예측 결과
+        isSuccess = true;
         setState(() {
           isLoading = false;
           hasResult = true;
@@ -87,17 +98,48 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
               'AI 확신도': confidenceValue != null ? '${confidenceValue.toStringAsFixed(1)}%' : 'N/A',
               'AI 정확도': '82%'
             },
-            // 권장사항 안내 제거
           };
         });
       } else {
+        // 예측 실패
+        isSuccess = false;
+        errorMessage = '예측 결과를 처리할 수 없습니다.';
+      }
+    } else if (selectedServiceId == 'mastitis_risk') {
+      // 유방염 예측 결과 처리
+      if (predictionClass == 'ERROR') {
+        // 서버 오류 처리
+        isSuccess = false;
+        errorMessage = confidence ?? '서버 연결에 실패했습니다.';
+      } else if (predictionClass != null && predictionClass.isNotEmpty && predictionClass != '알 수 없음') {
+        // 성공적인 예측 결과
+        isSuccess = true;
+        final confidenceValue = double.tryParse(confidence ?? '0');
+        final confidencePercent = confidenceValue != null ? (confidenceValue * 100).toStringAsFixed(1) : '0.0';
+        
         setState(() {
           isLoading = false;
-          hasResult = false;
+          hasResult = true;
+          resultData = {
+            'prediction': predictionClass,
+            'confidence': '$confidencePercent%',
+            'level': _getMastitisLevel(predictionClass),
+            'details': {
+              '위험도': predictionClass,
+              '신뢰도': '$confidencePercent%',
+              '모델 버전': modelVersion ?? 'v2.0.0',
+            },
+            'recommendations': _getMastitisRecommendations(predictionClass),
+          };
         });
+      } else {
+        // 예측 실패
+        isSuccess = false;
+        errorMessage = '유방염 위험도를 예측할 수 없습니다.';
       }
     } else {
       // 기존 더미 결과 데이터 생성 (다른 서비스)
+      isSuccess = true;
       Future.delayed(const Duration(seconds: 2), () {
         setState(() {
           isLoading = false;
@@ -107,20 +149,94 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
       });
     }
     
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.check_circle, color: Colors.white),
-            const SizedBox(width: 8),
-            const Text('AI 분석이 완료되었습니다!'),
-          ],
+    // 에러가 발생한 경우 로딩 상태 해제
+    if (!isSuccess) {
+      setState(() {
+        isLoading = false;
+        hasResult = false;
+      });
+    }
+    
+    // 결과에 따른 메시지 표시
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(
+                isSuccess ? Icons.check_circle : Icons.error,
+                color: Colors.white,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  isSuccess 
+                      ? 'AI 분석이 완료되었습니다!'
+                      : errorMessage ?? 'AI 분석 중 오류가 발생했습니다.',
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: isSuccess ? Colors.grey.shade800 : Colors.red.shade600,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          duration: Duration(seconds: isSuccess ? 3 : 5),
+          action: !isSuccess ? SnackBarAction(
+            label: '확인',
+            textColor: Colors.white,
+            onPressed: () {
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            },
+          ) : null,
         ),
-        backgroundColor: Colors.grey.shade800,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
-    );
+      );
+    }
+  }
+
+  // 유방염 위험도 레벨 반환
+  int _getMastitisLevel(String predictionClass) {
+    switch (predictionClass.toLowerCase()) {
+      case '정상':
+        return 1;
+      case '주의':
+        return 2;
+      case '염증 가능성':
+      case '위험':
+        return 3;
+      default:
+        return 1;
+    }
+  }
+
+  // 유방염 권장사항 반환
+  List<String> _getMastitisRecommendations(String predictionClass) {
+    switch (predictionClass.toLowerCase()) {
+      case '정상':
+        return [
+          '현재 상태가 양호합니다',
+          '정기적인 검사를 계속하세요',
+          '현재 관리 방법을 유지하세요',
+        ];
+      case '주의':
+        return [
+          '세심한 관찰이 필요합니다',
+          '유방 상태를 더 자주 확인하세요',
+          '사료 관리에 주의를 기울이세요',
+        ];
+      case '염증 가능성':
+      case '위험':
+        return [
+          '즉시 수의사와 상담하세요',
+          '유방염 치료를 시작하세요',
+          '격리 관리가 필요할 수 있습니다',
+        ];
+      default:
+        return [
+          '결과를 확인해주세요',
+          '필요시 전문가와 상담하세요',
+        ];
+    }
   }
 
   Map<String, dynamic> _generateDummyResult() {
@@ -391,6 +507,9 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
                                   () => setState(() {
                                     mastitisMode = 'with_scc';
                                     isMastitisModeWithSCC = true;
+                                    // 모드 변경 시 결과 초기화
+                                    hasResult = false;
+                                    resultData = {};
                                   }),
                                 ),
                               ),
@@ -404,6 +523,9 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
                                   () => setState(() {
                                     mastitisMode = 'without_scc';
                                     isMastitisModeWithSCC = false;
+                                    // 모드 변경 시 결과 초기화
+                                    hasResult = false;
+                                    resultData = {};
                                   }),
                                 ),
                               ),
@@ -1088,10 +1210,11 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
             ],
           ),
           const SizedBox(height: 12),
-          // 오직 직접 입력만 사용
+          // 직접 입력 폼 사용
           AnalysisFormManual(
             onPredict: _predict,
             selectedServiceId: selectedServiceId,
+            mastitisMode: mastitisMode,
           ),
         ],
       ),

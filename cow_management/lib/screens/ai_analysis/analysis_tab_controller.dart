@@ -37,7 +37,7 @@ const List<AnalysisTab> analysisTabs = [
     description: '체세포수 데이터 또는 다양한 생체 지표를 통해 유방염 위험도를 단계별로 예측합니다',
     icon: '⚠️',
     color: Color(0xFFFF9800),
-    requiredFields: ['착유량', '전도율', '유지방비율', '유단백비율', '산차수'],
+    requiredFields: ['착유량', '전도율_유방염', '유지방비율_유방염', '유단백비율_유방염', '산차수'],
     subtitle: '체세포수 유무에 따른 2가지 분석 모드',
   ),
   AnalysisTab(
