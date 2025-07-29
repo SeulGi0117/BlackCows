@@ -31,12 +31,14 @@ Future<String?> createChatRoom(String userId) async {
 Future<String?> sendChatbotMessage({
   required String userId,
   required String chatId,
+  required String farmId,
   required String question,
 }) async {
   try {
     final response = await _dio.post('/chatbot/ask', data: {
       'user_id': userId,
       'chat_id': chatId,
+      'farm_id': farmId,
       'question': question,
     });
     return response.data['answer'];

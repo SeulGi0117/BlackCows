@@ -304,8 +304,8 @@ class _AnalysisFormAutofillState extends State<AnalysisFormAutofill> {
                 Expanded(
                   child: Text(
                     widget.mastitisMode == 'with_scc' 
-                        ? '체세포수 데이터를 기반으로 정확한 위험도를 4단계로 분석합니다.'
-                        : '다양한 생체 지표를 기반으로 염증 가능성을 3단계로 추정합니다.',
+                        ? '체세포수 데이터를 기반으로 염증 가능성을 3단계로 분석합니다.'
+                        : '다양한 생체 지표를 기반으로 염증 가능성을 3단계로 분석합니다.',
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.orange.shade700,
