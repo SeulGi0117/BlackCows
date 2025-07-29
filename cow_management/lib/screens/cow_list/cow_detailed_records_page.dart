@@ -232,7 +232,6 @@ class _CowDetailedRecordsPageState extends State<CowDetailedRecordsPage>
             child: TabBar(
               controller: _tabController,
               labelColor: const Color(0xFF4CAF50),
-              unselectedLabelColor: Colors.grey.shade600,
               indicatorColor: const Color(0xFF4CAF50),
               indicatorWeight: 3,
               tabs: const [
@@ -319,28 +318,7 @@ class _CowDetailedRecordsPageState extends State<CowDetailedRecordsPage>
     }
   }
 
-  Widget _buildBasicInfoCard() {
-    const infoStyle = TextStyle(fontWeight: FontWeight.w500);
-    const valueStyle = TextStyle(color: Colors.black87);
-
-    Widget buildInfoRow(String label, String value) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              width: 90,
-              child: Text(label, style: infoStyle),
-            ),
-            Expanded(
-              child: Text(value.isNotEmpty ? value : '미등록', style: valueStyle),
-            ),
-          ],
-        ),
-      );
-    }
-
+  Widget _buildSectionCard(String title, List<Widget> children) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 0,
@@ -351,128 +329,155 @@ class _CowDetailedRecordsPageState extends State<CowDetailedRecordsPage>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('🐾 기본 정보',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(title,
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const Divider(height: 20),
-            buildInfoRow('이름', currentCow.name),
-            buildInfoRow('이표번호', currentCow.earTagNumber),
-            buildInfoRow(
-                '출생일',
-                currentCow.birthdate != null
-                    ? '${currentCow.birthdate!.year}년 ${currentCow.birthdate!.month}월 ${currentCow.birthdate!.day}일'
-                    : '미등록'),
-            buildInfoRow('품종', currentCow.breed ?? '미등록'),
-            if (currentCow.sensorNumber != null &&
-                currentCow.sensorNumber!.isNotEmpty)
-              buildInfoRow('센서번호', currentCow.sensorNumber!),
-            buildInfoRow('건강상태', _getHealthStatusText(currentCow.healthStatus)),
-            buildInfoRow(
-                '번식상태', _getBreedingStatusText(currentCow.breedingStatus)),
-            if (currentCow.notes != null && currentCow.notes!.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              const Text('📝 메모',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(currentCow.notes!,
-                    style: const TextStyle(fontSize: 14)),
-              ),
-            ],
-            const SizedBox(height: 20),
-            Expanded(
-              child: Row(
-                children: [
-                  // ✅ 정보 수정 버튼
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => CowEditPage(cow: currentCow),
-                          ),
-                        ).then((updatedCow) {
-                          if (updatedCow != null) {
-                            setState(() => currentCow = updatedCow);
-                          }
-                        });
-                      },
-                      icon: const Icon(Icons.edit, size: 18),
-                      label: const Text('정보 수정'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF4CAF50),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(width: 12),
-
-                  // ✅ 삭제 버튼
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () async {
-                        final confirmed = await showDialog<bool>(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text("삭제 확인"),
-                            content: const Text("정말 이 젖소를 삭제하시겠습니까?"),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, false),
-                                child: const Text("취소"),
-                              ),
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, true),
-                                child: const Text("삭제",
-                                    style: TextStyle(color: Colors.red)),
-                              ),
-                            ],
-                          ),
-                        );
-
-                        if (confirmed == true) {
-                          final success =
-                              await deleteCow(context, currentCow.id);
-                          if (success && context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("젖소가 삭제되었습니다"),
-                                backgroundColor: Colors.green,
-                              ),
-                            );
-                            Navigator.pop(context, true);
-                          }
-                        }
-                      },
-                      icon: const Icon(Icons.delete, size: 18),
-                      label: const Text('삭제하기'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            )
+            ...children,
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 90,
+            child: Text(label,
+                style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey)),
+          ),
+          Expanded(
+            child: Text(
+              value.isNotEmpty ? value : '미등록',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBasicInfoCard() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionCard('🐾 기본 정보', [
+          _buildInfoRow('이름', currentCow.name),
+          _buildInfoRow('이표번호', currentCow.earTagNumber),
+          _buildInfoRow(
+            '출생일',
+            currentCow.birthdate != null
+                ? '${currentCow.birthdate!.year}년 ${currentCow.birthdate!.month}월 ${currentCow.birthdate!.day}일'
+                : '미등록',
+          ),
+          _buildInfoRow('품종', currentCow.breed ?? '미등록'),
+          if (currentCow.sensorNumber != null &&
+              currentCow.sensorNumber!.isNotEmpty)
+            _buildInfoRow('센서번호', currentCow.sensorNumber!),
+          _buildInfoRow('건강상태', _getHealthStatusText(currentCow.healthStatus)),
+          _buildInfoRow(
+              '번식상태', _getBreedingStatusText(currentCow.breedingStatus)),
+        ]),
+        if (currentCow.notes != null && currentCow.notes!.isNotEmpty)
+          _buildSectionCard('📝 메모', [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child:
+                  Text(currentCow.notes!, style: const TextStyle(fontSize: 14)),
+            ),
+          ]),
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CowEditPage(cow: currentCow),
+                    ),
+                  ).then((updatedCow) {
+                    if (updatedCow != null) {
+                      setState(() => currentCow = updatedCow);
+                    }
+                  });
+                },
+                icon: const Icon(Icons.edit, size: 18),
+                label: const Text('정보 수정'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF4CAF50),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () async {
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text("삭제 확인"),
+                      content: const Text("정말 이 젖소를 삭제하시겠습니까?"),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: const Text("취소"),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          child: const Text("삭제",
+                              style: TextStyle(color: Colors.red)),
+                        ),
+                      ],
+                    ),
+                  );
+
+                  if (confirmed == true) {
+                    final success = await deleteCow(context, currentCow.id);
+                    if (success && context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("젖소가 삭제되었습니다"),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                      Navigator.pop(context, true);
+                    }
+                  }
+                },
+                icon: const Icon(Icons.delete, size: 18),
+                label: const Text('삭제하기'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
