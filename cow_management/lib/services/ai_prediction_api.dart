@@ -1,8 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:cow_management/services/dio_client.dart';
-
-final Dio _dio = DioClient().dio;
+import 'package:cow_management/utils/api_config.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // 착유량 예측 결과 모델
 class MilkYieldPredictionResult {
@@ -21,19 +19,29 @@ class MilkYieldPredictionResult {
 
 // 유방염 예측 결과 모델
 class MastitisPredictionResult {
-  final String? predictionClass;
-  final double? confidenceScore;
-  final String? modelVersion;
+  final int? predictionClass;           // 0: 정상, 1: 주의, 2: 염증 가능성
+  final String? predictionClassLabel;   // "정상", "주의", "염증 가능성"
+  final double? confidence;             // 예측 신뢰도 (%)
+  final String? predictionMethod;       // 예측 방법 (체세포수 기반일 때)
+  final Map<String, dynamic>? inputFeatures; // 입력 특성값들 (생체정보 기반일 때)
   final String? errorMessage;
   final bool isSuccess;
 
   MastitisPredictionResult({
     this.predictionClass,
-    this.confidenceScore,
-    this.modelVersion,
+    this.predictionClassLabel,
+    this.confidence,
+    this.predictionMethod,
+    this.inputFeatures,
     this.errorMessage,
     required this.isSuccess,
   });
+}
+
+// 토큰 가져오기 헬퍼 함수
+Future<String?> _getAccessToken() async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getString('access_token');
 }
 
 // 착유량 예측
@@ -48,6 +56,18 @@ Future<MilkYieldPredictionResult> milkYieldPrediction({
    required int milking_day_of_week,    
 }) async {
   try {
+    // 소 목록 불러오기와 동일한 방식으로 토큰 처리
+    final dio = Dio();
+    final apiUrl = ApiConfig.baseUrl;
+    final token = await _getAccessToken();
+    
+    if (token == null) {
+      return MilkYieldPredictionResult(
+        isSuccess: false,
+        errorMessage: '로그인이 필요합니다.',
+      );
+    }
+
     // 입력값 검증
     final validationError = _validateInputs(
       milking_frequency: milking_frequency,
@@ -67,21 +87,30 @@ Future<MilkYieldPredictionResult> milkYieldPrediction({
       );
     }
 
-    final response = await _dio.post('/ai/milk-yield/predict', data: {
-      'milking_frequency': milking_frequency,
-      'conductivity': conductivity,
-      'temperature': temperature,
-      'fat_percentage': fat_percentage,
-      'protein_percentage': protein_percentage,
-      'concentrate_intake': concentrate_intake,
-      'milking_month': milking_month,
-      'milking_day_of_week': milking_day_of_week,
-    });
+    final response = await dio.post(
+      '$apiUrl/ai/milk-yield/predict', 
+      data: {
+        'milking_frequency': milking_frequency,
+        'conductivity': conductivity,
+        'temperature': temperature,
+        'fat_percentage': fat_percentage,
+        'protein_percentage': protein_percentage,
+        'concentrate_intake': concentrate_intake,
+        'milking_month': milking_month,
+        'milking_day_of_week': milking_day_of_week,
+      },
+      options: Options(
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      ),
+    );
     
     // 예측값과 신뢰도(%)를 반환
     final predictedYield = (response.data['predicted_milk_yield'] as num?)?.toDouble();
     final confidence = (response.data['confidence'] as num?)?.toDouble();
-    
+
     return MilkYieldPredictionResult(
       predictedYield: predictedYield,
       confidence: confidence,
@@ -171,8 +200,8 @@ String? _validateInputs({
     return '환경 온도는 -50°C ~ 100°C 범위여야 합니다.';
   }
   
-  if (fat_percentage <= 0 || fat_percentage > 20) {
-    return '유지방 비율은 0% ~ 20% 범위여야 합니다.';
+  if (fat_percentage <= 0 || fat_percentage > 10) {
+    return '유지방 비율은 0% ~ 10% 범위여야 합니다.';
   }
   
   if (protein_percentage <= 0 || protein_percentage > 10) {
@@ -227,26 +256,6 @@ String _parse422Error(dynamic errorData) {
   return '입력값이 올바르지 않습니다. 모든 필드를 확인해주세요.';
 }
 
-/// 다중 젖소 착유량 예측 (배치)
-Future<Map<String, dynamic>?> milkYieldBatchPrediction({
-  required List<Map<String, dynamic>> predictions,
-  String? batchName,
-}) async {
-  try {
-    final response = await _dio.post('/ai/milk-yield/batch-predict', data: {
-      'predictions': predictions,
-      'batch_name': batchName,
-    });
-    return response.data as Map<String, dynamic>;
-  } catch (e) {
-    print('❌ 착유량 배치 예측 실패: $e');
-    if (e is DioException) {
-      print('❌ Dio 에러 상세: ${e.response?.data}');
-    }
-    return null;
-  }
-}
-
 // 유방염 예측 (체세포수 없음 모드)
 Future<MastitisPredictionResult> mastitisPrediction({
   required double milk_yield,
@@ -259,6 +268,18 @@ Future<MastitisPredictionResult> mastitisPrediction({
   String? notes,
 }) async {
   try {
+    // 소 목록 불러오기와 동일한 방식으로 토큰 처리
+    final dio = Dio();
+    final apiUrl = ApiConfig.baseUrl;
+    final token = await _getAccessToken();
+    
+    if (token == null) {
+      return MastitisPredictionResult(
+        isSuccess: false,
+        errorMessage: '로그인이 필요합니다.',
+      );
+    }
+
     // 입력값 검증
     final validationError = _validateMastitisInputs(
       milk_yield: milk_yield,
@@ -285,15 +306,25 @@ Future<MastitisPredictionResult> mastitisPrediction({
       if (prediction_date != null) 'prediction_date': prediction_date,
       if (notes != null) 'notes': notes,
     };
-    
+
     print('🔍 유방염 예측 요청 데이터: $requestData');
-    
-    final response = await _dio.post('/ai/mastitis/predict', data: requestData);
+
+    final response = await dio.post(
+      '$apiUrl/ai/mastitis/predict', 
+      data: requestData,
+      options: Options(
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      ),
+    );
     
     return MastitisPredictionResult(
-      predictionClass: response.data['prediction_class'],
-      confidenceScore: (response.data['confidence_score'] as num?)?.toDouble(),
-      modelVersion: response.data['model_version'],
+      predictionClass: response.data['prediction_class'] as int?,
+      predictionClassLabel: response.data['prediction_class_label'] as String?,
+      confidence: (response.data['confidence'] as num?)?.toDouble(),
+      inputFeatures: response.data['input_features'] as Map<String, dynamic>?,
       isSuccess: true,
     );
   } catch (e) {
@@ -355,6 +386,18 @@ Future<MastitisPredictionResult> sccMastitisPrediction({
   String? notes,
 }) async {
   try {
+    // 소 목록 불러오기와 동일한 방식으로 토큰 처리
+    final dio = Dio();
+    final apiUrl = ApiConfig.baseUrl;
+    final token = await _getAccessToken();
+    
+    if (token == null) {
+      return MastitisPredictionResult(
+        isSuccess: false,
+        errorMessage: '로그인이 필요합니다.',
+      );
+    }
+
     // 입력값 검증
     final validationError = _validateSCCInputs(
       somatic_cell_count: somatic_cell_count,
@@ -373,15 +416,25 @@ Future<MastitisPredictionResult> sccMastitisPrediction({
       if (prediction_date != null) 'prediction_date': prediction_date,
       if (notes != null) 'notes': notes,
     };
-    
+
     print('🔍 체세포수 기반 유방염 예측 요청 데이터: $requestData');
-    
-    final response = await _dio.post('/ai/scc-mastitis/predict', data: requestData);
+
+    final response = await dio.post(
+      '$apiUrl/ai/scc-mastitis/predict', 
+      data: requestData,
+      options: Options(
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      ),
+    );
     
     return MastitisPredictionResult(
-      predictionClass: response.data['prediction_class'],
-      confidenceScore: (response.data['confidence_score'] as num?)?.toDouble(),
-      modelVersion: response.data['model_version'],
+      predictionClass: response.data['prediction_class'] as int?,
+      predictionClassLabel: response.data['prediction_class_label'] as String?,
+      confidence: (response.data['confidence'] as num?)?.toDouble(),
+      predictionMethod: response.data['prediction_method'] as String?,
       isSuccess: true,
     );
   } catch (e) {
@@ -457,8 +510,8 @@ String? _validateMastitisInputs({
     return '전도율은 20 mS/cm 이하여야 합니다.';
   }
   
-  if (fat_percentage <= 0 || fat_percentage > 20) {
-    return '유지방 비율은 0% ~ 20% 범위여야 합니다.';
+  if (fat_percentage <= 0 || fat_percentage > 10) {
+    return '유지방 비율은 0% ~ 10% 범위여야 합니다.';
   }
   
   if (protein_percentage <= 0 || protein_percentage > 10) {
@@ -482,8 +535,8 @@ String? _validateSCCInputs({
   if (somatic_cell_count <= 0) {
     return '체세포수는 0보다 큰 값이어야 합니다.';
   }
-  if (somatic_cell_count > 10000000) {
-    return '체세포수는 10,000,000 cells/mL 이하여야 합니다.';
+  if (somatic_cell_count > 10000) {
+    return '체세포수는 10,000개/ml 이하여야 합니다.';
   }
   
   return null;

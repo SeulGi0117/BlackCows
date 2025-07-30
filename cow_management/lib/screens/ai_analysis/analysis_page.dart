@@ -115,7 +115,10 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
         // 성공적인 예측 결과
         isSuccess = true;
         final confidenceValue = double.tryParse(confidence ?? '0');
-        final confidencePercent = confidenceValue != null ? (confidenceValue * 100).toStringAsFixed(1) : '0.0';
+        final confidencePercent = confidenceValue != null ? confidenceValue.toStringAsFixed(1) : '0.0';
+        
+        // 서버 응답에서 받은 실제 데이터 활용
+        final analysisMode = mastitisMode == 'with_scc' ? '체세포수 기반' : '생체정보 기반';
         
         setState(() {
           isLoading = false;
@@ -127,7 +130,7 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
             'details': {
               '위험도': predictionClass,
               '신뢰도': '$confidencePercent%',
-              '모델 버전': modelVersion ?? 'v2.0.0',
+              '분석 방법': analysisMode,
             },
             'recommendations': _getMastitisRecommendations(predictionClass),
           };
@@ -743,7 +746,7 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
               final isPremium = service.isPremium;
               return GestureDetector(
                 onTap: () {
-                  if (service.id == 'milk_yield' || service.id == 'mastitis_risk') {
+                  if (service.id == 'milk_yield' || service.id == 'mastitis_risk' || service.id == 'lumpy_skin_detection') {
                     setState(() => selectedServiceId = service.id);
                   } else {
                     // 안내 팝업 (SnackBar)
@@ -1793,8 +1796,32 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
   }
 
   Widget _buildMastitisResult(AnalysisTab selectedService) {
-    final level = resultData['level'] ?? 1;
-    final levelTexts = ['정상', '주의', '염증 가능성'];
+    final predictionResult = resultData['prediction'] ?? '알 수 없음';
+    final confidence = resultData['confidence'] ?? '0%';
+    
+    // 위험도에 따른 색상 설정
+    Color getRiskColor(String prediction) {
+      final lowerPrediction = prediction.toLowerCase();
+      
+      // 정상 관련
+      if (lowerPrediction.contains('정상')) {
+        return Colors.green;
+      }
+      // 주의 관련
+      else if (lowerPrediction.contains('주의')) {
+        return Colors.orange;
+      }
+      // 염증/위험 관련 (빨간색)
+      else if (lowerPrediction.contains('염증') || 
+               lowerPrediction.contains('위험') || 
+               lowerPrediction.contains('의심')) {
+        return Colors.red;
+      }
+      // 기본값
+      else {
+        return Colors.grey;
+      }
+    }
     
     return Container(
       padding: const EdgeInsets.all(20),
@@ -1831,23 +1858,23 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
             width: double.infinity,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.grey.shade50,
+              color: getRiskColor(predictionResult).withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade300),
+              border: Border.all(color: getRiskColor(predictionResult).withOpacity(0.3)),
             ),
             child: Column(
               children: [
                 Text(
-                  levelTexts[level - 1],
+                  predictionResult,
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: Colors.grey.shade800,
+                    color: getRiskColor(predictionResult),
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '신뢰도: ${resultData['confidence'] ?? ''}',
+                  '신뢰도: $confidence',
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey.shade600,
@@ -1857,12 +1884,13 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
             ),
           ),
           const SizedBox(height: 16),
-          ...resultData['details'].entries.map<Widget>((entry) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: _buildDetailItem(entry.key, entry.value.toString()),
-            );
-          }).toList(),
+          if (resultData['details'] != null)
+            ...resultData['details'].entries.map<Widget>((entry) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: _buildDetailItem(entry.key, entry.value.toString()),
+              );
+            }).toList(),
         ],
       ),
     );

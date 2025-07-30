@@ -75,7 +75,8 @@ const List<AnalysisTab> analysisTabs = [
   AnalysisTab(
     id: 'lumpy_skin_detection',
     label: '럼피스킨병 AI 진단',
-    description: '개발중...',
+    // description: '개발중...',
+    description: '소의 피부 이미지를 업로드하여 럼피스킨병 감염 여부를 AI로 진단합니다',
     icon: '🔍',
     color: Color(0xFFFF5722),
     requiredFields: ['소 피부 이미지'],

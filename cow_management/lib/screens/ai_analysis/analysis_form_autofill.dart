@@ -1,3 +1,10 @@
+/*
+ * 해당 파일은 현재 사용하지 않습니다.
+ * 추후 사용자에게 등록된 소 정보로 자동 채우기를 할 때 사용하세요.
+ * 
+ * 현재는 analysis_form_manual.dart만 사용하고 있습니다.
+ */
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'analysis_tab_controller.dart';
@@ -21,91 +28,26 @@ class AnalysisFormAutofill extends StatefulWidget {
 
 class _AnalysisFormAutofillState extends State<AnalysisFormAutofill> {
   final Map<String, TextEditingController> _controllers = {};
-  String? _selectedCowId;
-
-  final List<Map<String, dynamic>> _cowData = [
-    {
-      'id': 'cow_1',
-      'name': '보균',
-      'temperature': '38.4',
-      'milkVolume': '18.5',
-      'feedIntake': '25.0',
-      'heartRate': '72',
-      'weight': '650',
-      'age': '36',
-      'milkingFreq': '2',
-      'fatRatio': '3.8',
-      'proteinRatio': '3.2',
-      'conductivity': '4.2',
-      'parity': '2',
-      'daysOpen': '45',
-      'activity': '높음',
-      'bodyScore': '3.5',
-      'scc': '185000',
-    },
-    {
-      'id': 'cow_2',
-      'name': '슬기',
-      'temperature': '38.1',
-      'milkVolume': '19.2',
-      'feedIntake': '26.5',
-      'heartRate': '68',
-      'weight': '680',
-      'age': '42',
-      'milkingFreq': '3',
-      'fatRatio': '3.6',
-      'proteinRatio': '3.3',
-      'conductivity': '4.0',
-      'parity': '3',
-      'daysOpen': '32',
-      'activity': '보통',
-      'bodyScore': '3.8',
-      'scc': '220000',
-    },
-    {
-      'id': 'cow_3',
-      'name': '행복',
-      'temperature': '38.6',
-      'milkVolume': '17.8',
-      'feedIntake': '24.0',
-      'heartRate': '75',
-      'weight': '620',
-      'age': '28',
-      'milkingFreq': '2',
-      'fatRatio': '4.0',
-      'proteinRatio': '3.1',
-      'conductivity': '4.5',
-      'parity': '1',
-      'daysOpen': '60',
-      'activity': '낮음',
-      'bodyScore': '3.2',
-      'scc': '280000',
-    },
-  ];
 
   // 필드 매핑
   final Map<String, Map<String, dynamic>> _fieldMapping = {
-    '착유횟수': {'key': 'milkingFreq', 'label': '착유횟수 (회/일)', 'hint': '2', 'icon': Icons.schedule},
-    '사료섭취량': {'key': 'feedIntake', 'label': '사료섭취량 (kg)', 'hint': '25.0', 'icon': Icons.grass},
-    '온도': {'key': 'temperature', 'label': '환경온도 (°C)', 'hint': '20', 'icon': Icons.thermostat},
-    '유지방비율': {'key': 'fatRatio', 'label': '유지방비율 (%)', 'hint': '3.8', 'icon': Icons.opacity},
-    '전도율': {'key': 'conductivity', 'label': '전도율 (mS/cm)', 'hint': '4.2', 'icon': Icons.electric_bolt},
-    '유단백비율': {'key': 'proteinRatio', 'label': '유단백비율 (%)', 'hint': '3.2', 'icon': Icons.science},
-    '체세포수 또는 생체지표': {'key': 'scc', 'label': '체세포수 (cells/mL)', 'hint': '200000', 'icon': Icons.biotech},
-    '착유량': {'key': 'milkVolume', 'label': '착유량 (L)', 'hint': '18.5', 'icon': Icons.water_drop},
-    '산차수': {'key': 'parity', 'label': '산차수', 'hint': '2', 'icon': Icons.child_care},
-    '질병이력': {'key': 'diseaseHistory', 'label': '질병이력', 'hint': '없음', 'icon': Icons.medical_services},
-    '체중': {'key': 'weight', 'label': '체중 (kg)', 'hint': '650', 'icon': Icons.monitor_weight},
-    '활동량': {'key': 'activity', 'label': '활동량', 'hint': '보통', 'icon': Icons.directions_walk},
-    '체형점수': {'key': 'bodyScore', 'label': '체형점수', 'hint': '3.5', 'icon': Icons.assessment},
-    '수정일': {'key': 'breedingDate', 'label': '수정일', 'hint': '2024-01-15', 'icon': Icons.calendar_today},
-    '공태일수': {'key': 'daysOpen', 'label': '공태일수', 'hint': '45', 'icon': Icons.timer},
-    '이전분만일': {'key': 'lastCalvingDate', 'label': '이전분만일', 'hint': '2023-12-01', 'icon': Icons.event},
-    '수정방법': {'key': 'breedingMethod', 'label': '수정방법', 'hint': '인공수정', 'icon': Icons.medical_information},
-    '유방염이력': {'key': 'mastitisHistory', 'label': '유방염이력', 'hint': '없음', 'icon': Icons.warning},
-    '체온': {'key': 'temperature', 'label': '체온 (°C)', 'hint': '38.4', 'icon': Icons.thermostat},
-    '발정주기': {'key': 'estruscycle', 'label': '발정주기 (일)', 'hint': '21', 'icon': Icons.favorite},
-    '마지막분만일': {'key': 'lastCalvingDate', 'label': '마지막분만일', 'hint': '2023-12-01', 'icon': Icons.event},
+    // 착유량 예측 필드 (8개)
+    '착유횟수': {'key': 'milkingFreq_milk', 'label': '착유횟수 (회/일)', 'hint': '2', 'icon': Icons.schedule},
+    '전도율': {'key': 'conductivity_milk', 'label': '전도율 (mS/cm)', 'hint': '4.2', 'icon': Icons.electric_bolt},
+    '온도': {'key': 'temperature_milk', 'label': '환경온도 (°C)', 'hint': '20', 'icon': Icons.thermostat},
+    '유지방비율': {'key': 'fatRatio_milk', 'label': '유지방비율 (%)', 'hint': '3.8', 'icon': Icons.opacity},
+    '유단백비율': {'key': 'proteinRatio_milk', 'label': '유단백비율 (%)', 'hint': '3.2', 'icon': Icons.science},
+    '농후사료섭취량': {'key': 'feedIntake_milk', 'label': '사료섭취량 (kg)', 'hint': '25.0', 'icon': Icons.grass},
+    '착유기측정월': {'key': 'milkDateMonth_milk', 'label': '착유기측정월', 'hint': '1', 'icon': Icons.calendar_today},
+    '착유기측정요일': {'key': 'milkDateDay_milk', 'label': '착유기측정요일', 'hint': '수', 'icon': Icons.calendar_today},
+    
+    // 유방염 위험도 예측 필드
+    '체세포수': {'key': 'somatic_cell_count', 'label': '체세포수 (cells/mL)', 'hint': '200000', 'icon': Icons.biotech},
+    '착유량': {'key': 'milkVolume_mastitis', 'label': '착유량 (L)', 'hint': '18.5', 'icon': Icons.water_drop},
+    '전도율_유방염': {'key': 'conductivity_mastitis', 'label': '전도율 (mS/cm)', 'hint': '4.2', 'icon': Icons.electric_bolt},
+    '유지방비율_유방염': {'key': 'fatRatio_mastitis', 'label': '유지방비율 (%)', 'hint': '3.8', 'icon': Icons.opacity},
+    '유단백비율_유방염': {'key': 'proteinRatio_mastitis', 'label': '유단백비율 (%)', 'hint': '3.2', 'icon': Icons.science},
+    '산차수': {'key': 'parity_mastitis', 'label': '산차수', 'hint': '2', 'icon': Icons.child_care},
   };
 
   @override
@@ -131,10 +73,10 @@ class _AnalysisFormAutofillState extends State<AnalysisFormAutofill> {
     List<String> fields = selectedService.requiredFields;
     if (widget.selectedServiceId == 'mastitis_risk') {
       if (widget.mastitisMode == 'with_scc') {
-        fields = ['체세포수 또는 생체지표'];
-      } else {
-        fields = ['전도율', '유지방비율', '체온', '활동량'];
-      }
+        fields = ['체세포수'];
+              } else {
+          fields = ['착유량', '전도율_유방염', '유지방비율_유방염', '유단백비율_유방염', '산차수'];
+        }
     }
     
     for (final field in fields) {
@@ -145,16 +87,7 @@ class _AnalysisFormAutofillState extends State<AnalysisFormAutofill> {
     }
   }
 
-  void _loadCowData(String cowId) {
-    final cow = _cowData.firstWhere((cow) => cow['id'] == cowId);
-    setState(() {
-      _controllers.forEach((key, controller) {
-        if (cow.containsKey(key)) {
-          controller.text = cow[key].toString();
-        }
-      });
-    });
-  }
+
 
   @override
   void dispose() {
@@ -167,10 +100,6 @@ class _AnalysisFormAutofillState extends State<AnalysisFormAutofill> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 소 선택 섹션
-        _buildCowSelectionSection(),
-        const SizedBox(height: 24),
-
         // 데이터 입력 섹션
         _buildDataInputSection(),
         const SizedBox(height: 24),
@@ -181,78 +110,7 @@ class _AnalysisFormAutofillState extends State<AnalysisFormAutofill> {
     );
   }
 
-  Widget _buildCowSelectionSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(Icons.pets, color: Colors.grey.shade700, size: 20),
-            const SizedBox(width: 8),
-            const Text(
-              "소 선택",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey.shade300),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: DropdownButtonFormField<String>(
-            value: _selectedCowId,
-            items: _cowData.map((cow) {
-              return DropdownMenuItem<String>(
-                value: cow['id'] as String,
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 16,
-                      backgroundColor: Colors.grey.shade200,
-                      child: Text(
-                        cow['name'][0],
-                        style: TextStyle(
-                          color: Colors.grey.shade700,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          cow['name'],
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                       
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
-          onChanged: (value) {
-            if (value != null) {
-              setState(() {
-                _selectedCowId = value;
-                _loadCowData(value);
-              });
-            }
-          },
-          decoration: const InputDecoration(
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            hintText: '소를 선택하세요',
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+
 
   Widget _buildDataInputSection() {
     final selectedService = analysisTabs.firstWhere((s) => s.id == widget.selectedServiceId);
@@ -261,9 +119,9 @@ class _AnalysisFormAutofillState extends State<AnalysisFormAutofill> {
     List<String> fields = selectedService.requiredFields;
     if (widget.selectedServiceId == 'mastitis_risk') {
       if (widget.mastitisMode == 'with_scc') {
-        fields = ['체세포수 또는 생체지표'];
+        fields = ['체세포수'];
       } else {
-        fields = ['전도율', '유지방비율', '체온', '활동량'];
+        fields = ['착유량', '전도율_유방염', '유지방비율_유방염', '유단백비율_유방염', '산차수'];
       }
     }
     
@@ -404,14 +262,14 @@ class _AnalysisFormAutofillState extends State<AnalysisFormAutofill> {
         onPressed: () async {
           if (widget.selectedServiceId == 'milk_yield') {
             // 착유량 예측 입력값 추출
-            final milking_frequency = int.tryParse(_controllers['milkingFreq']?.text ?? '') ?? 0;
-            final conductivity = double.tryParse(_controllers['conductivity']?.text ?? '') ?? 0.0;
-            final temperature = double.tryParse(_controllers['temperature']?.text ?? '') ?? 0.0;
-            final fat_percentage = double.tryParse(_controllers['fatRatio']?.text ?? '') ?? 0.0;
-            final protein_percentage = double.tryParse(_controllers['proteinRatio']?.text ?? '') ?? 0.0;
-            final concentrate_intake = double.tryParse(_controllers['feedIntake']?.text ?? '') ?? 0.0;
-            final milking_month = int.tryParse(_controllers['milkDateMonth']?.text ?? '') ?? 0;
-            final milking_day_of_week = _convertDayToInt(_controllers['milkDateDay']?.text ?? '');
+            final milking_frequency = int.tryParse(_controllers['milkingFreq_milk']?.text ?? '') ?? 0;
+            final conductivity = double.tryParse(_controllers['conductivity_milk']?.text ?? '') ?? 0.0;
+            final temperature = double.tryParse(_controllers['temperature_milk']?.text ?? '') ?? 0.0;
+            final fat_percentage = double.tryParse(_controllers['fatRatio_milk']?.text ?? '') ?? 0.0;
+            final protein_percentage = double.tryParse(_controllers['proteinRatio_milk']?.text ?? '') ?? 0.0;
+            final concentrate_intake = double.tryParse(_controllers['feedIntake_milk']?.text ?? '') ?? 0.0;
+            final milking_month = int.tryParse(_controllers['milkDateMonth_milk']?.text ?? '') ?? 0;
+            final milking_day_of_week = _convertDayToInt(_controllers['milkDateDay_milk']?.text ?? '');
 
             // 단일 예측 API 호출
             final result = await milkYieldPrediction(
@@ -428,9 +286,9 @@ class _AnalysisFormAutofillState extends State<AnalysisFormAutofill> {
             if (result.isSuccess) {
               // 성공 시 결과를 analysis_page.dart로 전달 (예측값, 신뢰도)
               widget.onPredict(
-                temperature.toString(),
                 result.predictedYield?.toStringAsFixed(2) ?? '',
                 result.confidence?.toStringAsFixed(1) ?? '',
+                null, // 모델 버전 (착유량 예측에서는 사용하지 않음)
               );
             } else {
               // 실패 시 에러 메시지 표시
@@ -462,6 +320,115 @@ class _AnalysisFormAutofillState extends State<AnalysisFormAutofill> {
                     ),
                   ),
                 );
+              }
+            }
+          } else if (widget.selectedServiceId == 'mastitis_risk') {
+            // 유방염 예측
+            if (widget.mastitisMode == 'with_scc') {
+              // 체세포수 기반 유방염 예측
+              final somatic_cell_count = int.tryParse(_controllers['somatic_cell_count']?.text ?? '') ?? 0;
+              
+              final result = await sccMastitisPrediction(
+                somatic_cell_count: somatic_cell_count,
+              );
+
+              if (result.isSuccess) {
+                // 성공 시 결과를 analysis_page.dart로 전달
+                final predictionLabel = result.predictionClassLabel ?? '알 수 없음';
+                final confidence = result.confidence ?? 0.0;
+                widget.onPredict(
+                  predictionLabel,
+                  confidence.toStringAsFixed(1),
+                  '', // modelVersion 제거됨
+                );
+              } else {
+                // 실패 시 에러 메시지 표시
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Row(
+                        children: [
+                          const Icon(Icons.error, color: Colors.white),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              result.errorMessage ?? '알 수 없는 오류가 발생했습니다.',
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                          ),
+                        ],
+                      ),
+                      backgroundColor: Colors.red.shade600,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      duration: const Duration(seconds: 5),
+                      action: SnackBarAction(
+                        label: '확인',
+                        textColor: Colors.white,
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                        },
+                      ),
+                    ),
+                  );
+                }
+              }
+                          } else {
+                // 유방염 예측
+                final milk_yield = double.tryParse(_controllers['milkVolume_mastitis']?.text ?? '') ?? 0.0;
+                final conductivity = double.tryParse(_controllers['conductivity_mastitis']?.text ?? '') ?? 0.0;
+                final fat_percentage = double.tryParse(_controllers['fatRatio_mastitis']?.text ?? '') ?? 0.0;
+                final protein_percentage = double.tryParse(_controllers['proteinRatio_mastitis']?.text ?? '') ?? 0.0;
+                final lactation_number = int.tryParse(_controllers['parity_mastitis']?.text ?? '') ?? 0;
+                
+                              final result = await mastitisPrediction(
+                milk_yield: milk_yield,
+                conductivity: conductivity,
+                fat_percentage: fat_percentage,
+                protein_percentage: protein_percentage,
+                lactation_number: lactation_number,
+              );
+
+              if (result.isSuccess) {
+                // 성공 시 결과를 analysis_page.dart로 전달
+                final predictionLabel = result.predictionClassLabel ?? '알 수 없음';
+                final confidence = result.confidence ?? 0.0;
+                widget.onPredict(
+                  predictionLabel,
+                  confidence.toStringAsFixed(1),
+                  '', // modelVersion 제거됨
+                );
+              } else {
+                // 실패 시 에러 메시지 표시
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Row(
+                        children: [
+                          const Icon(Icons.error, color: Colors.white),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              result.errorMessage ?? '알 수 없는 오류가 발생했습니다.',
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                          ),
+                        ],
+                      ),
+                      backgroundColor: Colors.red.shade600,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      duration: const Duration(seconds: 5),
+                      action: SnackBarAction(
+                        label: '확인',
+                        textColor: Colors.white,
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                        },
+                      ),
+                    ),
+                  );
+                }
               }
             }
           } else {

@@ -35,7 +35,7 @@ class _AnalysisFormManualState extends State<AnalysisFormManual> {
     '착유기측정요일': {'key': 'milkDateDay_milk', 'label': '착유기측정요일', 'hint': '수 또는 수요일', 'icon': Icons.calendar_today},
     
     // 유방염 위험도 예측 필드
-    '체세포수': {'key': 'somatic_cell_count', 'label': '체세포수 (cells/mL)', 'hint': '200000', 'icon': Icons.biotech},
+    '체세포수': {'key': 'somatic_cell_count', 'label': '체세포수', 'hint': '10000 이하 입력', 'icon': Icons.biotech},
     '착유량': {'key': 'milkYield_mastitis', 'label': '착유량 (L)', 'hint': '20', 'icon': Icons.water_drop},
     '전도율_유방염': {'key': 'conductivity_mastitis', 'label': '전도율 (mS/cm)', 'hint': '4.2', 'icon': Icons.electric_bolt},
     '유지방비율_유방염': {'key': 'fatRatio_mastitis', 'label': '유지방비율 (%)', 'hint': '3.8', 'icon': Icons.opacity},
@@ -239,7 +239,12 @@ class _AnalysisFormManualState extends State<AnalysisFormManual> {
                         fieldInfo['key'] == 'mastitisHistory' ||
                         fieldInfo['key'] == 'activity'
             ? null
-            : [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
+            : fieldInfo['key'] == 'somatic_cell_count'
+                ? [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(5), // 최대 5자리 (10000)
+                  ]
+                : [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
         decoration: InputDecoration(
           labelText: fieldInfo['label'],
           hintText: fieldInfo['hint'],
@@ -338,10 +343,12 @@ class _AnalysisFormManualState extends State<AnalysisFormManual> {
 
               if (result.isSuccess) {
                 // 성공 시 결과를 analysis_page.dart로 전달
+                final predictionLabel = result.predictionClassLabel ?? '알 수 없음';
+                final confidence = result.confidence ?? 0.0;
                 widget.onPredict(
-                  result.predictionClass ?? '',
-                  (result.confidenceScore ?? 0.0).toStringAsFixed(1),
-                  result.modelVersion ?? '',
+                  predictionLabel,
+                  confidence.toStringAsFixed(1),
+                  '', // modelVersion 제거됨
                 );
               } else {
                 // 실패 시 에러 메시지 표시
@@ -393,10 +400,12 @@ class _AnalysisFormManualState extends State<AnalysisFormManual> {
 
               if (result.isSuccess) {
                 // 성공 시 결과를 analysis_page.dart로 전달
+                final predictionLabel = result.predictionClassLabel ?? '알 수 없음';
+                final confidence = result.confidence ?? 0.0;
                 widget.onPredict(
-                  result.predictionClass ?? '',
-                  (result.confidenceScore ?? 0.0).toStringAsFixed(1),
-                  result.modelVersion ?? '',
+                  predictionLabel,
+                  confidence.toStringAsFixed(1),
+                  '', // modelVersion 제거됨
                 );
               } else {
                 // 실패 시 에러 메시지 표시
