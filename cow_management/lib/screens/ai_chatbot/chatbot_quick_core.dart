@@ -127,6 +127,8 @@ class _ChatbotQuickCoreState extends State<ChatbotQuickCore> {
 
     final userId = Provider.of<UserProvider>(context, listen: false).currentUser?.userId;
     if (userId == null) return;
+    final farmId = Provider.of<UserProvider>(context, listen: false).currentUser?.farmId;
+    if (farmId == null) return;
 
     setState(() {
       _messages.add(_ChatMessage(
@@ -148,6 +150,7 @@ class _ChatbotQuickCoreState extends State<ChatbotQuickCore> {
     final answer = await sendChatbotMessage(
       userId: userId,
       chatId: _chatId!,
+      farmId: farmId,
       question: text,
     );
 
