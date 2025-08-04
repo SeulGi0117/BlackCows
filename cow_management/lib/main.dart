@@ -54,7 +54,6 @@ import 'screens/ai_analysis/analysis_page.dart';
 
 import 'screens/cow_list/Cow_Detail//Milk/milk_add_page.dart';
 import 'screens/cow_list/Cow_Detail//Milk/milk_list_page.dart';
-import 'screens/cow_list/Cow_Detail//Milk/milk_detail_page.dart';
 
 import 'screens/cow_list/Cow_Detail//Health/health_check_list_page.dart';
 import 'screens/cow_list/Cow_Detail/Health/health_check_add_page.dart';
@@ -191,7 +190,7 @@ class SoDamApp extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               ),
             ),
-            cardTheme: const CardThemeData(
+            cardTheme: const CardTheme(
               color: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(
@@ -458,6 +457,7 @@ class _MainScaffoldState extends State<MainScaffold> {
   @override
   Widget build(BuildContext context) {
     return AppWrapper(
+      hideChatbot: _selectedIndex == 3, // 챗봇 탭(인덱스 3)일 때 챗봇 버튼 숨김
       child: Scaffold(
         resizeToAvoidBottomInset: true,
         body: _pages[_selectedIndex],

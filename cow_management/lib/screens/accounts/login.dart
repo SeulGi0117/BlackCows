@@ -11,7 +11,6 @@ import 'dart:math';
 import 'find_user_id_page.dart' show FindUserIdPage;
 import 'find_password_page.dart' show FindPasswordPage;
 import 'package:flutter/foundation.dart';
-import 'package:cow_management/services/auth/blackcows_auth_service.dart';
 import 'package:cow_management/services/auth/google_auth_service.dart';
 import 'package:cow_management/services/auth/token_manager.dart';
 

@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:cow_management/screens/ai_chatbot/chatbot_quick_core.dart';
 
 class FloatingChatbotButton extends StatelessWidget {
-  const FloatingChatbotButton({super.key});
+  final VoidCallback? onLongPress;
+  
+  const FloatingChatbotButton({super.key, this.onLongPress});
 
   @override
   Widget build(BuildContext context) {
@@ -63,6 +65,33 @@ class FloatingChatbotButton extends StatelessWidget {
             );
           },
         );
+      },
+      onLongPress: () {
+        if (onLongPress != null) {
+          // 길게 누르면 숨기기 확인 다이얼로그 표시
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('소담이 숨기기'),
+                content: const Text('소담이를 숨기시겠습니까?\n우측 하단의 작은 아이콘을 눌러 다시 표시할 수 있습니다.'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('취소'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      onLongPress!();
+                    },
+                    child: const Text('숨기기'),
+                  ),
+                ],
+              );
+            },
+          );
+        }
       },
       child: Stack(
         alignment: Alignment.center,

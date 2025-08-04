@@ -214,31 +214,40 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
 
   // 유방염 권장사항 반환
   List<String> _getMastitisRecommendations(String predictionClass) {
-    switch (predictionClass.toLowerCase()) {
-      case '정상':
-        return [
-          '현재 상태가 양호합니다',
-          '정기적인 검사를 계속하세요',
-          '현재 관리 방법을 유지하세요',
-        ];
-      case '주의':
-        return [
-          '세심한 관찰이 필요합니다',
-          '유방 상태를 더 자주 확인하세요',
-          '사료 관리에 주의를 기울이세요',
-        ];
-      case '염증 가능성':
-      case '위험':
-        return [
-          '즉시 수의사와 상담하세요',
-          '유방염 치료를 시작하세요',
-          '격리 관리가 필요할 수 있습니다',
-        ];
-      default:
-        return [
-          '결과를 확인해주세요',
-          '필요시 전문가와 상담하세요',
-        ];
+    final lowerPrediction = predictionClass.toLowerCase();
+    
+    // 정상 관련
+    if (lowerPrediction.contains('정상')) {
+      return [
+        '현재 상태가 양호합니다',
+        '정기적인 검사를 계속하세요',
+        '현재 관리 방법을 유지하세요',
+      ];
+    }
+    // 주의 관련
+    else if (lowerPrediction.contains('주의')) {
+      return [
+        '세심한 관찰이 필요합니다',
+        '유방 상태를 더 자주 확인하세요',
+        '사료 관리에 주의를 기울이세요',
+      ];
+    }
+    // 염증/위험/의심 관련 (위험 상황)
+    else if (lowerPrediction.contains('염증') || 
+             lowerPrediction.contains('위험') || 
+             lowerPrediction.contains('의심')) {
+      return [
+        '즉시 수의사와 상담하세요',
+        '유방염 치료를 시작하세요',
+        '격리 관리가 필요할 수 있습니다',
+      ];
+    }
+    // 기본값
+    else {
+      return [
+        '결과를 확인해주세요',
+        '필요시 전문가와 상담하세요',
+      ];
     }
   }
 
@@ -366,25 +375,25 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
           ]
         };
       case 'lumpy_skin_detection':
-        // 이미지가 있을 때와 없을 때 다른 결과 반환
+        // 목업 템플릿 - 럼피스킨병 의심 결과
         if (selectedImage != null) {
-          // 이미지가 있을 때는 실제 분석 결과 시뮬레이션
+          // 럼피스킨병 의심 결과 시뮬레이션
           return {
-            'prediction': '정상',
-            'confidence': '96%',
-            'detected_areas': 0,
+            'prediction': '럼피스킨병이 의심됨',
+            'confidence': '99%',
+            'detected_areas': 2,
             'details': {
-              '진단 결과': '정상',
-              '감염 부위': '없음',
-              '심각도': '없음',
-              '신뢰도': '96.1%'
+              '위험도': '럼피스킨병이 의심됨',
+              '신뢰도': '98.4%',
+              '심각도': '위험',
             },
             'recommendations': [
-              '현재 상태가 정상입니다',
-              '정기적인 건강 관찰 지속',
-              '예방 접종 일정 확인'
+              '즉시 방역 당국(1588-9060)에 신고하세요',
+              '감염 의심 소를 즉시 격리하세요',
+              '농장 전체 소독을 실시하세요',
+              '수의사와 긴급 상담이 필요합니다',
             ],
-            'warning': false
+            'warning': true
           };
         } else {
           // 이미지가 없을 때는 기본 메시지
@@ -394,7 +403,6 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
             'detected_areas': 0,
             'details': {
               '진단 결과': '이미지 업로드 필요',
-              '감염 부위': '분석 불가',
               '심각도': '분석 불가',
               '신뢰도': '0%'
             },
@@ -420,6 +428,13 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
         selectedImage = File(image.path);
       });
     }
+  }
+
+  // 럼피스킨병 목업 이미지 설정
+  void _setMockImage() {
+    setState(() {
+      selectedImage = File('assets/images/Lumpi_mock.png');
+    });
   }
 
   @override
@@ -1275,8 +1290,97 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 럼피스킨병 경고 메시지
+          // 럼피스킨병 결과 표시
           if (selectedServiceId == 'lumpy_skin_detection') ...[
+            // 1. 상세 분석 (맨 위에 표시)
+            if (resultData['details'] != null && resultData['details'] is Map) ...[
+              const Text(
+                '상세 분석',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 12),
+              ...(resultData['details'] as Map<String, dynamic>).entries.map<Widget>((entry) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade600,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        entry.key,
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        entry.value.toString(),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+              const SizedBox(height: 20),
+            ],
+            
+            // 2. 권장사항 (두 번째)
+            if (resultData['recommendations'] != null && resultData['recommendations'] is List) ...[
+              const Text(
+                '권장사항',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 12),
+              ...(resultData['recommendations'] as List).map<Widget>((recommendation) {
+                return Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.red.shade200),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.warning,
+                        color: Colors.red,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          recommendation.toString(),
+                          style: TextStyle(
+                            color: Colors.red.shade700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+              const SizedBox(height: 20),
+            ],
+            
+            // 3. 럼피스킨병 주의사항 (마지막)
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -1347,311 +1451,98 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
                 ],
               ),
             ),
-            const SizedBox(height: 20),
-          ],
-          
-          // 럼피스킨병 특별 결과 표시
-          if (selectedServiceId == 'lumpy_skin_detection') ...[
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.orange, width: 2),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.orange.withOpacity(0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.camera_alt, color: Colors.orange.shade600),
-                      const SizedBox(width: 8),
-                      Text(
-                        'AI 이미지 진단 결과',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.orange.shade700,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  // 이미지 업로드 섹션
-                  if (selectedImage == null) ...[
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(40),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade300, style: BorderStyle.solid),
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.add_photo_alternate,
-                            size: 48,
-                            color: Colors.grey.shade400,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            '이미지를 업로드해주세요',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey.shade600,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            '소의 피부 상태를 촬영한 사진을 업로드하면\nAI가 럼피스킨병 감염 여부를 분석합니다',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey.shade500,
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          ElevatedButton.icon(
-                            onPressed: _pickImage,
-                            icon: const Icon(Icons.upload),
-                            label: const Text('이미지 선택'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.orange,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ] else ...[
-                    // 이미지 분석 결과 표시
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                '원본 이미지',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Image.file(
-                                  selectedImage!,
-                                  height: 150,
-                                  width: double.infinity,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'AI 분석 결과',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Container(
-                                height: 150,
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade200,
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: Colors.orange, width: 2),
-                                ),
-                                child: Stack(
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(6),
-                                      child: Image.file(
-                                        selectedImage!,
-                                        height: 150,
-                                        width: double.infinity,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                    // 바운딩박스 시뮬레이션 (정상일 때는 표시하지 않음)
-                                    if (resultData['prediction'] == '럼피스킨병 의심') ...[
-                                      Positioned(
-                                        top: 30,
-                                        left: 20,
-                                        child: Container(
-                                          width: 80,
-                                          height: 60,
-                                          decoration: BoxDecoration(
-                                            border: Border.all(color: Colors.red, width: 3),
-                                            borderRadius: BorderRadius.circular(4),
-                                          ),
-                                          child: Container(
-                                            padding: const EdgeInsets.all(4),
-                                            decoration: BoxDecoration(
-                                              color: Colors.red.withOpacity(0.8),
-                                              borderRadius: BorderRadius.circular(4),
-                                            ),
-                                            child: const Text(
-                                              '감염부위 1',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: _pickImage,
-                            icon: const Icon(Icons.refresh),
-                            label: const Text('이미지 변경'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.grey.shade200,
-                              foregroundColor: Colors.grey.shade700,
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ],
-              ),
-            ),
           ],
           
           // 일반 서비스 결과 표시 (럼피스킨병이 아닐 때만)
           if (selectedServiceId != 'lumpy_skin_detection') ...[
             _buildServiceSpecificResult(selectedService),
-          ],
-          
-          // 상세 정보 (null 체크 추가)
-          if (resultData['details'] != null && resultData['details'] is Map) ...[
-            const SizedBox(height: 20),
-            const Text(
-              '상세 분석',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 12),
-            ...(resultData['details'] as Map<String, dynamic>).entries.map<Widget>((entry) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade600,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      entry.key,
-                      style: TextStyle(
-                        color: Colors.grey.shade600,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      entry.value.toString(),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+            
+            // 일반 서비스의 상세 정보
+            if (resultData['details'] != null && resultData['details'] is Map) ...[
+              const SizedBox(height: 20),
+              const Text(
+                '상세 분석',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
                 ),
-              );
-            }).toList(),
-          ],
-          const SizedBox(height: 20),
-          
-          // 권장사항 (null 체크 추가)
-          if (resultData['recommendations'] != null && resultData['recommendations'] is List) ...[
-            const Text(
-              '권장사항',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
               ),
-            ),
-            const SizedBox(height: 12),
-            ...(resultData['recommendations'] as List).map<Widget>((recommendation) {
-              return Container(
-                width: double.infinity,
-                margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: isWarning ? Colors.red.shade50 : Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                  border: isWarning ? Border.all(color: Colors.red.shade200) : null,
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      isWarning ? Icons.warning : Icons.lightbulb_outline,
-                      color: isWarning ? Colors.red : Colors.orange,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        recommendation.toString(),
-                        style: TextStyle(
-                          color: isWarning ? Colors.red.shade700 : Colors.grey.shade700,
+              const SizedBox(height: 12),
+              ...(resultData['details'] as Map<String, dynamic>).entries.map<Widget>((entry) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade600,
+                          shape: BoxShape.circle,
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 12),
+                      Text(
+                        entry.key,
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        entry.value.toString(),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+              const SizedBox(height: 20),
+            ],
+            
+            // 일반 서비스의 권장사항
+            if (resultData['recommendations'] != null && resultData['recommendations'] is List) ...[
+              const Text(
+                '권장사항',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
                 ),
-              );
-            }).toList(),
+              ),
+              const SizedBox(height: 12),
+              ...(resultData['recommendations'] as List).map<Widget>((recommendation) {
+                return Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.lightbulb_outline,
+                        color: Colors.orange,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          recommendation.toString(),
+                          style: TextStyle(
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ],
           ],
         ],
       ),
@@ -1872,20 +1763,19 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
                     color: getRiskColor(predictionResult),
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  '신뢰도: $confidence',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
               ],
             ),
           ),
           const SizedBox(height: 16),
           if (resultData['details'] != null)
-            ...resultData['details'].entries.map<Widget>((entry) {
+            ...resultData['details'].entries.where((entry) {
+              // 위험도, 신뢰도, 분석 방법 제외
+              final key = entry.key.toLowerCase();
+              return !key.contains('위험도') && 
+                     !key.contains('신뢰도') && 
+                     !key.contains('분석 방법') &&
+                     !key.contains('분석방법');
+            }).map<Widget>((entry) {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: _buildDetailItem(entry.key, entry.value.toString()),
@@ -2393,19 +2283,37 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
                     ),
                   ),
                   const SizedBox(height: 20),
-                  ElevatedButton.icon(
-                    onPressed: _pickImage,
-                    icon: const Icon(Icons.upload),
-                    label: const Text('이미지 선택'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFF5722),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
+                                            Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              ElevatedButton.icon(
+                                onPressed: _pickImage,
+                                icon: const Icon(Icons.upload),
+                                label: const Text('갤러리'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFFF5722),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                              ),
+                              ElevatedButton.icon(
+                                onPressed: _setMockImage,
+                                icon: const Icon(Icons.science),
+                                label: const Text('목업 예시'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.orange.shade400,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                 ],
               ),
             ),
@@ -2423,12 +2331,19 @@ class _AnalysisPageState extends State<AnalysisPage> with TickerProviderStateMix
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: Image.file(
-                      selectedImage!,
-                      height: 200,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
+                    child: selectedImage!.path.contains('assets/images/Lumpi_mock.png')
+                        ? Image.asset(
+                            'assets/images/Lumpi_mock.png',
+                            height: 200,
+                            width: double.infinity,
+                            fit: BoxFit.contain,
+                          )
+                        : Image.file(
+                            selectedImage!,
+                            height: 200,
+                            width: double.infinity,
+                            fit: BoxFit.contain,
+                          ),
                   ),
                   const SizedBox(height: 16),
                   Row(

@@ -8,7 +8,6 @@ import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 import 'package:cow_management/providers/user_provider.dart';
 import 'package:cow_management/widgets/modern_card.dart';
-import 'package:cow_management/widgets/loading_widget.dart';
 import 'package:flutter/foundation.dart';
 
 class SignupPage extends StatefulWidget {
