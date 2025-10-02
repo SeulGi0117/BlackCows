@@ -122,6 +122,6 @@ lib/
 ---
 
 ## 📑 발표자료
-- [발표자료 PDF 보기](./BlackCows_발표자료.pdf)
+- [발표자료 PDF 보기](./docs/Blackcows발표자료.pdf)
 ---
 © 2025 BlackCows Team. All rights reserved
